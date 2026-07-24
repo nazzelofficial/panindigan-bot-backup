@@ -25,21 +25,21 @@ export class TwentyFourSevenCommand extends BaseCommand {
 
     try {
       const client = interaction.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await interaction.reply({ content: '❌ Music system is not available.', ephemeral: true });
         return;
       }
 
-      const player = musicManager.get(interaction.guild.id);
+      const player = client.kazagumo!.players.get(interaction.guild.id);
 
       if (!player) {
         await interaction.reply({ content: '❌ Nothing is currently playing.', ephemeral: true });
         return;
       }
 
-      const newState = await musicManager.toggle247(interaction.guild.id);
+      const newState = player.data.set("247", !player.data.get("247"));
 
       const embed = new EmbedBuilder()
         .setTitle(`${EMOJIS.music} 24/7 Mode ${newState ? 'Enabled' : 'Disabled'}`)
@@ -61,21 +61,21 @@ export class TwentyFourSevenCommand extends BaseCommand {
 
     try {
       const client = message.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await message.reply('❌ Music system is not available.');
         return;
       }
 
-      const player = musicManager.get(message.guild.id);
+      const player = client.kazagumo!.players.get(message.guild.id);
 
       if (!player) {
         await message.reply('❌ Nothing is currently playing.');
         return;
       }
 
-      const newState = await musicManager.toggle247(message.guild.id);
+      const newState = player.data.set("247", !player.data.get("247"));
 
       const embed = new EmbedBuilder()
         .setTitle(`${EMOJIS.music} 24/7 Mode ${newState ? 'Enabled' : 'Disabled'}`)

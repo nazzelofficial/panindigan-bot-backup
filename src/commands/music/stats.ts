@@ -25,14 +25,14 @@ export class StatsCommand extends BaseCommand {
 
     try {
       const client = interaction.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await interaction.reply({ content: '❌ Music system is not available.', ephemeral: true });
         return;
       }
 
-      const player = musicManager.get(interaction.guildId);
+      const player = client.kazagumo!.players.get(interaction.guildId);
       const stats = await musicManager.getStats(interaction.guildId);
 
       const embed = new EmbedBuilder()
@@ -57,14 +57,14 @@ export class StatsCommand extends BaseCommand {
 
     try {
       const client = message.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await message.reply('❌ Music system is not available.');
         return;
       }
 
-      const player = musicManager.get(message.guildId);
+      const player = client.kazagumo!.players.get(message.guildId);
       const stats = await musicManager.getStats(message.guildId);
 
       const embed = new EmbedBuilder()

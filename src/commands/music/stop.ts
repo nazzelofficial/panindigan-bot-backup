@@ -31,14 +31,14 @@ export class StopCommand extends BaseCommand {
 
     try {
       const client = interaction.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await interaction.reply({ content: '❌ Music system is not available.', ephemeral: true });
         return;
       }
 
-      const player = musicManager.get(interaction.guild.id);
+      const player = client.kazagumo!.players.get(interaction.guild.id);
 
       if (!player) {
         await interaction.reply({ content: '❌ Nothing is currently playing.', ephemeral: true });
@@ -50,7 +50,7 @@ export class StopCommand extends BaseCommand {
         return;
       }
 
-      await musicManager.stop(interaction.guild.id);
+      player.stop();
 
       const embed = new EmbedBuilder()
         .setTitle(`${EMOJIS.music} Stopped`)
@@ -77,14 +77,14 @@ export class StopCommand extends BaseCommand {
 
     try {
       const client = message.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await message.reply('❌ Music system is not available.');
         return;
       }
 
-      const player = musicManager.get(message.guild.id);
+      const player = client.kazagumo!.players.get(message.guild.id);
 
       if (!player) {
         await message.reply('❌ Nothing is currently playing.');
@@ -96,7 +96,7 @@ export class StopCommand extends BaseCommand {
         return;
       }
 
-      await musicManager.stop(message.guild.id);
+      player.stop();
 
       const embed = new EmbedBuilder()
         .setTitle(`${EMOJIS.music} Stopped`)

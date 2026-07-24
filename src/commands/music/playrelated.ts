@@ -33,14 +33,14 @@ export class PlayRelatedCommand extends BaseCommand {
       await interaction.deferReply();
 
       const client = interaction.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await interaction.editReply({ content: '❌ Music system is not available.' });
         return;
       }
 
-      const player = musicManager.get(interaction.guild.id);
+      const player = client.kazagumo!.players.get(interaction.guild.id);
 
       if (!player || !player.currentTrack) {
         await interaction.editReply({ content: '❌ Nothing is currently playing.' });
@@ -90,14 +90,14 @@ export class PlayRelatedCommand extends BaseCommand {
       await message.reply('🎵 Finding related songs...');
 
       const client = message.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await message.edit('❌ Music system is not available.');
         return;
       }
 
-      const player = musicManager.get(message.guild.id);
+      const player = client.kazagumo!.players.get(message.guild.id);
 
       if (!player || !player.currentTrack) {
         await message.edit('❌ Nothing is currently playing.');

@@ -46,14 +46,14 @@ export class PlaylistCommand extends BaseCommand {
         }
 
         const client = interaction.client as any;
-        const musicManager = client.musicManager;
+        const musicManager = client.kazagumo;
 
         if (!musicManager) {
           await interaction.reply({ content: '❌ Music system is not available.', ephemeral: true });
           return;
         }
 
-        const player = musicManager.get(interaction.guildId);
+        const player = client.kazagumo!.players.get(interaction.guildId);
         if (!player || player.queue.length === 0) {
           await interaction.reply({ content: '❌ No songs in the current queue to save.', ephemeral: true });
           return;
@@ -195,14 +195,14 @@ export class PlaylistCommand extends BaseCommand {
         }
 
         const client = message.client as any;
-        const musicManager = client.musicManager;
+        const musicManager = client.kazagumo;
 
         if (!musicManager) {
           await message.reply('❌ Music system is not available.');
           return;
         }
 
-        const player = musicManager.get(message.guildId);
+        const player = client.kazagumo!.players.get(message.guildId);
         if (!player || player.queue.length === 0) {
           await message.reply('❌ No songs in the current queue to save.');
           return;

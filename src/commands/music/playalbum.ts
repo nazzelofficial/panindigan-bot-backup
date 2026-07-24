@@ -41,14 +41,14 @@ export class PlayAlbumCommand extends BaseCommand {
       await interaction.deferReply();
 
       const client = interaction.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await interaction.editReply({ content: '❌ Music system is not available.' });
         return;
       }
 
-      const player = musicManager.get(interaction.guild.id);
+      const player = client.kazagumo!.players.get(interaction.guild.id);
 
       if (player && player.voiceChannel !== voiceChannel.id) {
         await interaction.editReply({ content: '❌ I\'m already playing in another voice channel.' });
@@ -56,7 +56,7 @@ export class PlayAlbumCommand extends BaseCommand {
       }
 
       const query = artist ? `${album} ${artist}` : album;
-      const tracks = await musicManager.searchAlbum(query);
+      const tracks = await player.search(query);
 
       if (!tracks || tracks.length === 0) {
         await interaction.editReply({ content: '❌ No album found for that query.' });
@@ -64,10 +64,10 @@ export class PlayAlbumCommand extends BaseCommand {
       }
 
       if (!player) {
-        await musicManager.create(interaction.guild.id, voiceChannel.id, interaction.channel.id);
+        await client.kazagumo.createPlayer({ guildId: interaction.guild.id, voiceId: voiceChannel.id, textId: interaction.channel.id, volume: 80, deaf: true });
       }
 
-      await musicManager.loadQueue(interaction.guild.id, tracks);
+      player.queue.add(tracks);
 
       const embed = new EmbedBuilder()
         .setTitle(`${EMOJIS.music} Album Added to Queue`)
@@ -107,14 +107,14 @@ export class PlayAlbumCommand extends BaseCommand {
       await message.reply('🎵 Searching for album...');
 
       const client = message.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await message.edit('❌ Music system is not available.');
         return;
       }
 
-      const player = musicManager.get(message.guild.id);
+      const player = client.kazagumo!.players.get(message.guild.id);
 
       if (player && player.voiceChannel !== voiceChannel.id) {
         await message.edit('❌ I\'m already playing in another voice channel.');
@@ -122,7 +122,7 @@ export class PlayAlbumCommand extends BaseCommand {
       }
 
       const query = artist ? `${album} ${artist}` : album;
-      const tracks = await musicManager.searchAlbum(query);
+      const tracks = await player.search(query);
 
       if (!tracks || tracks.length === 0) {
         await message.edit('❌ No album found for that query.');
@@ -130,10 +130,10 @@ export class PlayAlbumCommand extends BaseCommand {
       }
 
       if (!player) {
-        await musicManager.create(message.guild.id, voiceChannel.id, message.channel.id);
+        await client.kazagumo.createPlayer({ guildId: message.guild.id, voiceId: voiceChannel.id, textId: message.channel.id, volume: 80, deaf: true });
       }
 
-      await musicManager.loadQueue(message.guild.id, tracks);
+      player.queue.add(tracks);
 
       const embed = new EmbedBuilder()
         .setTitle(`${EMOJIS.music} Album Added to Queue`)

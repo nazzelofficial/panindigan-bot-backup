@@ -46,14 +46,14 @@ export class PlayFavoritesCommand extends BaseCommand {
       const favoriteSongs = JSON.parse(user.favoriteSongs);
 
       const client = interaction.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await interaction.reply({ content: '❌ Music system is not available.', ephemeral: true });
         return;
       }
 
-      const player = musicManager.get(interaction.guild.id);
+      const player = client.kazagumo!.players.get(interaction.guild.id);
 
       if (player && player.voiceChannel !== voiceChannel.id) {
         await interaction.reply({ content: '❌ I\'m already playing in another voice channel.', ephemeral: true });
@@ -61,10 +61,10 @@ export class PlayFavoritesCommand extends BaseCommand {
       }
 
       if (!player) {
-        await musicManager.create(interaction.guild.id, voiceChannel.id, interaction.channel.id);
+        await client.kazagumo.createPlayer({ guildId: interaction.guild.id, voiceId: voiceChannel.id, textId: interaction.channel.id, volume: 80, deaf: true });
       }
 
-      await musicManager.loadQueue(interaction.guild.id, favoriteSongs);
+      player.queue.add(favoriteSongs);
 
       const embed = new EmbedBuilder()
         .setTitle(`${EMOJIS.music} Playing Favorites`)
@@ -106,14 +106,14 @@ export class PlayFavoritesCommand extends BaseCommand {
       const favoriteSongs = JSON.parse(user.favoriteSongs);
 
       const client = message.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await message.reply('❌ Music system is not available.');
         return;
       }
 
-      const player = musicManager.get(message.guild.id);
+      const player = client.kazagumo!.players.get(message.guild.id);
 
       if (player && player.voiceChannel !== voiceChannel.id) {
         await message.reply('❌ I\'m already playing in another voice channel.');
@@ -121,10 +121,10 @@ export class PlayFavoritesCommand extends BaseCommand {
       }
 
       if (!player) {
-        await musicManager.create(message.guild.id, voiceChannel.id, message.channel.id);
+        await client.kazagumo.createPlayer({ guildId: message.guild.id, voiceId: voiceChannel.id, textId: message.channel.id, volume: 80, deaf: true });
       }
 
-      await musicManager.loadQueue(message.guild.id, favoriteSongs);
+      player.queue.add(favoriteSongs);
 
       const embed = new EmbedBuilder()
         .setTitle(`${EMOJIS.music} Playing Favorites`)

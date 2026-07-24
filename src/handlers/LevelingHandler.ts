@@ -1,37 +1,42 @@
 import { getPrismaClient } from '../database/postgresql/client';
 import config from '../../config.json';
 
-export interface LevelingConfig {
-  xpPerMessage: { min: number; max: number };
-  xpCooldownSeconds: number;
-  levelUpNotification: boolean;
-  stackRoles: boolean;
-  voiceXpPerMinute: number;
-}
-
 export function calculateLevelFromXP(xp: number): number {
   let level = 0;
   let xpNeeded = 100;
-  
-  while (xp >= xpNeeded) {
-    xp -= xpNeeded;
+  let remaining = xp;
+
+  while (remaining >= xpNeeded) {
+    remaining -= xpNeeded;
     level++;
     xpNeeded = Math.floor(xpNeeded * 1.5);
   }
-  
+
   return level;
 }
 
 export function calculateXPForLevel(level: number): number {
   let totalXP = 0;
   let xpNeeded = 100;
-  
+
   for (let i = 0; i < level; i++) {
     totalXP += xpNeeded;
     xpNeeded = Math.floor(xpNeeded * 1.5);
   }
-  
+
   return totalXP;
+}
+
+export function getXPForNextLevel(currentXP: number): { current: number; required: number; remaining: number } {
+  const level = calculateLevelFromXP(currentXP);
+  const xpForCurrentLevel = calculateXPForLevel(level);
+  const xpForNextLevel = calculateXPForLevel(level + 1);
+
+  return {
+    current: currentXP - xpForCurrentLevel,
+    required: xpForNextLevel - xpForCurrentLevel,
+    remaining: xpForNextLevel - currentXP,
+  };
 }
 
 export function getRandomXP(): number {
@@ -43,23 +48,32 @@ export async function addXP(
   userId: string,
   guildId: string,
   amount: number
-): Promise<{ newXP: number; newLevel: number; leveledUp: boolean }> {
+): Promise<{ newXP: number; newLevel: number; leveledUp: boolean; oldLevel: number }> {
   const prisma = getPrismaClient();
-  
+
   try {
-    const user = await prisma.user.findUnique({
+    // Check cooldown
+    const existing = await prisma.leveling.findUnique({
       where: { userId_guildId: { userId, guildId } },
-      include: { leveling: true },
     });
 
-    if (!user) {
-      return { newXP: 0, newLevel: 0, leveledUp: false };
+    const now = new Date();
+    if (existing?.lastXpAt) {
+      const elapsed = (now.getTime() - existing.lastXpAt.getTime()) / 1000;
+      if (elapsed < config.leveling.xpCooldownSeconds) {
+        return {
+          newXP: existing.xp,
+          newLevel: existing.level,
+          leveledUp: false,
+          oldLevel: existing.level,
+        };
+      }
     }
 
-    const currentXP = user.leveling?.xp || 0;
+    const currentXP = existing?.xp || 0;
+    const currentLevel = existing?.level || 0;
     const newXP = currentXP + amount;
     const newLevel = calculateLevelFromXP(newXP);
-    const currentLevel = user.leveling?.level || 0;
     const leveledUp = newLevel > currentLevel;
 
     await prisma.leveling.upsert({
@@ -68,6 +82,8 @@ export async function addXP(
         xp: newXP,
         level: newLevel,
         totalMessages: { increment: 1 },
+        totalXpEarned: { increment: amount },
+        lastXpAt: now,
       },
       create: {
         userId,
@@ -75,13 +91,15 @@ export async function addXP(
         xp: newXP,
         level: newLevel,
         totalMessages: 1,
+        totalXpEarned: amount,
+        lastXpAt: now,
       },
     });
 
-    return { newXP, newLevel, leveledUp };
+    return { newXP, newLevel, leveledUp, oldLevel: currentLevel };
   } catch (error) {
     console.error('Error adding XP:', error);
-    return { newXP: 0, newLevel: 0, leveledUp: false };
+    return { newXP: 0, newLevel: 0, leveledUp: false, oldLevel: 0 };
   }
 }
 
@@ -91,22 +109,17 @@ export async function addVoiceXP(
   minutes: number
 ): Promise<{ newXP: number; newLevel: number; leveledUp: boolean }> {
   const prisma = getPrismaClient();
-  
+
   try {
-    const user = await prisma.user.findUnique({
+    const existing = await prisma.leveling.findUnique({
       where: { userId_guildId: { userId, guildId } },
-      include: { leveling: true },
     });
 
-    if (!user) {
-      return { newXP: 0, newLevel: 0, leveledUp: false };
-    }
-
     const xpToAdd = minutes * config.leveling.voiceXpPerMinute;
-    const currentXP = user.leveling?.xp || 0;
+    const currentXP = existing?.xp || 0;
+    const currentLevel = existing?.level || 0;
     const newXP = currentXP + xpToAdd;
     const newLevel = calculateLevelFromXP(newXP);
-    const currentLevel = user.leveling?.level || 0;
     const leveledUp = newLevel > currentLevel;
 
     await prisma.leveling.upsert({
@@ -115,6 +128,7 @@ export async function addVoiceXP(
         xp: newXP,
         level: newLevel,
         voiceMinutes: { increment: minutes },
+        totalXpEarned: { increment: xpToAdd },
       },
       create: {
         userId,
@@ -122,6 +136,7 @@ export async function addVoiceXP(
         xp: newXP,
         level: newLevel,
         voiceMinutes: minutes,
+        totalXpEarned: xpToAdd,
       },
     });
 
@@ -132,29 +147,71 @@ export async function addVoiceXP(
   }
 }
 
-export async function getLeaderboard(guildId: string, limit: number = 10): Promise<any[]> {
+export async function getLeaderboard(
+  guildId: string,
+  limit: number = 10,
+  page: number = 1
+): Promise<{ entries: any[]; total: number }> {
   const prisma = getPrismaClient();
-  
-  try {
-    const users = await prisma.leveling.findMany({
-      where: { guildId },
-      orderBy: { xp: 'desc' },
-      take: limit,
-      include: {
-        user: true,
-      },
-    });
 
-    return users.map((entry, index) => ({
-      rank: index + 1,
-      userId: entry.userId,
-      xp: entry.xp,
-      level: entry.level,
-      totalMessages: entry.totalMessages,
-      voiceMinutes: entry.voiceMinutes,
-    }));
+  try {
+    const [entries, total] = await Promise.all([
+      prisma.leveling.findMany({
+        where: { guildId },
+        orderBy: { xp: 'desc' },
+        take: limit,
+        skip: (page - 1) * limit,
+      }),
+      prisma.leveling.count({ where: { guildId } }),
+    ]);
+
+    return {
+      entries: entries.map((entry, index) => ({
+        rank: (page - 1) * limit + index + 1,
+        userId: entry.userId,
+        xp: entry.xp,
+        level: entry.level,
+        totalMessages: entry.totalMessages,
+        voiceMinutes: entry.voiceMinutes,
+      })),
+      total,
+    };
   } catch (error) {
     console.error('Error fetching leaderboard:', error);
-    return [];
+    return { entries: [], total: 0 };
   }
+}
+
+export async function getUserRank(userId: string, guildId: string): Promise<number> {
+  const prisma = getPrismaClient();
+
+  try {
+    const user = await prisma.leveling.findUnique({
+      where: { userId_guildId: { userId, guildId } },
+    });
+    if (!user) return 0;
+
+    const rank = await prisma.leveling.count({
+      where: { guildId, xp: { gt: user.xp } },
+    });
+
+    return rank + 1;
+  } catch {
+    return 0;
+  }
+}
+
+export async function setUserXP(
+  userId: string,
+  guildId: string,
+  xp: number
+): Promise<void> {
+  const prisma = getPrismaClient();
+  const level = calculateLevelFromXP(xp);
+
+  await prisma.leveling.upsert({
+    where: { userId_guildId: { userId, guildId } },
+    create: { userId, guildId, xp, level },
+    update: { xp, level },
+  });
 }

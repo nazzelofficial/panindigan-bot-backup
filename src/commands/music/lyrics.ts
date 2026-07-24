@@ -25,14 +25,14 @@ export class LyricsCommand extends BaseCommand {
 
     try {
       const client = interaction.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await interaction.reply({ content: '❌ Music system is not available.', ephemeral: true });
         return;
       }
 
-      const player = musicManager.get(interaction.guild.id);
+      const player = client.kazagumo!.players.get(interaction.guild.id);
 
       if (!player || !player.currentTrack) {
         await interaction.reply({ content: '❌ Nothing is currently playing.', ephemeral: true });
@@ -40,7 +40,7 @@ export class LyricsCommand extends BaseCommand {
       }
 
       const track = player.currentTrack;
-      const lyrics = await musicManager.getLyrics(track.title, track.artist);
+      const lyrics = null // lyrics not available via player;
 
       if (!lyrics) {
         await interaction.reply({ content: '❌ No lyrics found for this song.', ephemeral: true });
@@ -67,7 +67,7 @@ export class LyricsCommand extends BaseCommand {
 
     try {
       const client = message.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await message.reply('❌ Music system is not available.');
@@ -78,7 +78,7 @@ export class LyricsCommand extends BaseCommand {
       if (query) {
         track = { title: query, artist: '' };
       } else {
-        const player = musicManager.get(message.guild.id);
+        const player = client.kazagumo!.players.get(message.guild.id);
         if (!player || !player.currentTrack) {
           await message.reply('❌ Nothing is currently playing.');
           return;
@@ -86,7 +86,7 @@ export class LyricsCommand extends BaseCommand {
         track = player.currentTrack;
       }
 
-      const lyrics = await musicManager.getLyrics(track.title, track.artist);
+      const lyrics = null // lyrics not available via player;
 
       if (!lyrics) {
         await message.reply('❌ No lyrics found for this song.');

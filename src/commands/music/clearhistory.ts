@@ -25,14 +25,14 @@ export class ClearHistoryCommand extends BaseCommand {
 
     try {
       const client = interaction.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await interaction.reply({ content: '❌ Music system is not available.', ephemeral: true });
         return;
       }
 
-      const player = musicManager.get(interaction.guildId);
+      const player = client.kazagumo!.players.get(interaction.guildId);
 
       if (!player) {
         await interaction.reply({ content: '❌ Nothing is currently playing.', ephemeral: true });
@@ -67,14 +67,14 @@ export class ClearHistoryCommand extends BaseCommand {
 
     try {
       const client = message.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await message.reply('❌ Music system is not available.');
         return;
       }
 
-      const player = musicManager.get(message.guildId);
+      const player = client.kazagumo!.players.get(message.guildId);
 
       if (!player) {
         await message.reply('❌ Nothing is currently playing.');

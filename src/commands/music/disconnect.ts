@@ -31,14 +31,14 @@ export class DisconnectCommand extends BaseCommand {
 
     try {
       const client = interaction.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await interaction.reply({ content: '❌ Music system is not available.', ephemeral: true });
         return;
       }
 
-      const player = musicManager.get(interaction.guild.id);
+      const player = client.kazagumo!.players.get(interaction.guild.id);
 
       if (!player) {
         await interaction.reply({ content: '❌ I\'m not connected to a voice channel.', ephemeral: true });
@@ -50,7 +50,7 @@ export class DisconnectCommand extends BaseCommand {
         return;
       }
 
-      await musicManager.disconnect(interaction.guild.id);
+      player.disconnect();
 
       const embed = new EmbedBuilder()
         .setTitle(`${EMOJIS.music} Disconnected`)
@@ -77,14 +77,14 @@ export class DisconnectCommand extends BaseCommand {
 
     try {
       const client = message.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await message.reply('❌ Music system is not available.');
         return;
       }
 
-      const player = musicManager.get(message.guild.id);
+      const player = client.kazagumo!.players.get(message.guild.id);
 
       if (!player) {
         await message.reply('❌ I\'m not connected to a voice channel.');
@@ -96,7 +96,7 @@ export class DisconnectCommand extends BaseCommand {
         return;
       }
 
-      await musicManager.disconnect(message.guild.id);
+      player.disconnect();
 
       const embed = new EmbedBuilder()
         .setTitle(`${EMOJIS.music} Disconnected`)

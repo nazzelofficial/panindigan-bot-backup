@@ -25,14 +25,14 @@ export class QueueCommand extends BaseCommand {
 
     try {
       const client = interaction.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await interaction.reply({ content: '❌ Music system is not available.', ephemeral: true });
         return;
       }
 
-      const player = musicManager.get(interaction.guild.id);
+      const player = client.kazagumo!.players.get(interaction.guild.id);
 
       if (!player || (!player.currentTrack && player.queue.length === 0)) {
         await interaction.reply({ content: '❌ The queue is empty.', ephemeral: true });
@@ -68,14 +68,14 @@ export class QueueCommand extends BaseCommand {
 
     try {
       const client = message.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await message.reply('❌ Music system is not available.');
         return;
       }
 
-      const player = musicManager.get(message.guild.id);
+      const player = client.kazagumo!.players.get(message.guild.id);
 
       if (!player || (!player.currentTrack && player.queue.length === 0)) {
         await message.reply('❌ The queue is empty.');

@@ -31,14 +31,14 @@ export class MCompandCommand extends BaseCommand {
 
     try {
       const client = interaction.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await interaction.reply({ content: '❌ Music system is not available.', ephemeral: true });
         return;
       }
 
-      const player = musicManager.get(interaction.guild.id);
+      const player = client.kazagumo!.players.get(interaction.guild.id);
 
       if (!player) {
         await interaction.reply({ content: '❌ Nothing is currently playing.', ephemeral: true });
@@ -50,7 +50,7 @@ export class MCompandCommand extends BaseCommand {
         return;
       }
 
-      await musicManager.setFilter(interaction.guild.id, 'mcompand');
+      await player.setFilters('mcompand');
 
       const embed = new EmbedBuilder()
         .setTitle(`${EMOJIS.music} MCompand Applied`)
@@ -77,14 +77,14 @@ export class MCompandCommand extends BaseCommand {
 
     try {
       const client = message.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await message.reply('❌ Music system is not available.');
         return;
       }
 
-      const player = musicManager.get(message.guild.id);
+      const player = client.kazagumo!.players.get(message.guild.id);
 
       if (!player) {
         await message.reply('❌ Nothing is currently playing.');
@@ -96,7 +96,7 @@ export class MCompandCommand extends BaseCommand {
         return;
       }
 
-      await musicManager.setFilter(message.guild.id, 'mcompand');
+      await player.setFilters('mcompand');
 
       const embed = new EmbedBuilder()
         .setTitle(`${EMOJIS.music} MCompand Applied`)

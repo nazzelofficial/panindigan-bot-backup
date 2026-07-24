@@ -1,0 +1,65 @@
+import { Event } from '../structures/BaseCommand';
+import { Message, EmbedBuilder, PartialMessage, TextChannel } from 'discord.js';
+import { PanindiganClient } from '../structures/PanindiganClient';
+import { COLORS } from '../utils/Constants';
+import { getRedisClient } from '../database/redis/client';
+import config from '../../config.json';
+
+export const event: Event = {
+  name: 'messageUpdate',
+  once: false,
+  async execute(oldMessage: Message | PartialMessage, newMessage: Message | PartialMessage, client: PanindiganClient) {
+    if (!newMessage.guild) return;
+    if (newMessage.author?.bot) return;
+    if (oldMessage.content === newMessage.content) return;
+
+    // Store edited message in Redis for editsnipe command
+    try {
+      const redis = getRedisClient();
+      const editSnipeData = JSON.stringify({
+        oldContent: oldMessage.content || '[No text content]',
+        newContent: newMessage.content || '[No text content]',
+        authorId: newMessage.author?.id,
+        authorTag: newMessage.author?.tag || 'Unknown#0000',
+        authorAvatar: newMessage.author?.displayAvatarURL({ size: 128 }) || null,
+        channelId: newMessage.channel.id,
+        guildId: newMessage.guild.id,
+        messageUrl: newMessage.url,
+        editedAt: new Date().toISOString(),
+      });
+      await redis.set(
+        `${config.databases.redis.keyPrefix}editsnipe:${newMessage.guild.id}:${newMessage.channel.id}`,
+        editSnipeData,
+        { EX: 60 }
+      );
+    } catch { /* Redis optional */ }
+
+    // Log to guild log channel
+    try {
+      const { getPrismaClient } = await import('../database/postgresql/client');
+      const prisma = getPrismaClient();
+      const guild = await prisma.guild.findUnique({
+        where: { guildId: newMessage.guild.id },
+        select: { logChannelId: true },
+      });
+
+      if (!guild?.logChannelId) return;
+      const logChannel = newMessage.guild.channels.cache.get(guild.logChannelId) as TextChannel;
+      if (!logChannel?.isTextBased()) return;
+
+      const embed = new EmbedBuilder()
+        .setTitle('✏️ Message Edited')
+        .setColor(COLORS.warning)
+        .addFields(
+          { name: 'Author', value: newMessage.author ? `${newMessage.author.tag} (${newMessage.author.id})` : 'Unknown', inline: true },
+          { name: 'Channel', value: `<#${newMessage.channel.id}>`, inline: true },
+          { name: 'Jump to Message', value: `[Click here](${newMessage.url})`, inline: true },
+          { name: 'Before', value: (oldMessage.content || '[No content]').slice(0, 512), inline: false },
+          { name: 'After', value: (newMessage.content || '[No content]').slice(0, 512), inline: false },
+        )
+        .setTimestamp();
+
+      await logChannel.send({ embeds: [embed] });
+    } catch { /* Optional logging */ }
+  },
+};

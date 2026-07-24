@@ -31,14 +31,14 @@ export class SkipCommand extends BaseCommand {
 
     try {
       const client = interaction.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await interaction.reply({ content: '❌ Music system is not available.', ephemeral: true });
         return;
       }
 
-      const player = musicManager.get(interaction.guild.id);
+      const player = client.kazagumo!.players.get(interaction.guild.id);
 
       if (!player) {
         await interaction.reply({ content: '❌ Nothing is currently playing.', ephemeral: true });
@@ -51,7 +51,7 @@ export class SkipCommand extends BaseCommand {
       }
 
       const skippedTrack = player.currentTrack;
-      await musicManager.skip(interaction.guild.id);
+      await player.skip();
 
       const embed = new EmbedBuilder()
         .setTitle(`${EMOJIS.music} Skipped`)
@@ -79,14 +79,14 @@ export class SkipCommand extends BaseCommand {
 
     try {
       const client = message.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await message.reply('❌ Music system is not available.');
         return;
       }
 
-      const player = musicManager.get(message.guild.id);
+      const player = client.kazagumo!.players.get(message.guild.id);
 
       if (!player) {
         await message.reply('❌ Nothing is currently playing.');
@@ -99,7 +99,7 @@ export class SkipCommand extends BaseCommand {
       }
 
       const skippedTrack = player.currentTrack;
-      await musicManager.skip(message.guild.id);
+      await player.skip();
 
       const embed = new EmbedBuilder()
         .setTitle(`${EMOJIS.music} Skipped`)

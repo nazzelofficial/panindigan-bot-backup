@@ -25,14 +25,14 @@ export class HistoryCommand extends BaseCommand {
 
     try {
       const client = interaction.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await interaction.reply({ content: '❌ Music system is not available.', ephemeral: true });
         return;
       }
 
-      const player = musicManager.get(interaction.guildId);
+      const player = client.kazagumo!.players.get(interaction.guildId);
 
       if (!player || !player.history || player.history.length === 0) {
         await interaction.reply({ content: '❌ No song history available.', ephemeral: true });
@@ -63,14 +63,14 @@ export class HistoryCommand extends BaseCommand {
 
     try {
       const client = message.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await message.reply('❌ Music system is not available.');
         return;
       }
 
-      const player = musicManager.get(message.guildId);
+      const player = client.kazagumo!.players.get(message.guildId);
 
       if (!player || !player.history || player.history.length === 0) {
         await message.reply('❌ No song history available.');

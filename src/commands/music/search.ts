@@ -40,7 +40,7 @@ export class SearchCommand extends BaseCommand {
       await interaction.deferReply();
 
       const client = interaction.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await interaction.editReply({ content: '❌ Music system is not available.' });
@@ -96,9 +96,9 @@ export class SearchCommand extends BaseCommand {
         const selectedIndex = parseInt(i.values[0]);
         const selectedTrack = results[selectedIndex];
 
-        const player = musicManager.get(interaction.guild.id);
+        const player = client.kazagumo!.players.get(interaction.guild.id);
         if (!player) {
-          await musicManager.create(interaction.guild.id, voiceChannel.id, interaction.channel.id);
+          await client.kazagumo.createPlayer({ guildId: interaction.guild.id, voiceId: voiceChannel.id, textId: interaction.channel.id, volume: 80, deaf: true });
         }
 
         await musicManager.play(interaction.guild.id, selectedTrack);
@@ -147,7 +147,7 @@ export class SearchCommand extends BaseCommand {
       await message.reply('🔍 Searching...');
 
       const client = message.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await message.edit('❌ Music system is not available.');
@@ -203,9 +203,9 @@ export class SearchCommand extends BaseCommand {
         const selectedIndex = parseInt(i.values[0]);
         const selectedTrack = results[selectedIndex];
 
-        const player = musicManager.get(message.guild.id);
+        const player = client.kazagumo!.players.get(message.guild.id);
         if (!player) {
-          await musicManager.create(message.guild.id, voiceChannel.id, message.channel.id);
+          await client.kazagumo.createPlayer({ guildId: message.guild.id, voiceId: voiceChannel.id, textId: message.channel.id, volume: 80, deaf: true });
         }
 
         await musicManager.play(message.guild.id, selectedTrack);

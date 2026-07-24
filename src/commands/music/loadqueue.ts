@@ -54,19 +54,19 @@ export class LoadQueueCommand extends BaseCommand {
       const songs = JSON.parse(playlist.songs);
 
       const client = interaction.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await interaction.reply({ content: '❌ Music system is not available.', ephemeral: true });
         return;
       }
 
-      const player = musicManager.get(interaction.guild.id);
+      const player = client.kazagumo!.players.get(interaction.guild.id);
       if (!player) {
-        await musicManager.create(interaction.guild.id, voiceChannel.id, interaction.channel.id);
+        await client.kazagumo.createPlayer({ guildId: interaction.guild.id, voiceId: voiceChannel.id, textId: interaction.channel.id, volume: 80, deaf: true });
       }
 
-      await musicManager.loadQueue(interaction.guild.id, songs);
+      player.queue.add(songs);
 
       const embed = new EmbedBuilder()
         .setTitle(`${EMOJIS.success} Playlist Loaded`)
@@ -117,19 +117,19 @@ export class LoadQueueCommand extends BaseCommand {
       const songs = JSON.parse(playlist.songs);
 
       const client = message.client as any;
-      const musicManager = client.musicManager;
+      const musicManager = client.kazagumo;
 
       if (!musicManager) {
         await message.reply('❌ Music system is not available.');
         return;
       }
 
-      const player = musicManager.get(message.guild.id);
+      const player = client.kazagumo!.players.get(message.guild.id);
       if (!player) {
-        await musicManager.create(message.guild.id, voiceChannel.id, message.channel.id);
+        await client.kazagumo.createPlayer({ guildId: message.guild.id, voiceId: voiceChannel.id, textId: message.channel.id, volume: 80, deaf: true });
       }
 
-      await musicManager.loadQueue(message.guild.id, songs);
+      player.queue.add(songs);
 
       const embed = new EmbedBuilder()
         .setTitle(`${EMOJIS.success} Playlist Loaded`)
