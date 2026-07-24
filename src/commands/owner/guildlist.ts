@@ -1,34 +1,63 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants';
-import { PanindiganClient } from '../../structures/PanindiganClient';
+
+const PAGE_SIZE = 10;
 
 export class GuildListCommand extends BaseCommand {
   constructor() {
-    super({ name: 'guildlist', description: 'List all guilds the bot is in (Owner only)', category: 'owner', premiumTier: 'free', cooldown: 5, guildOnly: false, ownerOnly: true, slashCommand: true, prefixCommand: true, aliases: ['serverlist', 'guilds', 'servers'], examples: ['p!guildlist', 'p!guildlist 2'] } as CommandOptions);
+    super({
+      name: 'guildlist',
+      description: 'Lists all guilds the bot is in (paginated)',
+      category: 'owner',
+      premiumTier: 'free',
+      cooldown: 0,
+      ownerOnly: true,
+      guildOnly: false,
+      slashCommand: false,
+      prefixCommand: true,
+      aliases: ['guilds', 'serverlist'],
+      examples: ['p!guildlist', 'p!guildlist 2'],
+    } as CommandOptions);
   }
+
   public buildSlashCommand(): SlashCommandBuilder {
-    return (new SlashCommandBuilder().setName(this.name).setDescription(this.description)
-      .addIntegerOption(o => o.setName('page').setDescription('Page number').setRequired(false))) as SlashCommandBuilder;
+    return new SlashCommandBuilder().setName(this.name).setDescription(this.description).setDMPermission(false) as SlashCommandBuilder;
   }
-  private buildEmbed(client: PanindiganClient, page: number): EmbedBuilder {
-    const perPage = 15;
-    const guilds = [...client.guilds.cache.values()];
-    const start = (page - 1) * perPage;
-    const pageGuilds = guilds.slice(start, start + perPage);
-    const pages = Math.ceil(guilds.length / perPage);
-    return new EmbedBuilder().setTitle(`📋 Guild List (${guilds.length} total)`)
-      .setColor(COLORS.info)
-      .setDescription(pageGuilds.map(g => `**${g.name}** (\`${g.id}\`) — ${g.memberCount} members`).join('\n'))
-      .setFooter({ text: `Page ${page}/${pages}` }).setTimestamp();
-  }
+
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> {
-    const page = i.options.getInteger('page') || 1;
-    await i.reply({ embeds: [this.buildEmbed(i.client as PanindiganClient, page)], ephemeral: true });
+    await i.reply({ content: 'Use prefix command `p!guildlist [page]` for this.', ephemeral: true });
   }
+
   public async executePrefix(m: Message, args: string[]): Promise<void> {
-    const page = parseInt(args[0]) || 1;
-    await m.reply({ embeds: [this.buildEmbed(m.client as PanindiganClient, page)] });
+    try {
+      const guilds = [...m.client.guilds.cache.values()].sort((a, b) => b.memberCount - a.memberCount);
+      const page = Math.max(1, parseInt(args[0]) || 1);
+      const totalPages = Math.ceil(guilds.length / PAGE_SIZE);
+      const start = (page - 1) * PAGE_SIZE;
+      const slice = guilds.slice(start, start + PAGE_SIZE);
+
+      if (slice.length === 0) {
+        await m.reply({ embeds: [new EmbedBuilder().setColor(COLORS.error).setDescription('❌ No guilds found on that page.')] });
+        return;
+      }
+
+      const rows = slice.map((g, idx) =>
+        `\`${start + idx + 1}.\` **${g.name}** — ID: \`${g.id}\` — Members: **${g.memberCount}**`
+      ).join('\n');
+
+      const embed = new EmbedBuilder()
+        .setTitle(`🌐 Guild List (${guilds.length} total)`)
+        .setColor(COLORS.default)
+        .setDescription(rows)
+        .setFooter({ text: `Page ${page} of ${totalPages}` })
+        .setTimestamp();
+
+      await m.reply({ embeds: [embed] });
+    } catch (err: any) {
+      await m.reply({ embeds: [new EmbedBuilder().setColor(COLORS.error).setDescription(`❌ Error: ${err?.message}`)] });
+    }
   }
 }
+
 export default GuildListCommand;

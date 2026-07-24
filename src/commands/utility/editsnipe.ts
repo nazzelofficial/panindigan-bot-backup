@@ -2,59 +2,72 @@ import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import { COLORS, EMOJIS } from '../../utils/Constants';
 import { getRedisClient } from '../../database/redis/client';
-import config from '../../../config.json';
 
 export class EditsnipeCommand extends BaseCommand {
   constructor() {
-    const options: CommandOptions = {
+    super({
       name: 'editsnipe',
-      description: 'Show the last edited message in the channel',
+      description: 'Shows the last edited message (before and after) in this channel',
       category: 'utility',
+      premiumTier: 'free',
       cooldown: 5,
-      userPermissions: [],
-      botPermissions: [],
+      ownerOnly: false,
       guildOnly: true,
-      slashCommand: false,
+      slashCommand: true,
       prefixCommand: true,
-      aliases: ['esnipe'],
+      aliases: ['es'],
       examples: ['p!editsnipe'],
-    };
-    super(options);
+    } as CommandOptions);
   }
 
   public buildSlashCommand(): SlashCommandBuilder {
-    return new SlashCommandBuilder().setName(this.name).setDescription(this.description) as SlashCommandBuilder;
+    return new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .setDMPermission(false) as SlashCommandBuilder;
   }
 
-  private async getEditData(guildId: string, channelId: string): Promise<any | null> {
+  private async getEditSnipe(channelId: string): Promise<EmbedBuilder> {
     try {
-      const redis = getRedisClient();
-      const raw = await redis.get(`${config.databases.redis.keyPrefix}editsnipe:${guildId}:${channelId}`);
-      return raw ? JSON.parse(raw) : null;
-    } catch { return null; }
-  }
-
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    await interaction.reply({ content: 'Use `/editsnipe` from the info category.', ephemeral: true });
-  }
-
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const data = await this.getEditData(message.guildId!, message.channelId);
-    if (!data) {
-      await message.reply({ embeds: [new EmbedBuilder().setColor(COLORS.warning).setDescription(`${EMOJIS.warning} No recently edited messages.`)] });
-      return;
+      const redis = await getRedisClient();
+      const data = await redis.hGetAll(`panindigan:editsnipe:${channelId}`);
+      if (!data || !data.before) {
+        return new EmbedBuilder()
+          .setColor(COLORS.warning)
+          .setDescription(`${EMOJIS.warning} There is no recently edited message in this channel.`);
+      }
+      const editedAt = data.editedAt ? new Date(data.editedAt) : new Date();
+      return new EmbedBuilder()
+        .setTitle(`${EMOJIS.utility} Edit Sniped Message`)
+        .setColor(COLORS.default)
+        .addFields(
+          { name: 'Before', value: (data.before ?? 'N/A').slice(0, 1024), inline: false },
+          { name: 'After', value: (data.after ?? 'N/A').slice(0, 1024), inline: false },
+          { name: 'Author', value: data.author ?? 'Unknown', inline: true },
+          { name: 'Edited At', value: `<t:${Math.floor(editedAt.getTime() / 1000)}:R>`, inline: true },
+        )
+        .setTimestamp();
+    } catch (err) {
+      return new EmbedBuilder().setColor(COLORS.error).setDescription(`${EMOJIS.error} Failed to retrieve edit sniped message.`);
     }
-    const embed = new EmbedBuilder()
-      .setTitle(`✏️ Edit Snipe`)
-      .setColor(COLORS.warning)
-      .addFields(
-        { name: '📝 Before', value: data.oldContent?.slice(0, 1024) || '[No text]', inline: false },
-        { name: '✏️ After', value: data.newContent?.slice(0, 1024) || '[No text]', inline: false },
-      )
-      .setFooter({ text: `Author: ${data.authorTag} • Edited ${new Date(data.editedAt).toLocaleTimeString()}` })
-      .setTimestamp(new Date(data.editedAt));
-    if (data.authorAvatar) embed.setThumbnail(data.authorAvatar);
-    await message.reply({ embeds: [embed] });
+  }
+
+  public async executeSlash(i: ChatInputCommandInteraction): Promise<void> {
+    try {
+      const embed = await this.getEditSnipe(i.channelId);
+      await i.reply({ embeds: [embed] });
+    } catch (err) {
+      await i.reply({ embeds: [new EmbedBuilder().setColor(COLORS.error).setDescription(`${EMOJIS.error} An error occurred.`)], ephemeral: true });
+    }
+  }
+
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+    try {
+      const embed = await this.getEditSnipe(m.channelId);
+      await m.reply({ embeds: [embed] });
+    } catch (err) {
+      await m.reply({ embeds: [new EmbedBuilder().setColor(COLORS.error).setDescription(`${EMOJIS.error} An error occurred.`)] });
+    }
   }
 }
 

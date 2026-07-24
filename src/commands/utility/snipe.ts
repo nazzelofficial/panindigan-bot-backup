@@ -2,57 +2,71 @@ import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import { COLORS, EMOJIS } from '../../utils/Constants';
 import { getRedisClient } from '../../database/redis/client';
-import config from '../../../config.json';
 
 export class SnipeCommand extends BaseCommand {
   constructor() {
-    const options: CommandOptions = {
+    super({
       name: 'snipe',
-      description: 'Show the last deleted message in the channel',
+      description: 'Shows the last deleted message in this channel',
       category: 'utility',
+      premiumTier: 'free',
       cooldown: 5,
-      userPermissions: [],
-      botPermissions: [],
+      ownerOnly: false,
       guildOnly: true,
-      slashCommand: false, // handled by info category
+      slashCommand: true,
       prefixCommand: true,
       aliases: [],
       examples: ['p!snipe'],
-    };
-    super(options);
+    } as CommandOptions);
   }
 
   public buildSlashCommand(): SlashCommandBuilder {
-    return new SlashCommandBuilder().setName(this.name).setDescription(this.description) as SlashCommandBuilder;
+    return new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .setDMPermission(false) as SlashCommandBuilder;
   }
 
-  private async getSnipeData(guildId: string, channelId: string): Promise<any | null> {
+  private async getSnipe(channelId: string): Promise<EmbedBuilder> {
     try {
-      const redis = getRedisClient();
-      const raw = await redis.get(`${config.databases.redis.keyPrefix}snipe:${guildId}:${channelId}`);
-      return raw ? JSON.parse(raw) : null;
-    } catch { return null; }
-  }
-
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    // Redirect to info/snipe
-    await interaction.reply({ content: 'Use `/snipe` from the info category.', ephemeral: true });
-  }
-
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const data = await this.getSnipeData(message.guildId!, message.channelId);
-    if (!data) {
-      await message.reply({ embeds: [new EmbedBuilder().setColor(COLORS.warning).setDescription(`${EMOJIS.warning} No recently deleted messages.`)] });
-      return;
+      const redis = await getRedisClient();
+      const data = await redis.hGetAll(`panindigan:snipe:${channelId}`);
+      if (!data || !data.content) {
+        return new EmbedBuilder()
+          .setColor(COLORS.warning)
+          .setDescription(`${EMOJIS.warning} There is no recently deleted message in this channel.`);
+      }
+      const deletedAt = data.deletedAt ? new Date(data.deletedAt) : new Date();
+      return new EmbedBuilder()
+        .setTitle(`${EMOJIS.utility} Sniped Message`)
+        .setColor(COLORS.default)
+        .setDescription(data.content.slice(0, 4000))
+        .addFields(
+          { name: 'Author', value: data.author ?? 'Unknown', inline: true },
+          { name: 'Deleted At', value: `<t:${Math.floor(deletedAt.getTime() / 1000)}:R>`, inline: true },
+        )
+        .setTimestamp();
+    } catch (err) {
+      return new EmbedBuilder().setColor(COLORS.error).setDescription(`${EMOJIS.error} Failed to retrieve sniped message.`);
     }
-    const embed = new EmbedBuilder()
-      .setTitle(`🔫 Sniped Message`)
-      .setColor(COLORS.error)
-      .setDescription(data.content?.slice(0, 2048) || '[No text]')
-      .setFooter({ text: `Author: ${data.authorTag} • Deleted ${new Date(data.deletedAt).toLocaleTimeString()}` })
-      .setTimestamp(new Date(data.deletedAt));
-    if (data.authorAvatar) embed.setThumbnail(data.authorAvatar);
-    await message.reply({ embeds: [embed] });
+  }
+
+  public async executeSlash(i: ChatInputCommandInteraction): Promise<void> {
+    try {
+      const embed = await this.getSnipe(i.channelId);
+      await i.reply({ embeds: [embed] });
+    } catch (err) {
+      await i.reply({ embeds: [new EmbedBuilder().setColor(COLORS.error).setDescription(`${EMOJIS.error} An error occurred.`)], ephemeral: true });
+    }
+  }
+
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+    try {
+      const embed = await this.getSnipe(m.channelId);
+      await m.reply({ embeds: [embed] });
+    } catch (err) {
+      await m.reply({ embeds: [new EmbedBuilder().setColor(COLORS.error).setDescription(`${EMOJIS.error} An error occurred.`)] });
+    }
   }
 }
 
