@@ -1,0 +1,76 @@
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandStringOption } from 'discord.js';
+import { COLORS, EMOJIS } from '../../utils/Constants';
+
+export class MockCommand extends BaseCommand {
+  constructor() {
+    const options: CommandOptions = {
+      name: 'mock',
+      description: 'Convert text to SpongeBob mocking format',
+      category: 'fun',
+      premiumTier: 'free',
+      cooldown: 3,
+      userPermissions: [],
+      botPermissions: [],
+      ownerOnly: false,
+      guildOnly: false,
+      slashCommand: true,
+      prefixCommand: true,
+      aliases: ['spongebob', 'mocking'],
+      examples: ['/mock text:hello world', 'p!mock hello world'],
+    };
+    super(options);
+  }
+
+  private mockText(text: string): string {
+    return text
+      .split('')
+      .map((char, index) => (index % 2 === 0 ? char.toLowerCase() : char.toUpperCase()))
+      .join('');
+  }
+
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    const text = interaction.options.getString('text', true);
+    const mocked = this.mockText(text);
+
+    const embed = new EmbedBuilder()
+      .setTitle('🧽 SpongeBob Mocking')
+      .addFields(
+        { name: 'Original', value: text },
+        { name: 'Mocked', value: mocked }
+      )
+      .setColor(COLORS.warning)
+      .setThumbnail('https://i.imgur.com/7EqpCDL.png')
+      .setTimestamp();
+
+    await interaction.reply({ embeds: [embed] });
+  }
+
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
+    if (!args.length) {
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.error} Missing Text`)
+        .setDescription('Please provide text to mock!\nUsage: `p!mock <text>`')
+        .setColor(COLORS.error);
+      await message.reply({ embeds: [embed] });
+      return;
+    }
+
+    const text = args.join(' ');
+    const mocked = this.mockText(text);
+
+    const embed = new EmbedBuilder()
+      .setTitle('🧽 SpongeBob Mocking')
+      .addFields(
+        { name: 'Original', value: text },
+        { name: 'Mocked', value: mocked }
+      )
+      .setColor(COLORS.warning)
+      .setThumbnail('https://i.imgur.com/7EqpCDL.png')
+      .setTimestamp();
+
+    await message.reply({ embeds: [embed] });
+  }
+}
+
+export default MockCommand;
