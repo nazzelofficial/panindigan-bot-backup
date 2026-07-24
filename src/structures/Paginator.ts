@@ -1,0 +1,148 @@
+import {
+  EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ComponentType,
+  ChatInputCommandInteraction,
+  Message,
+  TextChannel,
+  InteractionCollector,
+  ButtonInteraction,
+} from 'discord.js';
+
+export interface PaginatorOptions {
+  timeout?: number;
+  showPageNumbers?: boolean;
+  allowAllUsers?: boolean;
+  ephemeral?: boolean;
+}
+
+export class Paginator {
+  private pages: EmbedBuilder[];
+  private currentPage: number = 0;
+  private timeout: number;
+  private showPageNumbers: boolean;
+  private allowAllUsers: boolean;
+  private ephemeral: boolean;
+
+  constructor(pages: EmbedBuilder[], options: PaginatorOptions = {}) {
+    if (!pages.length) throw new Error('Paginator requires at least one page.');
+    this.pages = pages;
+    this.timeout = options.timeout ?? 120000;
+    this.showPageNumbers = options.showPageNumbers ?? true;
+    this.allowAllUsers = options.allowAllUsers ?? false;
+    this.ephemeral = options.ephemeral ?? false;
+  }
+
+  private buildRow(disabled = false): ActionRowBuilder<ButtonBuilder> {
+    const prev = new ButtonBuilder()
+      .setCustomId('paginator_prev')
+      .setLabel('◀')
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(disabled || this.currentPage === 0);
+
+    const pageLabel = new ButtonBuilder()
+      .setCustomId('paginator_page')
+      .setLabel(`${this.currentPage + 1} / ${this.pages.length}`)
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(true);
+
+    const next = new ButtonBuilder()
+      .setCustomId('paginator_next')
+      .setLabel('▶')
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(disabled || this.currentPage === this.pages.length - 1);
+
+    const row = new ActionRowBuilder<ButtonBuilder>();
+    if (this.showPageNumbers) {
+      row.addComponents(prev, pageLabel, next);
+    } else {
+      row.addComponents(prev, next);
+    }
+    return row;
+  }
+
+  private getCurrentEmbed(): EmbedBuilder {
+    const embed = this.pages[this.currentPage];
+    if (this.showPageNumbers && this.pages.length > 1) {
+      embed.setFooter({ text: `Page ${this.currentPage + 1} of ${this.pages.length}` });
+    }
+    return embed;
+  }
+
+  public async send(
+    target: ChatInputCommandInteraction | Message | TextChannel,
+    authorId?: string
+  ): Promise<void> {
+    const components = this.pages.length > 1 ? [this.buildRow()] : [];
+    const payload = { embeds: [this.getCurrentEmbed()], components };
+
+    let sentMessage: Message;
+    let originalInteraction: ChatInputCommandInteraction | null = null;
+
+    if (target instanceof ChatInputCommandInteraction) {
+      originalInteraction = target;
+      const replyFn = target.deferred || target.replied
+        ? target.editReply.bind(target)
+        : (p: any) => target.reply({ ...p, ephemeral: this.ephemeral });
+      const replied = await replyFn(payload);
+      sentMessage = replied instanceof Message ? replied : await target.fetchReply() as Message;
+    } else if (target instanceof Message) {
+      sentMessage = await target.reply(payload);
+    } else {
+      sentMessage = await target.send(payload);
+    }
+
+    if (this.pages.length <= 1) return;
+
+    const filter = (i: ButtonInteraction) => {
+      if (!this.allowAllUsers && authorId && i.user.id !== authorId) {
+        i.reply({ content: '❌ Only the command author can use these buttons.', ephemeral: true });
+        return false;
+      }
+      return i.customId.startsWith('paginator_');
+    };
+
+    const collector = sentMessage.createMessageComponentCollector({
+      componentType: ComponentType.Button,
+      time: this.timeout,
+      filter,
+    });
+
+    collector.on('collect', async (i: ButtonInteraction) => {
+      if (i.customId === 'paginator_prev' && this.currentPage > 0) {
+        this.currentPage--;
+      } else if (i.customId === 'paginator_next' && this.currentPage < this.pages.length - 1) {
+        this.currentPage++;
+      }
+      await i.update({ embeds: [this.getCurrentEmbed()], components: [this.buildRow()] });
+    });
+
+    collector.on('end', async () => {
+      try {
+        await sentMessage.edit({ components: [this.buildRow(true)] });
+      } catch { /* message may have been deleted */ }
+    });
+  }
+
+  public static chunk<T>(array: T[], size: number): T[][] {
+    const chunks: T[][] = [];
+    for (let i = 0; i < array.length; i += size) {
+      chunks.push(array.slice(i, i + size));
+    }
+    return chunks;
+  }
+
+  public static fromStrings(items: string[], title: string, color: number = 0x5865f2, perPage = 10): Paginator {
+    const chunks = Paginator.chunk(items, perPage);
+    const pages = chunks.map((chunk, idx) =>
+      new EmbedBuilder()
+        .setTitle(title)
+        .setColor(color)
+        .setDescription(chunk.join('\n'))
+        .setFooter({ text: `Page ${idx + 1} of ${chunks.length}` })
+    );
+    return new Paginator(pages);
+  }
+}
