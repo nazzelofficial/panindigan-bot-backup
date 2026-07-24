@@ -1,59 +1,79 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
-import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import { COLORS, EMOJIS } from '../../utils/Constants';
-import { Formatter } from '../../utils/Formatter';
+import { getCollection } from '../../database/mongodb/client';
 
 export class MessageStatsCommand extends BaseCommand {
   constructor() {
     const options: CommandOptions = {
       name: 'messagestats',
-      description: 'Display message statistics for the server',
+      description: 'Show message statistics for this server',
       category: 'info',
-      cooldown: 5,
+      cooldown: 10,
       userPermissions: [],
       botPermissions: [],
       guildOnly: true,
       slashCommand: true,
       prefixCommand: true,
-      aliases: ['msgstats'],
+      aliases: ['msgstats', 'messages'],
       examples: ['/messagestats', 'p!messagestats'],
     };
     super(options);
   }
 
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const guild = interaction.guild!;
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.info} 📊 Message Statistics`)
-      .setColor(COLORS.info)
-      .setDescription('This is a placeholder. Message statistics will be implemented with database integration.')
-      .addFields([
-        { name: 'Total Messages', value: Formatter.formatNumber(0), inline: true },
-        { name: 'Messages Today', value: Formatter.formatNumber(0), inline: true },
-        { name: 'Messages This Week', value: Formatter.formatNumber(0), inline: true },
-        { name: 'Most Active Channel', value: 'N/A', inline: false },
-      ])
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed] });
+  public buildSlashCommand(): SlashCommandBuilder {
+    return new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .setDMPermission(false) as SlashCommandBuilder;
   }
 
-  public async executePrefix(message: Message): Promise<void> {
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    await interaction.deferReply();
+    try {
+      const guild = interaction.guild!;
+      // Try to get stats from MongoDB analytics collection
+      let statsText = '';
+      try {
+        const collection = getCollection('bot_analytics');
+        const stats = await collection.findOne({ guildId: guild.id, type: 'message_stats' });
+        if (stats) {
+          statsText = [
+            `📨 Total Tracked: **${stats.totalMessages?.toLocaleString() || 0}**`,
+            `👤 Unique Users: **${stats.uniqueUsers || 0}**`,
+            `📅 Today: **${stats.todayMessages || 0}**`,
+            `📆 This Week: **${stats.weekMessages || 0}**`,
+          ].join('\n');
+        }
+      } catch { /* MongoDB optional */ }
+
+      const embed = new EmbedBuilder()
+        .setTitle(`📊 Message Stats — ${guild.name}`)
+        .setColor(COLORS.info)
+        .setDescription(statsText || 'Message tracking data will accumulate over time as members chat.\n\nStats are logged to MongoDB analytics collection.')
+        .addFields(
+          { name: '📝 Channels', value: `**${guild.channels.cache.filter(c => c.isTextBased()).size}** text channels`, inline: true },
+          { name: '👥 Members', value: `**${guild.memberCount}** members`, inline: true },
+          { name: '📅 Server Created', value: `<t:${Math.floor(guild.createdTimestamp / 1000)}:R>`, inline: true },
+        )
+        .setFooter({ text: 'Stats tracked via bot analytics' })
+        .setTimestamp();
+      await interaction.editReply({ embeds: [embed] });
+    } catch (err: any) {
+      await interaction.editReply({ content: `${EMOJIS.error} ${err.message || 'Failed to fetch message stats.'}` });
+    }
+  }
+
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const guild = message.guild!;
-
     const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.info} 📊 Message Statistics`)
+      .setTitle(`📊 Message Stats — ${guild.name}`)
       .setColor(COLORS.info)
-      .setDescription('This is a placeholder. Message statistics will be implemented with database integration.')
-      .addFields([
-        { name: 'Total Messages', value: Formatter.formatNumber(0), inline: true },
-        { name: 'Messages Today', value: Formatter.formatNumber(0), inline: true },
-        { name: 'Messages This Week', value: Formatter.formatNumber(0), inline: true },
-        { name: 'Most Active Channel', value: 'N/A', inline: false },
-      ])
+      .addFields(
+        { name: '📝 Text Channels', value: `**${guild.channels.cache.filter(c => c.isTextBased()).size}**`, inline: true },
+        { name: '👥 Members', value: `**${guild.memberCount}**`, inline: true },
+      )
       .setTimestamp();
-
     await message.reply({ embeds: [embed] });
   }
 }

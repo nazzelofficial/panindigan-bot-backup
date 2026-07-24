@@ -1,75 +1,88 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
-import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+import { PanindiganClient } from '../../structures/PanindiganClient';
 import { COLORS, EMOJIS } from '../../utils/Constants';
 
 export class StudyCommand extends BaseCommand {
   constructor() {
     const options: CommandOptions = {
       name: 'study',
-      description: 'Generate a study plan using AI',
+      description: 'Create a study guide or notes for any topic using AI',
       category: 'ai',
-      cooldown: 15,
+      cooldown: 10,
       userPermissions: [],
       botPermissions: [],
       guildOnly: false,
       slashCommand: true,
       prefixCommand: true,
-      aliases: ['generatestudy', 'learn'],
-      examples: ['/study mathematics', 'p!study history'],
+      aliases: ['studyguide', 'notes'],
+      examples: ['/study Photosynthesis', 'p!study World War 2 causes'],
     };
     super(options);
   }
 
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const subject = interaction.options.getString('subject') || '';
-    if (!subject) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide a subject for study plan generation.')
-        .setTimestamp();
-
-      await interaction.reply({ embeds: [errorEmbed] });
-      return;
-    }
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} 📚 AI Study Plan Generator`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Subject', value: subject, inline: false },
-        { name: 'Study Plan', value: 'This is a placeholder. AI study plan generation will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed] });
+  public buildSlashCommand(): SlashCommandBuilder {
+    return new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .addStringOption(o => o.setName('topic').setDescription('Topic to create study guide for').setRequired(true))
+      .addStringOption(o => o.setName('format').setDescription('Study format').setRequired(false)
+        .addChoices(
+          { name: 'Study guide', value: 'guide' },
+          { name: 'Flashcard-style Q&A', value: 'qa' },
+          { name: 'Key concepts summary', value: 'concepts' },
+          { name: 'Mnemonics', value: 'mnemonics' }
+        )) as SlashCommandBuilder;
   }
 
-  public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
-    const subject = args.join(' ');
-
-    if (!subject) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide a subject for study plan generation.')
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    const topic = interaction.options.getString('topic', true);
+    const format = interaction.options.getString('format') || 'guide';
+    await interaction.deferReply();
+    try {
+      const client = interaction.client as PanindiganClient;
+      const systemPrompts: Record<string, string> = {
+        guide: 'Create a comprehensive study guide with: key concepts, definitions, important facts, examples, and memory tips. Organize logically with clear headings.',
+        qa: 'Create 8-10 study flashcard Q&A pairs for the topic. Include important concepts, definitions, and application questions. Format: Q: [question] A: [answer]',
+        concepts: 'Summarize the 7-10 most important key concepts/terms. For each: term, clear definition, and why it matters.',
+        mnemonics: 'Create helpful mnemonics, acronyms, and memory tricks to remember key information about this topic.'
+      };
+      const response = await client.aiHandler.generateTaskResponse(
+        topic,
+        `You are an expert educator and study coach. ${systemPrompts[format] || systemPrompts.guide}`
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} 📚 Study: ${topic.slice(0, 50)}`)
+        .setColor(COLORS.info)
+        .setDescription(response.content.slice(0, 4000))
+        .setFooter({ text: `Format: ${format} | Provider: ${response.provider}` })
         .setTimestamp();
-
-      await message.reply({ embeds: [errorEmbed] });
-      return;
+      await interaction.editReply({ embeds: [embed] });
+    } catch (err: any) {
+      await interaction.editReply({ content: `${EMOJIS.error} Error: ${err.message || 'AI unavailable.'}` });
     }
+  }
 
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} 📚 AI Study Plan Generator`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Subject', value: subject, inline: false },
-        { name: 'Study Plan', value: 'This is a placeholder. AI study plan generation will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await message.reply({ embeds: [embed] });
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
+    const topic = args.join(' ');
+    if (!topic) return void message.reply(`${EMOJIS.error} Please provide a study topic.`);
+    const thinking = await message.reply(`${EMOJIS.ai} Creating study guide...`);
+    try {
+      const client = message.client as PanindiganClient;
+      const response = await client.aiHandler.generateTaskResponse(
+        topic,
+        'Create a comprehensive study guide: key concepts, definitions, important facts, examples, and memory tips. Clear headings.'
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} 📚 Study Guide: ${topic.slice(0, 50)}`)
+        .setColor(COLORS.info)
+        .setDescription(response.content.slice(0, 4000))
+        .setFooter({ text: `Provider: ${response.provider}` })
+        .setTimestamp();
+      await thinking.edit({ content: null, embeds: [embed] });
+    } catch (err: any) {
+      await thinking.edit(`${EMOJIS.error} Error: ${err.message || 'AI unavailable.'}`);
+    }
   }
 }
 

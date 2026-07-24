@@ -1,75 +1,80 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
-import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+import { PanindiganClient } from '../../structures/PanindiganClient';
 import { COLORS, EMOJIS } from '../../utils/Constants';
 
 export class ProofreadCommand extends BaseCommand {
   constructor() {
     const options: CommandOptions = {
       name: 'proofread',
-      description: 'Proofread and correct text using AI',
+      description: 'Proofread and polish text using AI',
       category: 'ai',
-      cooldown: 10,
+      cooldown: 5,
       userPermissions: [],
       botPermissions: [],
       guildOnly: false,
       slashCommand: true,
       prefixCommand: true,
-      aliases: ['correct', 'fixgrammar'],
-      examples: ['/proofread this text', 'p!proofread check my writing'],
+      aliases: ['polish', 'edit'],
+      examples: ['/proofread My essay text here', 'p!proofread Check this paragraph'],
     };
     super(options);
   }
 
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const text = interaction.options.getString('text') || '';
-    if (!text) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide text to proofread.')
-        .setTimestamp();
-
-      await interaction.reply({ embeds: [errorEmbed] });
-      return;
-    }
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} ✅ AI Proofreader`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Original', value: text.substring(0, 500) + (text.length > 500 ? '...' : ''), inline: false },
-        { name: 'Corrected', value: 'This is a placeholder. AI proofreading will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed] });
+  public buildSlashCommand(): SlashCommandBuilder {
+    return new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .addStringOption(o => o.setName('text').setDescription('Text to proofread').setRequired(true).setMaxLength(3000)) as SlashCommandBuilder;
   }
 
-  public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
-    const text = args.join(' ');
-
-    if (!text) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide text to proofread.')
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    const text = interaction.options.getString('text', true);
+    await interaction.deferReply();
+    try {
+      const client = interaction.client as PanindiganClient;
+      const response = await client.aiHandler.generateTaskResponse(
+        text,
+        'You are a professional editor. Proofread the following text and: 1) Fix all grammar, spelling, punctuation errors. 2) Improve clarity and flow. 3) Show the polished version. 4) List major changes made. Keep the original voice and intent.'
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} 🔍 Proofread`)
+        .setColor(COLORS.success)
+        .addFields(
+          { name: '📝 Original', value: text.slice(0, 800) + (text.length > 800 ? '...' : ''), inline: false },
+          { name: '✅ Polished', value: response.content.slice(0, 3200), inline: false }
+        )
+        .setFooter({ text: `Provider: ${response.provider}` })
         .setTimestamp();
-
-      await message.reply({ embeds: [errorEmbed] });
-      return;
+      await interaction.editReply({ embeds: [embed] });
+    } catch (err: any) {
+      await interaction.editReply({ content: `${EMOJIS.error} Error: ${err.message || 'AI unavailable.'}` });
     }
+  }
 
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} ✅ AI Proofreader`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Original', value: text.substring(0, 500) + (text.length > 500 ? '...' : ''), inline: false },
-        { name: 'Corrected', value: 'This is a placeholder. AI proofreading will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await message.reply({ embeds: [embed] });
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
+    const text = args.join(' ');
+    if (!text) return void message.reply(`${EMOJIS.error} Please provide text to proofread.`);
+    const thinking = await message.reply(`${EMOJIS.ai} Proofreading...`);
+    try {
+      const client = message.client as PanindiganClient;
+      const response = await client.aiHandler.generateTaskResponse(
+        text,
+        'Proofread: fix grammar, spelling, punctuation. Improve clarity. Show polished version and list major changes.'
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} 🔍 Proofread`)
+        .setColor(COLORS.success)
+        .addFields(
+          { name: '📝 Original', value: text.slice(0, 800), inline: false },
+          { name: '✅ Polished', value: response.content.slice(0, 3200), inline: false }
+        )
+        .setFooter({ text: `Provider: ${response.provider}` })
+        .setTimestamp();
+      await thinking.edit({ content: null, embeds: [embed] });
+    } catch (err: any) {
+      await thinking.edit(`${EMOJIS.error} Error: ${err.message || 'AI unavailable.'}`);
+    }
   }
 }
 

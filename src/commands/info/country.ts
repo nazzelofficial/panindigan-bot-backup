@@ -1,12 +1,12 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
-import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import { COLORS, EMOJIS } from '../../utils/Constants';
 
 export class CountryCommand extends BaseCommand {
   constructor() {
     const options: CommandOptions = {
       name: 'country',
-      description: 'Get information about a country',
+      description: 'Get information about a country (via RestCountries API)',
       category: 'info',
       cooldown: 5,
       userPermissions: [],
@@ -20,62 +20,64 @@ export class CountryCommand extends BaseCommand {
     super(options);
   }
 
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const country = interaction.options.getString('country') || '';
-    if (!country) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide a country name.')
-        .setTimestamp();
-
-      await interaction.reply({ embeds: [errorEmbed] });
-      return;
-    }
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.info} 🌍 Country: ${country}`)
-      .setColor(COLORS.info)
-      .setDescription('This is a placeholder. Country information will be implemented with a country API.')
-      .addFields([
-        { name: 'Name', value: country, inline: true },
-        { name: 'Capital', value: 'N/A', inline: true },
-        { name: 'Population', value: 'N/A', inline: true },
-        { name: 'Region', value: 'N/A', inline: true },
-      ])
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed] });
+  public buildSlashCommand(): SlashCommandBuilder {
+    return new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .addStringOption(o => o.setName('country').setDescription('Country name').setRequired(true)) as SlashCommandBuilder;
   }
 
-  public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
-    const country = args.join(' ');
-
-    if (!country) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide a country name.')
-        .setTimestamp();
-
-      await message.reply({ embeds: [errorEmbed] });
-      return;
-    }
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.info} 🌍 Country: ${country}`)
+  private async fetchCountry(name: string): Promise<EmbedBuilder> {
+    const url = `https://restcountries.com/v3.1/name/${encodeURIComponent(name)}?fullText=false&fields=name,capital,population,area,region,subregion,languages,currencies,flags,cca2,timezones,borders`;
+    const res = await fetch(url);
+    if (res.status === 404) throw new Error(`Country "${name}" not found.`);
+    if (!res.ok) throw new Error(`Country API error: ${res.status}`);
+    const data: any[] = await res.json();
+    const c = data[0];
+    const languages = Object.values(c.languages || {}).join(', ') || 'N/A';
+    const currencies = Object.values(c.currencies || {}).map((cur: any) => `${cur.name} (${cur.symbol})`).join(', ') || 'N/A';
+    const capital = c.capital?.[0] || 'N/A';
+    const population = c.population?.toLocaleString() || 'N/A';
+    const area = c.area?.toLocaleString() || 'N/A';
+    return new EmbedBuilder()
+      .setTitle(`${c.flags?.emoji || '🌍'} ${c.name?.common} (${c.cca2})`)
       .setColor(COLORS.info)
-      .setDescription('This is a placeholder. Country information will be implemented with a country API.')
-      .addFields([
-        { name: 'Name', value: country, inline: true },
-        { name: 'Capital', value: 'N/A', inline: true },
-        { name: 'Population', value: 'N/A', inline: true },
-        { name: 'Region', value: 'N/A', inline: true },
-      ])
+      .setThumbnail(c.flags?.png || null)
+      .addFields(
+        { name: '🏛️ Capital', value: capital, inline: true },
+        { name: '🌎 Region', value: `${c.region} > ${c.subregion || 'N/A'}`, inline: true },
+        { name: '👥 Population', value: population, inline: true },
+        { name: '📐 Area', value: `${area} km²`, inline: true },
+        { name: '🗣️ Languages', value: languages.slice(0, 256), inline: true },
+        { name: '💰 Currency', value: currencies.slice(0, 256), inline: true },
+        { name: '🕐 Timezones', value: c.timezones?.slice(0, 3).join(', ') || 'N/A', inline: false },
+        ...(c.borders?.length ? [{ name: '🗺️ Borders', value: c.borders.slice(0, 10).join(', '), inline: false }] : []),
+      )
+      .setFooter({ text: 'Data from RestCountries API' })
       .setTimestamp();
+  }
 
-    await message.reply({ embeds: [embed] });
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    const country = interaction.options.getString('country', true);
+    await interaction.deferReply();
+    try {
+      const embed = await this.fetchCountry(country);
+      await interaction.editReply({ embeds: [embed] });
+    } catch (err: any) {
+      await interaction.editReply({ content: `${EMOJIS.error} ${err.message || 'Failed to fetch country data.'}` });
+    }
+  }
+
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
+    const country = args.join(' ');
+    if (!country) return void message.reply(`${EMOJIS.error} Please provide a country name.`);
+    const thinking = await message.reply(`${EMOJIS.info} Fetching country data...`);
+    try {
+      const embed = await this.fetchCountry(country);
+      await thinking.edit({ content: null, embeds: [embed] });
+    } catch (err: any) {
+      await thinking.edit(`${EMOJIS.error} ${err.message || 'Failed to fetch country data.'}`);
+    }
   }
 }
 

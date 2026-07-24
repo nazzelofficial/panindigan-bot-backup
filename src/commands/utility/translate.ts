@@ -1,83 +1,56 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
-import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+import { PanindiganClient } from '../../structures/PanindiganClient';
 import { COLORS, EMOJIS } from '../../utils/Constants';
 
-export class TranslateCommand extends BaseCommand {
+export class TranslateUtilityCommand extends BaseCommand {
   constructor() {
     const options: CommandOptions = {
       name: 'translate',
-      description: 'Translate text to another language',
+      description: 'Translate text',
       category: 'utility',
       cooldown: 5,
       userPermissions: [],
       botPermissions: [],
       guildOnly: false,
-      slashCommand: true,
+      slashCommand: false,
       prefixCommand: true,
-      aliases: ['tr'],
-      examples: ['/translate Hello es', '/translate Bonjour en', 'p!translate Hola en'],
+      aliases: ['trans', 'tl'],
+      examples: ['p!translate Hello | Filipino'],
     };
     super(options);
   }
 
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const text = interaction.options.getString('text');
-    const language = interaction.options.getString('language') || 'en';
-    
-    if (!text) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide text to translate.')
-        .setTimestamp();
-
-      await interaction.reply({ embeds: [errorEmbed] });
-      return;
-    }
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.info} 🌐 Translation`)
-      .setColor(COLORS.info)
-      .setDescription('This is a placeholder. Translation will be implemented with a translation API.')
-      .addFields([
-        { name: 'Original Text', value: text, inline: false },
-        { name: 'Target Language', value: language.toUpperCase(), inline: true },
-        { name: 'Translated Text', value: 'API integration pending', inline: false },
-      ])
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed] });
+  public buildSlashCommand(): SlashCommandBuilder {
+    return new SlashCommandBuilder().setName(this.name).setDescription(this.description) as SlashCommandBuilder;
   }
 
-  public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
-    const language = args[0] || 'en';
-    const text = args.slice(1).join(' ');
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    await interaction.reply({ content: 'Use `/translate` from the info category.', ephemeral: true });
+  }
 
-    if (!text) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide text to translate.')
-        .setTimestamp();
-
-      await message.reply({ embeds: [errorEmbed] });
-      return;
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
+    const input = args.join(' ');
+    const parts = input.split('|');
+    const text = parts[0]?.trim();
+    const lang = parts[1]?.trim() || 'English';
+    if (!text) return void message.reply(`${EMOJIS.error} Usage: \`p!translate <text> | <language>\``);
+    const thinking = await message.reply(`${EMOJIS.info} Translating...`);
+    try {
+      const client = message.client as PanindiganClient;
+      const response = await client.aiHandler.generateTaskResponse(text, `Translate to ${lang}. Provide only the translation.`);
+      const embed = new EmbedBuilder()
+        .setTitle(`🌐 Translation → ${lang}`)
+        .setColor(COLORS.info)
+        .addFields(
+          { name: '📝 Original', value: text.slice(0, 1024), inline: false },
+          { name: `🌍 ${lang}`, value: response.content.slice(0, 2000), inline: false }
+        ).setTimestamp();
+      await thinking.edit({ content: null, embeds: [embed] });
+    } catch (err: any) {
+      await thinking.edit(`${EMOJIS.error} Translation failed: ${err.message}`);
     }
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.info} 🌐 Translation`)
-      .setColor(COLORS.info)
-      .setDescription('This is a placeholder. Translation will be implemented with a translation API.')
-      .addFields([
-        { name: 'Original Text', value: text, inline: false },
-        { name: 'Target Language', value: language.toUpperCase(), inline: true },
-        { name: 'Translated Text', value: 'API integration pending', inline: false },
-      ])
-      .setTimestamp();
-
-    await message.reply({ embeds: [embed] });
   }
 }
 
-export default TranslateCommand;
+export default TranslateUtilityCommand;

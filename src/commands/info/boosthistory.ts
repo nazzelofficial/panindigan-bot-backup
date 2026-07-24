@@ -1,57 +1,73 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
-import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import { COLORS, EMOJIS } from '../../utils/Constants';
-import { Formatter } from '../../utils/Formatter';
 
 export class BoostHistoryCommand extends BaseCommand {
   constructor() {
     const options: CommandOptions = {
       name: 'boosthistory',
-      description: 'Display server boost history',
+      description: 'Show current server boost information',
       category: 'info',
-      cooldown: 5,
+      cooldown: 10,
       userPermissions: [],
       botPermissions: [],
       guildOnly: true,
       slashCommand: true,
       prefixCommand: true,
-      aliases: ['boosts'],
+      aliases: ['boosts', 'boosters'],
       examples: ['/boosthistory', 'p!boosthistory'],
     };
     super(options);
   }
 
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const guild = interaction.guild!;
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.info} 🚀 Boost History`)
-      .setColor(COLORS.info)
-      .setDescription('This is a placeholder. Boost history will be implemented with database integration.')
-      .addFields([
-        { name: 'Current Level', value: `Level ${guild.premiumTier}`, inline: true },
-        { name: 'Total Boosts', value: Formatter.formatNumber(guild.premiumSubscriptionCount), inline: true },
-        { name: 'Recent Boosts', value: 'N/A', inline: false },
-      ])
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed] });
+  public buildSlashCommand(): SlashCommandBuilder {
+    return new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .setDMPermission(false) as SlashCommandBuilder;
   }
 
-  public async executePrefix(message: Message): Promise<void> {
-    const guild = message.guild!;
-
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    await interaction.deferReply();
+    const guild = interaction.guild!;
+    await guild.members.fetch().catch(() => {});
+    const boosters = guild.members.cache.filter(m => m.premiumSince !== null).sort((a, b) =>
+      (a.premiumSince?.getTime() || 0) - (b.premiumSince?.getTime() || 0)
+    );
     const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.info} 🚀 Boost History`)
-      .setColor(COLORS.info)
-      .setDescription('This is a placeholder. Boost history will be implemented with database integration.')
-      .addFields([
-        { name: 'Current Level', value: `Level ${guild.premiumTier}`, inline: true },
-        { name: 'Total Boosts', value: Formatter.formatNumber(guild.premiumSubscriptionCount), inline: true },
-        { name: 'Recent Boosts', value: 'N/A', inline: false },
-      ])
+      .setTitle(`🚀 Server Boosts — ${guild.name}`)
+      .setColor(0xff73fa)
+      .addFields(
+        { name: '📊 Boost Stats', value: [
+          `**Tier:** ${guild.premiumTier}`,
+          `**Total Boosts:** ${guild.premiumSubscriptionCount || 0}`,
+          `**Boosters:** ${boosters.size}`,
+        ].join('\n'), inline: false },
+        {
+          name: '🌟 Current Boosters',
+          value: boosters.size
+            ? boosters.map(m => `<@${m.id}> — since <t:${Math.floor((m.premiumSince?.getTime() || 0) / 1000)}:R>`).slice(0, 15).join('\n').slice(0, 1024)
+            : 'No current boosters.',
+          inline: false
+        }
+      )
+      .setThumbnail(guild.iconURL() || null)
+      .setFooter({ text: 'Boost to unlock perks!' })
       .setTimestamp();
+    await interaction.editReply({ embeds: [embed] });
+  }
 
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
+    const guild = message.guild!;
+    await guild.members.fetch().catch(() => {});
+    const boosters = guild.members.cache.filter(m => m.premiumSince !== null);
+    const embed = new EmbedBuilder()
+      .setTitle(`🚀 Server Boosts — ${guild.name}`)
+      .setColor(0xff73fa)
+      .addFields(
+        { name: '📊 Stats', value: `Tier **${guild.premiumTier}** • **${guild.premiumSubscriptionCount || 0}** boosts • **${boosters.size}** boosters`, inline: false }
+      )
+      .setTimestamp();
     await message.reply({ embeds: [embed] });
   }
 }

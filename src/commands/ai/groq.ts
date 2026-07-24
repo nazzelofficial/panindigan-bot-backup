@@ -1,75 +1,78 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
-import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+import { PanindiganClient } from '../../structures/PanindiganClient';
 import { COLORS, EMOJIS } from '../../utils/Constants';
 
 export class GroqCommand extends BaseCommand {
   constructor() {
     const options: CommandOptions = {
       name: 'groq',
-      description: 'AI command using Groq',
+      description: 'Chat with Groq AI (ultra-fast Llama inference)',
       category: 'ai',
-      cooldown: 10,
+      cooldown: 5,
       userPermissions: [],
       botPermissions: [],
       guildOnly: false,
       slashCommand: true,
       prefixCommand: true,
-      aliases: [],
-      examples: ['/groq your prompt here', 'p!groq ask something'],
+      aliases: ['llama', 'fast'],
+      examples: ['/groq Explain recursion', 'p!groq Write JavaScript code'],
     };
     super(options);
   }
 
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const prompt = interaction.options.getString('prompt') || '';
-    if (!prompt) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide a prompt for Groq.')
-        .setTimestamp();
-
-      await interaction.reply({ embeds: [errorEmbed] });
-      return;
-    }
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} 🤖 Groq AI`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Prompt', value: prompt, inline: false },
-        { name: 'Response', value: 'This is a placeholder. Groq AI will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed] });
+  public buildSlashCommand(): SlashCommandBuilder {
+    return new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .addStringOption(o => o.setName('prompt').setDescription('Your prompt for Groq').setRequired(true)) as SlashCommandBuilder;
   }
 
-  public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
-    const prompt = args.join(' ');
-
-    if (!prompt) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide a prompt for Groq.')
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    const prompt = interaction.options.getString('prompt', true);
+    await interaction.deferReply();
+    try {
+      const client = interaction.client as PanindiganClient;
+      const response = await client.aiHandler.generateWithProvider(
+        interaction.user.id, interaction.guildId || 'dm', prompt, 'groq'
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} ⚡ Groq AI`)
+        .setColor(0xf55036)
+        .addFields(
+          { name: '💬 Prompt', value: prompt.slice(0, 1024), inline: false },
+          { name: '🤖 Response', value: response.content.slice(0, 4000) || 'No response.', inline: false }
+        )
+        .setFooter({ text: `Model: ${response.model} | Groq (Ultra-Fast)${response.tokens ? ` • ${response.tokens} tokens` : ''}` })
         .setTimestamp();
-
-      await message.reply({ embeds: [errorEmbed] });
-      return;
+      await interaction.editReply({ embeds: [embed] });
+    } catch (err: any) {
+      await interaction.editReply({ content: `${EMOJIS.error} Groq unavailable: ${err.message || 'Please check API key.'}` });
     }
+  }
 
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} 🤖 Groq AI`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Prompt', value: prompt, inline: false },
-        { name: 'Response', value: 'This is a placeholder. Groq AI will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await message.reply({ embeds: [embed] });
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
+    const prompt = args.join(' ');
+    if (!prompt) return void message.reply(`${EMOJIS.error} Please provide a prompt.`);
+    const thinking = await message.reply(`${EMOJIS.ai} Asking Groq...`);
+    try {
+      const client = message.client as PanindiganClient;
+      const response = await client.aiHandler.generateWithProvider(
+        message.author.id, message.guildId || 'dm', prompt, 'groq'
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} ⚡ Groq AI`)
+        .setColor(0xf55036)
+        .addFields(
+          { name: '💬 Prompt', value: prompt.slice(0, 1024), inline: false },
+          { name: '🤖 Response', value: response.content.slice(0, 4000) || 'No response.', inline: false }
+        )
+        .setFooter({ text: `Model: ${response.model} | Groq` })
+        .setTimestamp();
+      await thinking.edit({ content: null, embeds: [embed] });
+    } catch (err: any) {
+      await thinking.edit(`${EMOJIS.error} Groq unavailable: ${err.message || 'Please check API key.'}`);
+    }
   }
 }
 

@@ -1,81 +1,58 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
-import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import { COLORS, EMOJIS } from '../../utils/Constants';
 
-export class UrbanCommand extends BaseCommand {
+export class UrbanUtilityCommand extends BaseCommand {
   constructor() {
     const options: CommandOptions = {
       name: 'urban',
-      description: 'Search Urban Dictionary for a term',
+      description: 'Search Urban Dictionary',
       category: 'utility',
       cooldown: 5,
       userPermissions: [],
       botPermissions: [],
       guildOnly: false,
-      slashCommand: true,
+      slashCommand: false,
       prefixCommand: true,
-      aliases: [],
-      examples: ['/urban yeet', '/urban sus', 'p!urban based'],
+      aliases: ['ud'],
+      examples: ['p!urban yeet'],
     };
     super(options);
   }
 
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const term = interaction.options.getString('term');
-    
-    if (!term) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide a term to search.')
-        .setTimestamp();
-
-      await interaction.reply({ embeds: [errorEmbed] });
-      return;
-    }
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.info} 📚 Urban Dictionary: ${term}`)
-      .setColor(COLORS.info)
-      .setDescription('This is a placeholder. Urban Dictionary search will be implemented with Urban Dictionary API.')
-      .addFields([
-        { name: 'Term', value: term, inline: true },
-        { name: 'Definition', value: 'API integration pending', inline: false },
-        { name: 'Example', value: 'API integration pending', inline: false },
-      ])
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed] });
+  public buildSlashCommand(): SlashCommandBuilder {
+    return new SlashCommandBuilder().setName(this.name).setDescription(this.description) as SlashCommandBuilder;
   }
 
-  public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    await interaction.reply({ content: 'Use `/urban` from the info category.', ephemeral: true });
+  }
+
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const term = args.join(' ');
-
-    if (!term) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide a term to search.')
+    if (!term) return void message.reply(`${EMOJIS.error} Please provide a term.`);
+    const thinking = await message.reply(`${EMOJIS.info} Searching...`);
+    try {
+      const url = `https://api.urbandictionary.com/v0/define?term=${encodeURIComponent(term)}`;
+      const res = await fetch(url);
+      const data: any = await res.json();
+      const entry = data.list?.[0];
+      if (!entry) { await thinking.edit(`${EMOJIS.error} No definition found for **${term}**.`); return; }
+      const embed = new EmbedBuilder()
+        .setTitle(`📖 Urban: ${term}`)
+        .setColor(0x1d3461)
+        .setURL(entry.permalink)
+        .addFields(
+          { name: '📝 Definition', value: (entry.definition?.replace(/\[([^\]]+)\]/g, '$1') || 'N/A').slice(0, 1024), inline: false },
+          { name: '💬 Example', value: (entry.example?.replace(/\[([^\]]+)\]/g, '$1') || 'N/A').slice(0, 512), inline: false },
+        )
+        .setFooter({ text: `👍 ${entry.thumbs_up} | 👎 ${entry.thumbs_down} | by ${entry.author}` })
         .setTimestamp();
-
-      await message.reply({ embeds: [errorEmbed] });
-      return;
+      await thinking.edit({ content: null, embeds: [embed] });
+    } catch (err: any) {
+      await thinking.edit(`${EMOJIS.error} ${err.message || 'Failed.'}`);
     }
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.info} 📚 Urban Dictionary: ${term}`)
-      .setColor(COLORS.info)
-      .setDescription('This is a placeholder. Urban Dictionary search will be implemented with Urban Dictionary API.')
-      .addFields([
-        { name: 'Term', value: term, inline: true },
-        { name: 'Definition', value: 'API integration pending', inline: false },
-        { name: 'Example', value: 'API integration pending', inline: false },
-      ])
-      .setTimestamp();
-
-    await message.reply({ embeds: [embed] });
   }
 }
 
-export default UrbanCommand;
+export default UrbanUtilityCommand;

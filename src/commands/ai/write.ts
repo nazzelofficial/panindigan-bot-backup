@@ -1,80 +1,84 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
-import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+import { PanindiganClient } from '../../structures/PanindiganClient';
 import { COLORS, EMOJIS } from '../../utils/Constants';
 
 export class WriteCommand extends BaseCommand {
   constructor() {
     const options: CommandOptions = {
       name: 'write',
-      description: 'Write content using AI (essay, story, poem)',
+      description: 'Write essays, articles, or long-form content using AI',
       category: 'ai',
-      cooldown: 15,
+      cooldown: 10,
       userPermissions: [],
       botPermissions: [],
       guildOnly: false,
       slashCommand: true,
       prefixCommand: true,
-      aliases: ['aiwrite', 'compose'],
-      examples: ['/write essay about climate change', 'p!write story about adventure'],
+      aliases: ['essay', 'article'],
+      examples: ['/write An essay about renewable energy', 'p!write Article about Discord community building'],
     };
     super(options);
   }
 
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const topic = interaction.options.getString('topic') || '';
-    const type = interaction.options.getString('type') || 'essay';
-
-    if (!topic) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide a topic to write about.')
-        .setTimestamp();
-
-      await interaction.reply({ embeds: [errorEmbed] });
-      return;
-    }
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} ✍️ AI Writer`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Type', value: type, inline: true },
-        { name: 'Topic', value: topic, inline: false },
-        { name: 'Content', value: 'This is a placeholder. AI writing will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed] });
+  public buildSlashCommand(): SlashCommandBuilder {
+    return new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .addStringOption(o => o.setName('topic').setDescription('What to write about').setRequired(true))
+      .addStringOption(o => o.setName('type').setDescription('Content type').setRequired(false)
+        .addChoices(
+          { name: 'Essay', value: 'essay' },
+          { name: 'Article/Blog post', value: 'article' },
+          { name: 'Opinion piece', value: 'opinion' },
+          { name: 'Speech', value: 'speech' },
+          { name: 'Report', value: 'report' }
+        )) as SlashCommandBuilder;
   }
 
-  public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
-    const topic = args.slice(0, -1).join(' ');
-    const type = args[args.length - 1] || 'essay';
-
-    if (!topic) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide a topic to write about.')
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    const topic = interaction.options.getString('topic', true);
+    const type = interaction.options.getString('type') || 'essay';
+    await interaction.deferReply();
+    try {
+      const client = interaction.client as PanindiganClient;
+      const response = await client.aiHandler.generateTaskResponse(
+        topic,
+        `You are a professional writer. Write a well-structured, engaging ${type} about the given topic. Include: compelling introduction, well-developed body paragraphs with evidence and examples, and a strong conclusion. Use clear language and a consistent voice. Aim for 400-600 words.`
+      );
+      const content = response.content.slice(0, 4000);
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} ✍️ ${type.charAt(0).toUpperCase() + type.slice(1)}: ${topic.slice(0, 50)}`)
+        .setColor(COLORS.info)
+        .setDescription(content)
+        .setFooter({ text: `Type: ${type} | Provider: ${response.provider}` })
         .setTimestamp();
-
-      await message.reply({ embeds: [errorEmbed] });
-      return;
+      await interaction.editReply({ embeds: [embed] });
+    } catch (err: any) {
+      await interaction.editReply({ content: `${EMOJIS.error} Error: ${err.message || 'AI unavailable.'}` });
     }
+  }
 
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} ✍️ AI Writer`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Type', value: type, inline: true },
-        { name: 'Topic', value: topic, inline: false },
-        { name: 'Content', value: 'This is a placeholder. AI writing will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await message.reply({ embeds: [embed] });
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
+    const topic = args.join(' ');
+    if (!topic) return void message.reply(`${EMOJIS.error} Please provide a topic to write about.`);
+    const thinking = await message.reply(`${EMOJIS.ai} Writing...`);
+    try {
+      const client = message.client as PanindiganClient;
+      const response = await client.aiHandler.generateTaskResponse(
+        topic,
+        'Write a well-structured essay with compelling introduction, well-developed body, and strong conclusion. 400-600 words.'
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} ✍️ Written Content`)
+        .setColor(COLORS.info)
+        .setDescription(response.content.slice(0, 4000))
+        .setFooter({ text: `Provider: ${response.provider}` })
+        .setTimestamp();
+      await thinking.edit({ content: null, embeds: [embed] });
+    } catch (err: any) {
+      await thinking.edit(`${EMOJIS.error} Error: ${err.message || 'AI unavailable.'}`);
+    }
   }
 }
 

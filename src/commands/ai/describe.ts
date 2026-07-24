@@ -1,75 +1,88 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
-import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+import { PanindiganClient } from '../../structures/PanindiganClient';
 import { COLORS, EMOJIS } from '../../utils/Constants';
 
 export class DescribeCommand extends BaseCommand {
   constructor() {
     const options: CommandOptions = {
       name: 'describe',
-      description: 'Describe an image using AI',
+      description: 'Get an AI description of anything',
       category: 'ai',
-      cooldown: 10,
+      cooldown: 5,
       userPermissions: [],
       botPermissions: [],
       guildOnly: false,
       slashCommand: true,
       prefixCommand: true,
-      aliases: ['imagedescription', 'vision'],
-      examples: ['/describe [image attachment]', 'p!describe [image URL]'],
+      aliases: [],
+      examples: ['/describe a sunset over the ocean', 'p!describe quantum computers'],
     };
     super(options);
   }
 
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const imageUrl = interaction.options.getString('imageurl') || '';
-    const attachment = interaction.options.getAttachment('image');
-
-    if (!imageUrl && !attachment) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide an image URL or attachment to describe.')
-        .setTimestamp();
-
-      await interaction.reply({ embeds: [errorEmbed] });
-      return;
-    }
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} 👁️ AI Image Description`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Description', value: 'This is a placeholder. AI image description will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed] });
+  public buildSlashCommand(): SlashCommandBuilder {
+    return new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .addStringOption(o => o.setName('subject').setDescription('What to describe').setRequired(true))
+      .addStringOption(o => o.setName('style').setDescription('Description style').setRequired(false)
+        .addChoices(
+          { name: 'Informative', value: 'informative' },
+          { name: 'Poetic', value: 'poetic' },
+          { name: 'Technical', value: 'technical' },
+          { name: 'Simple', value: 'simple' }
+        )) as SlashCommandBuilder;
   }
 
-  public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
-    const imageUrl = args[0] || message.attachments.first()?.url;
-
-    if (!imageUrl) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide an image URL or attachment to describe.')
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    const subject = interaction.options.getString('subject', true);
+    const style = interaction.options.getString('style') || 'informative';
+    await interaction.deferReply();
+    try {
+      const client = interaction.client as PanindiganClient;
+      const response = await client.aiHandler.generateTaskResponse(
+        `Describe: ${subject}`,
+        `Write a ${style} description of the given subject. Be vivid, accurate, and engaging. Use sensory details where appropriate.`
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} 🖊️ Description`)
+        .setColor(COLORS.info)
+        .addFields(
+          { name: '📌 Subject', value: subject, inline: false },
+          { name: `📝 Description (${style})`, value: response.content.slice(0, 4000), inline: false }
+        )
+        .setFooter({ text: `Provider: ${response.provider}` })
         .setTimestamp();
-
-      await message.reply({ embeds: [errorEmbed] });
-      return;
+      await interaction.editReply({ embeds: [embed] });
+    } catch (err: any) {
+      await interaction.editReply({ content: `${EMOJIS.error} Error: ${err.message || 'AI unavailable.'}` });
     }
+  }
 
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} 👁️ AI Image Description`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Description', value: 'This is a placeholder. AI image description will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await message.reply({ embeds: [embed] });
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
+    const subject = args.join(' ');
+    if (!subject) return void message.reply(`${EMOJIS.error} Please provide a subject to describe.`);
+    const thinking = await message.reply(`${EMOJIS.ai} Describing...`);
+    try {
+      const client = message.client as PanindiganClient;
+      const response = await client.aiHandler.generateTaskResponse(
+        `Describe: ${subject}`,
+        'Write a vivid, informative, and engaging description of the subject.'
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} 🖊️ Description`)
+        .setColor(COLORS.info)
+        .addFields(
+          { name: '📌 Subject', value: subject, inline: false },
+          { name: '📝 Description', value: response.content.slice(0, 4000), inline: false }
+        )
+        .setFooter({ text: `Provider: ${response.provider}` })
+        .setTimestamp();
+      await thinking.edit({ content: null, embeds: [embed] });
+    } catch (err: any) {
+      await thinking.edit(`${EMOJIS.error} Error: ${err.message || 'AI unavailable.'}`);
+    }
   }
 }
 

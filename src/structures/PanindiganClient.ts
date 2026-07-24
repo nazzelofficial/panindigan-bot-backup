@@ -5,12 +5,14 @@ import { connectMongoDB, getMongoDb } from '../database/mongodb/client';
 import { getPrismaClient } from '../database/postgresql/client';
 import { connectRedis, getRedisClient } from '../database/redis/client';
 import { BaseCommand } from './BaseCommand';
+import { AIHandler } from '../handlers/AIHandler';
 import config from '../../config.json';
 
 export class PanindiganClient extends Client {
   public commands: Collection<string, BaseCommand>;
   public cooldowns: Collection<string, Collection<string, number>>;
   public kazagumo: Kazagumo | null;
+  public aiHandler: AIHandler;
   public config = config;
   public shardId: number;
   public totalShards: number;
@@ -52,6 +54,7 @@ export class PanindiganClient extends Client {
     this.commands = new Collection();
     this.cooldowns = new Collection();
     this.kazagumo = null;
+    this.aiHandler = new AIHandler();
     this.shardId = shardId;
     this.totalShards = totalShards;
   }

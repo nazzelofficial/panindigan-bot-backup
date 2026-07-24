@@ -1,12 +1,13 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
-import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+import { PanindiganClient } from '../../structures/PanindiganClient';
 import { COLORS, EMOJIS } from '../../utils/Constants';
 
 export class GeminiCommand extends BaseCommand {
   constructor() {
     const options: CommandOptions = {
       name: 'gemini',
-      description: 'AI command using Google Gemini',
+      description: 'Chat with Google Gemini AI',
       category: 'ai',
       cooldown: 10,
       userPermissions: [],
@@ -14,62 +15,64 @@ export class GeminiCommand extends BaseCommand {
       guildOnly: false,
       slashCommand: true,
       prefixCommand: true,
-      aliases: ['googleai'],
-      examples: ['/gemini your prompt here', 'p!gemini ask something'],
+      aliases: ['google'],
+      examples: ['/gemini Explain machine learning', 'p!gemini What is the weather on Mars?'],
     };
     super(options);
   }
 
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const prompt = interaction.options.getString('prompt') || '';
-    if (!prompt) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide a prompt for Gemini.')
-        .setTimestamp();
-
-      await interaction.reply({ embeds: [errorEmbed] });
-      return;
-    }
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} 🤖 Google Gemini`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Prompt', value: prompt, inline: false },
-        { name: 'Response', value: 'This is a placeholder. Gemini AI will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed] });
+  public buildSlashCommand(): SlashCommandBuilder {
+    return new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .addStringOption(o => o.setName('prompt').setDescription('Your prompt for Gemini').setRequired(true)) as SlashCommandBuilder;
   }
 
-  public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
-    const prompt = args.join(' ');
-
-    if (!prompt) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide a prompt for Gemini.')
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    const prompt = interaction.options.getString('prompt', true);
+    await interaction.deferReply();
+    try {
+      const client = interaction.client as PanindiganClient;
+      const response = await client.aiHandler.generateWithProvider(
+        interaction.user.id, interaction.guildId || 'dm', prompt, 'gemini'
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} ✨ Google Gemini`)
+        .setColor(0x4285f4)
+        .addFields(
+          { name: '💬 Prompt', value: prompt.slice(0, 1024), inline: false },
+          { name: '🤖 Response', value: response.content.slice(0, 4000) || 'No response.', inline: false }
+        )
+        .setFooter({ text: `Model: ${response.model} | Google` })
         .setTimestamp();
-
-      await message.reply({ embeds: [errorEmbed] });
-      return;
+      await interaction.editReply({ embeds: [embed] });
+    } catch (err: any) {
+      await interaction.editReply({ content: `${EMOJIS.error} Gemini unavailable: ${err.message || 'Please check API key.'}` });
     }
+  }
 
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} 🤖 Google Gemini`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Prompt', value: prompt, inline: false },
-        { name: 'Response', value: 'This is a placeholder. Gemini AI will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await message.reply({ embeds: [embed] });
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
+    const prompt = args.join(' ');
+    if (!prompt) return void message.reply(`${EMOJIS.error} Please provide a prompt.`);
+    const thinking = await message.reply(`${EMOJIS.ai} Asking Gemini...`);
+    try {
+      const client = message.client as PanindiganClient;
+      const response = await client.aiHandler.generateWithProvider(
+        message.author.id, message.guildId || 'dm', prompt, 'gemini'
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} ✨ Google Gemini`)
+        .setColor(0x4285f4)
+        .addFields(
+          { name: '💬 Prompt', value: prompt.slice(0, 1024), inline: false },
+          { name: '🤖 Response', value: response.content.slice(0, 4000) || 'No response.', inline: false }
+        )
+        .setFooter({ text: `Model: ${response.model} | Google` })
+        .setTimestamp();
+      await thinking.edit({ content: null, embeds: [embed] });
+    } catch (err: any) {
+      await thinking.edit(`${EMOJIS.error} Gemini unavailable: ${err.message || 'Please check API key.'}`);
+    }
   }
 }
 

@@ -1,5 +1,6 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
-import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+import { PanindiganClient } from '../../structures/PanindiganClient';
 import { COLORS, EMOJIS } from '../../utils/Constants';
 
 export class SummarizeCommand extends BaseCommand {
@@ -8,70 +9,72 @@ export class SummarizeCommand extends BaseCommand {
       name: 'summarize',
       description: 'Summarize text using AI',
       category: 'ai',
-      cooldown: 10,
+      cooldown: 8,
       userPermissions: [],
       botPermissions: [],
       guildOnly: false,
       slashCommand: true,
       prefixCommand: true,
-      aliases: ['summary', 'sum'],
-      examples: ['/summarize long text here', 'p!summarize long text here'],
+      aliases: ['summary', 'tldr'],
+      examples: ['/summarize <long text>', 'p!summarize paste text here'],
     };
     super(options);
   }
 
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const text = interaction.options.getString('text') || '';
-    if (!text) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide text to summarize.')
-        .setTimestamp();
-
-      await interaction.reply({ embeds: [errorEmbed] });
-      return;
-    }
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} 📝 AI Summary`)
-      .setColor(COLORS.info)
-      .setDescription(`Original text length: ${text.length} characters`)
-      .addFields([
-        { name: 'Original', value: text.substring(0, 500) + (text.length > 500 ? '...' : ''), inline: false },
-        { name: 'Summary', value: 'This is a placeholder. AI summarization will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed] });
+  public buildSlashCommand(): SlashCommandBuilder {
+    return new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .addStringOption(o => o.setName('text').setDescription('Text to summarize').setRequired(true).setMaxLength(3000)) as SlashCommandBuilder;
   }
 
-  public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
-    const text = args.join(' ');
-
-    if (!text) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide text to summarize.')
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    const text = interaction.options.getString('text', true);
+    await interaction.deferReply();
+    try {
+      const client = interaction.client as PanindiganClient;
+      const response = await client.aiHandler.generateTaskResponse(
+        text,
+        'You are a summarization expert. Provide a concise, accurate summary of the given text. Use bullet points for key points. Keep it under 300 words. Start with a 1-sentence TL;DR, then list the main points.'
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} 📝 Summary`)
+        .setColor(COLORS.info)
+        .addFields(
+          { name: '📄 Original', value: text.slice(0, 512) + (text.length > 512 ? '...' : ''), inline: false },
+          { name: '📋 Summary', value: response.content.slice(0, 4000), inline: false }
+        )
+        .setFooter({ text: `Provider: ${response.provider}` })
         .setTimestamp();
-
-      await message.reply({ embeds: [errorEmbed] });
-      return;
+      await interaction.editReply({ embeds: [embed] });
+    } catch (err: any) {
+      await interaction.editReply({ content: `${EMOJIS.error} Error: ${err.message || 'AI unavailable.'}` });
     }
+  }
 
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} 📝 AI Summary`)
-      .setColor(COLORS.info)
-      .setDescription(`Original text length: ${text.length} characters`)
-      .addFields([
-        { name: 'Original', value: text.substring(0, 500) + (text.length > 500 ? '...' : ''), inline: false },
-        { name: 'Summary', value: 'This is a placeholder. AI summarization will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await message.reply({ embeds: [embed] });
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
+    const text = args.join(' ');
+    if (!text) return void message.reply(`${EMOJIS.error} Please provide text to summarize.`);
+    const thinking = await message.reply(`${EMOJIS.ai} Summarizing...`);
+    try {
+      const client = message.client as PanindiganClient;
+      const response = await client.aiHandler.generateTaskResponse(
+        text,
+        'You are a summarization expert. Provide a concise, accurate summary with bullet points. Start with a 1-sentence TL;DR, then list the main points.'
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} 📝 Summary`)
+        .setColor(COLORS.info)
+        .addFields(
+          { name: '📄 Original', value: text.slice(0, 512) + (text.length > 512 ? '...' : ''), inline: false },
+          { name: '📋 Summary', value: response.content.slice(0, 4000), inline: false }
+        )
+        .setFooter({ text: `Provider: ${response.provider}` })
+        .setTimestamp();
+      await thinking.edit({ content: null, embeds: [embed] });
+    } catch (err: any) {
+      await thinking.edit(`${EMOJIS.error} Error: ${err.message || 'AI unavailable.'}`);
+    }
   }
 }
 

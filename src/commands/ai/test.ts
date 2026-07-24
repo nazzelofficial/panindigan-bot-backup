@@ -1,80 +1,86 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
-import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+import { PanindiganClient } from '../../structures/PanindiganClient';
 import { COLORS, EMOJIS } from '../../utils/Constants';
 
 export class TestCommand extends BaseCommand {
   constructor() {
     const options: CommandOptions = {
       name: 'test',
-      description: 'Generate tests using AI',
+      description: 'Generate unit tests for code using AI',
       category: 'ai',
-      cooldown: 15,
+      cooldown: 10,
       userPermissions: [],
       botPermissions: [],
       guildOnly: false,
       slashCommand: true,
       prefixCommand: true,
-      aliases: ['generatetests', 'unittest'],
-      examples: ['/test my code here', 'p!test create unit tests'],
+      aliases: ['unittest', 'tests'],
+      examples: ['/test function add(a, b) { return a + b }', 'p!test paste function here'],
     };
     super(options);
   }
 
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const code = interaction.options.getString('code') || '';
-    const language = interaction.options.getString('language') || 'javascript';
-
-    if (!code) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide code to generate tests for.')
-        .setTimestamp();
-
-      await interaction.reply({ embeds: [errorEmbed] });
-      return;
-    }
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} 🧪 AI Test Generator`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Language', value: language, inline: true },
-        { name: 'Code', value: code.substring(0, 500) + (code.length > 500 ? '...' : ''), inline: false },
-        { name: 'Tests', value: 'This is a placeholder. AI test generation will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed] });
+  public buildSlashCommand(): SlashCommandBuilder {
+    return new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .addStringOption(o => o.setName('code').setDescription('Code to write tests for').setRequired(true).setMaxLength(2000))
+      .addStringOption(o => o.setName('framework').setDescription('Test framework').setRequired(false)
+        .addChoices(
+          { name: 'Jest (JavaScript)', value: 'Jest' },
+          { name: 'Vitest', value: 'Vitest' },
+          { name: 'Mocha', value: 'Mocha' },
+          { name: 'pytest (Python)', value: 'pytest' },
+          { name: 'JUnit (Java)', value: 'JUnit' }
+        )) as SlashCommandBuilder;
   }
 
-  public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
-    const code = args.slice(0, -1).join(' ');
-    const language = args[args.length - 1] || 'javascript';
-
-    if (!code) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide code to generate tests for.')
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    const code = interaction.options.getString('code', true);
+    const framework = interaction.options.getString('framework') || 'Jest';
+    await interaction.deferReply();
+    try {
+      const client = interaction.client as PanindiganClient;
+      const response = await client.aiHandler.generateTaskResponse(
+        code,
+        `Write comprehensive ${framework} unit tests for the following code. Include: 1) Happy path tests. 2) Edge cases and boundary conditions. 3) Error handling tests. 4) Mocks/stubs where needed. Follow ${framework} best practices. Add descriptive test names.`
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} 🧪 Unit Tests Generated`)
+        .setColor(COLORS.success)
+        .addFields(
+          { name: '💻 Code', value: `\`\`\`\n${code.slice(0, 500)}\n\`\`\``, inline: false },
+          { name: `🧪 ${framework} Tests`, value: response.content.slice(0, 3500), inline: false }
+        )
+        .setFooter({ text: `Framework: ${framework} | Provider: ${response.provider}` })
         .setTimestamp();
-
-      await message.reply({ embeds: [errorEmbed] });
-      return;
+      await interaction.editReply({ embeds: [embed] });
+    } catch (err: any) {
+      await interaction.editReply({ content: `${EMOJIS.error} Error: ${err.message || 'AI unavailable.'}` });
     }
+  }
 
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} 🧪 AI Test Generator`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Language', value: language, inline: true },
-        { name: 'Code', value: code.substring(0, 500) + (code.length > 500 ? '...' : ''), inline: false },
-        { name: 'Tests', value: 'This is a placeholder. AI test generation will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await message.reply({ embeds: [embed] });
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
+    const code = args.join(' ');
+    if (!code) return void message.reply(`${EMOJIS.error} Please provide code to test.`);
+    const thinking = await message.reply(`${EMOJIS.ai} Generating tests...`);
+    try {
+      const client = message.client as PanindiganClient;
+      const response = await client.aiHandler.generateTaskResponse(
+        code,
+        'Write comprehensive Jest unit tests: happy path, edge cases, error handling, with descriptive test names.'
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} 🧪 Unit Tests Generated`)
+        .setColor(COLORS.success)
+        .addFields({ name: '🧪 Tests', value: response.content.slice(0, 3800), inline: false })
+        .setFooter({ text: `Provider: ${response.provider}` })
+        .setTimestamp();
+      await thinking.edit({ content: null, embeds: [embed] });
+    } catch (err: any) {
+      await thinking.edit(`${EMOJIS.error} Error: ${err.message || 'AI unavailable.'}`);
+    }
   }
 }
 

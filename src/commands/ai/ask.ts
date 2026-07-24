@@ -1,5 +1,6 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
-import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+import { PanindiganClient } from '../../structures/PanindiganClient';
 import { COLORS, EMOJIS } from '../../utils/Constants';
 
 export class AskCommand extends BaseCommand {
@@ -20,56 +21,63 @@ export class AskCommand extends BaseCommand {
     super(options);
   }
 
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const question = interaction.options.getString('question') || '';
-    if (!question) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide a question to ask.')
-        .setTimestamp();
-
-      await interaction.reply({ embeds: [errorEmbed] });
-      return;
-    }
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} ❓ AI Question`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Question', value: question, inline: false },
-        { name: 'Answer', value: 'This is a placeholder. AI answering will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed] });
+  public buildSlashCommand(): SlashCommandBuilder {
+    return new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .addStringOption(o => o.setName('question').setDescription('The question to ask').setRequired(true)) as SlashCommandBuilder;
   }
 
-  public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
-    const question = args.join(' ');
-
-    if (!question) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide a question to ask.')
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    const question = interaction.options.getString('question', true);
+    await interaction.deferReply();
+    try {
+      const client = interaction.client as PanindiganClient;
+      const response = await client.aiHandler.generateResponse(
+        interaction.user.id,
+        interaction.guildId || 'dm',
+        question
+      );
+      const answer = response.content.slice(0, 4000);
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} ❓ AI Answer`)
+        .setColor(COLORS.info)
+        .addFields(
+          { name: '❓ Question', value: question.slice(0, 1024), inline: false },
+          { name: '💡 Answer', value: answer || 'No response.', inline: false }
+        )
+        .setFooter({ text: `Provider: ${response.provider} • Model: ${response.model}` })
         .setTimestamp();
-
-      await message.reply({ embeds: [errorEmbed] });
-      return;
+      await interaction.editReply({ embeds: [embed] });
+    } catch (err: any) {
+      await interaction.editReply({ content: `${EMOJIS.error} Error: ${err.message || 'AI unavailable.'}` });
     }
+  }
 
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} ❓ AI Question`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Question', value: question, inline: false },
-        { name: 'Answer', value: 'This is a placeholder. AI answering will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await message.reply({ embeds: [embed] });
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
+    const question = args.join(' ');
+    if (!question) return void message.reply(`${EMOJIS.error} Please provide a question.`);
+    const thinking = await message.reply(`${EMOJIS.ai} Thinking...`);
+    try {
+      const client = message.client as PanindiganClient;
+      const response = await client.aiHandler.generateResponse(
+        message.author.id,
+        message.guildId || 'dm',
+        question
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} ❓ AI Answer`)
+        .setColor(COLORS.info)
+        .addFields(
+          { name: '❓ Question', value: question.slice(0, 1024), inline: false },
+          { name: '💡 Answer', value: response.content.slice(0, 4000) || 'No response.', inline: false }
+        )
+        .setFooter({ text: `Provider: ${response.provider} • Model: ${response.model}` })
+        .setTimestamp();
+      await thinking.edit({ content: null, embeds: [embed] });
+    } catch (err: any) {
+      await thinking.edit(`${EMOJIS.error} Error: ${err.message || 'AI unavailable.'}`);
+    }
   }
 }
 

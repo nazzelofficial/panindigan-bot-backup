@@ -1,12 +1,13 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
-import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+import { PanindiganClient } from '../../structures/PanindiganClient';
 import { COLORS, EMOJIS } from '../../utils/Constants';
 
 export class ChatGPTCommand extends BaseCommand {
   constructor() {
     const options: CommandOptions = {
       name: 'chatgpt',
-      description: 'AI command using ChatGPT',
+      description: 'Chat with OpenAI ChatGPT (GPT-4o)',
       category: 'ai',
       cooldown: 10,
       userPermissions: [],
@@ -14,62 +15,64 @@ export class ChatGPTCommand extends BaseCommand {
       guildOnly: false,
       slashCommand: true,
       prefixCommand: true,
-      aliases: ['gpt'],
-      examples: ['/chatgpt your prompt here', 'p!chatgpt ask something'],
+      aliases: ['gpt', 'gpt4'],
+      examples: ['/chatgpt Explain quantum computing', 'p!chatgpt Write a poem'],
     };
     super(options);
   }
 
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const prompt = interaction.options.getString('prompt') || '';
-    if (!prompt) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide a prompt for ChatGPT.')
-        .setTimestamp();
-
-      await interaction.reply({ embeds: [errorEmbed] });
-      return;
-    }
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} 🤖 ChatGPT`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Prompt', value: prompt, inline: false },
-        { name: 'Response', value: 'This is a placeholder. ChatGPT will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed] });
+  public buildSlashCommand(): SlashCommandBuilder {
+    return new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .addStringOption(o => o.setName('prompt').setDescription('Your prompt for ChatGPT').setRequired(true)) as SlashCommandBuilder;
   }
 
-  public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
-    const prompt = args.join(' ');
-
-    if (!prompt) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide a prompt for ChatGPT.')
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    const prompt = interaction.options.getString('prompt', true);
+    await interaction.deferReply();
+    try {
+      const client = interaction.client as PanindiganClient;
+      const response = await client.aiHandler.generateWithProvider(
+        interaction.user.id, interaction.guildId || 'dm', prompt, 'openai'
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} 🤖 ChatGPT`)
+        .setColor(0x10a37f)
+        .addFields(
+          { name: '💬 Prompt', value: prompt.slice(0, 1024), inline: false },
+          { name: '🤖 Response', value: response.content.slice(0, 4000) || 'No response.', inline: false }
+        )
+        .setFooter({ text: `Model: ${response.model} | OpenAI` })
         .setTimestamp();
-
-      await message.reply({ embeds: [errorEmbed] });
-      return;
+      await interaction.editReply({ embeds: [embed] });
+    } catch (err: any) {
+      await interaction.editReply({ content: `${EMOJIS.error} OpenAI unavailable: ${err.message || 'Please check API key.'}` });
     }
+  }
 
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} 🤖 ChatGPT`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Prompt', value: prompt, inline: false },
-        { name: 'Response', value: 'This is a placeholder. ChatGPT will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await message.reply({ embeds: [embed] });
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
+    const prompt = args.join(' ');
+    if (!prompt) return void message.reply(`${EMOJIS.error} Please provide a prompt.`);
+    const thinking = await message.reply(`${EMOJIS.ai} Asking ChatGPT...`);
+    try {
+      const client = message.client as PanindiganClient;
+      const response = await client.aiHandler.generateWithProvider(
+        message.author.id, message.guildId || 'dm', prompt, 'openai'
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} 🤖 ChatGPT`)
+        .setColor(0x10a37f)
+        .addFields(
+          { name: '💬 Prompt', value: prompt.slice(0, 1024), inline: false },
+          { name: '🤖 Response', value: response.content.slice(0, 4000) || 'No response.', inline: false }
+        )
+        .setFooter({ text: `Model: ${response.model} | OpenAI` })
+        .setTimestamp();
+      await thinking.edit({ content: null, embeds: [embed] });
+    } catch (err: any) {
+      await thinking.edit(`${EMOJIS.error} OpenAI unavailable: ${err.message || 'Please check API key.'}`);
+    }
   }
 }
 

@@ -296,4 +296,91 @@ export class AIHandler {
       console.error('Error clearing conversation memory:', error);
     }
   }
+
+  /**
+   * Generate a one-shot task response with a custom system prompt (no memory saved).
+   */
+  public async generateTaskResponse(
+    userMessage: string,
+    taskSystemPrompt: string,
+    providerOverride?: 'openai' | 'anthropic' | 'gemini' | 'groq'
+  ): Promise<AIResponse> {
+    const messagesForAI = [
+      { role: 'system' as const, content: taskSystemPrompt },
+      { role: 'user' as const, content: userMessage },
+    ];
+
+    const provider = providerOverride || config.ai.providers.primary;
+
+    let response: AIResponse | undefined;
+    const tryProviders = [provider, ...config.ai.providers.fallback.filter((p: string) => p !== provider)];
+
+    for (const p of tryProviders) {
+      try {
+        switch (p) {
+          case 'openai':
+            response = await this.generateWithOpenAI(messagesForAI);
+            break;
+          case 'anthropic':
+            response = await this.generateWithAnthropic(messagesForAI);
+            break;
+          case 'gemini':
+            response = await this.generateWithGemini(messagesForAI);
+            break;
+          case 'groq':
+            response = await this.generateWithGroq(messagesForAI);
+            break;
+        }
+        if (response) break;
+      } catch (err) {
+        console.error(`Provider ${p} failed for task request:`, err);
+      }
+    }
+
+    if (!response) throw new Error('All AI providers failed.');
+    return response;
+  }
+
+  /**
+   * Generate a response using a specific provider (for provider-specific commands).
+   */
+  public async generateWithProvider(
+    userId: string,
+    guildId: string,
+    userMessage: string,
+    provider: 'openai' | 'anthropic' | 'gemini' | 'groq',
+    premiumTier: string = 'free'
+  ): Promise<AIResponse> {
+    const memoryLimit = config.ai.conversationMemoryMessages[premiumTier as keyof typeof config.ai.conversationMemoryMessages] || config.ai.conversationMemoryMessages.free;
+    let messages = await this.getConversationMemory(userId, guildId);
+
+    messages.push({ role: 'user' as const, content: userMessage, timestamp: new Date() });
+    if (memoryLimit !== -1 && messages.length > memoryLimit) {
+      messages = messages.slice(-memoryLimit);
+    }
+
+    const messagesForAI = [
+      { role: 'system' as const, content: config.ai.systemPrompt },
+      ...messages.map((m: any) => ({ role: m.role, content: m.content })),
+    ];
+
+    let response: AIResponse;
+    try {
+      switch (provider) {
+        case 'openai': response = await this.generateWithOpenAI(messagesForAI); break;
+        case 'anthropic': response = await this.generateWithAnthropic(messagesForAI); break;
+        case 'gemini': response = await this.generateWithGemini(messagesForAI); break;
+        case 'groq': response = await this.generateWithGroq(messagesForAI); break;
+        default: response = await this.generateWithOpenAI(messagesForAI);
+      }
+    } catch (err) {
+      // Fallback to primary
+      response = await this.generateResponse(userId, guildId, userMessage, premiumTier);
+      return response;
+    }
+
+    messages.push({ role: 'assistant', content: response.content, timestamp: new Date() });
+    await this.saveConversationMemory(userId, guildId, messages, response.provider, response.model);
+    return response;
+  }
 }

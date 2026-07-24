@@ -1,80 +1,83 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
-import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+import { PanindiganClient } from '../../structures/PanindiganClient';
 import { COLORS, EMOJIS } from '../../utils/Constants';
 
 export class OutlineCommand extends BaseCommand {
   constructor() {
     const options: CommandOptions = {
       name: 'outline',
-      description: 'Generate AI outline for essay or presentation',
+      description: 'Create a structured outline for any topic using AI',
       category: 'ai',
-      cooldown: 15,
+      cooldown: 8,
       userPermissions: [],
       botPermissions: [],
       guildOnly: false,
       slashCommand: true,
       prefixCommand: true,
-      aliases: ['generateoutline', 'structure'],
-      examples: ['/outline climate change essay', 'p!outline presentation about AI'],
+      aliases: ['structure', 'plan'],
+      examples: ['/outline Essay on climate change', 'p!outline Book on learning JavaScript'],
     };
     super(options);
   }
 
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const topic = interaction.options.getString('topic') || '';
-    const type = interaction.options.getString('type') || 'essay';
-
-    if (!topic) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide a topic for the outline.')
-        .setTimestamp();
-
-      await interaction.reply({ embeds: [errorEmbed] });
-      return;
-    }
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} 📋 AI Outline Generator`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Type', value: type, inline: true },
-        { name: 'Topic', value: topic, inline: false },
-        { name: 'Outline', value: 'This is a placeholder. AI outline generation will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed] });
+  public buildSlashCommand(): SlashCommandBuilder {
+    return new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .addStringOption(o => o.setName('topic').setDescription('Topic to outline').setRequired(true))
+      .addStringOption(o => o.setName('type').setDescription('Type of outline').setRequired(false)
+        .addChoices(
+          { name: 'Essay', value: 'essay' },
+          { name: 'Presentation', value: 'presentation' },
+          { name: 'Book/Report', value: 'book' },
+          { name: 'Project plan', value: 'project' },
+          { name: 'Study guide', value: 'study' }
+        )) as SlashCommandBuilder;
   }
 
-  public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
-    const topic = args.slice(0, -1).join(' ');
-    const type = args[args.length - 1] || 'essay';
-
-    if (!topic) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide a topic for the outline.')
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    const topic = interaction.options.getString('topic', true);
+    const type = interaction.options.getString('type') || 'essay';
+    await interaction.deferReply();
+    try {
+      const client = interaction.client as PanindiganClient;
+      const response = await client.aiHandler.generateTaskResponse(
+        topic,
+        `Create a comprehensive, well-structured ${type} outline for the given topic. Use Roman numerals for main sections, letters for subsections. Include key points, supporting arguments, and a clear logical flow. Make it detailed and practical.`
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} 📋 Outline: ${topic.slice(0, 50)}`)
+        .setColor(COLORS.info)
+        .setDescription(response.content.slice(0, 4000))
+        .setFooter({ text: `Type: ${type} | Provider: ${response.provider}` })
         .setTimestamp();
-
-      await message.reply({ embeds: [errorEmbed] });
-      return;
+      await interaction.editReply({ embeds: [embed] });
+    } catch (err: any) {
+      await interaction.editReply({ content: `${EMOJIS.error} Error: ${err.message || 'AI unavailable.'}` });
     }
+  }
 
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} 📋 AI Outline Generator`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Type', value: type, inline: true },
-        { name: 'Topic', value: topic, inline: false },
-        { name: 'Outline', value: 'This is a placeholder. AI outline generation will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await message.reply({ embeds: [embed] });
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
+    const topic = args.join(' ');
+    if (!topic) return void message.reply(`${EMOJIS.error} Please provide a topic to outline.`);
+    const thinking = await message.reply(`${EMOJIS.ai} Creating outline...`);
+    try {
+      const client = message.client as PanindiganClient;
+      const response = await client.aiHandler.generateTaskResponse(
+        topic,
+        'Create a comprehensive outline with Roman numerals for main sections and letters for subsections. Clear logical flow.'
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} 📋 Outline: ${topic.slice(0, 50)}`)
+        .setColor(COLORS.info)
+        .setDescription(response.content.slice(0, 4000))
+        .setFooter({ text: `Provider: ${response.provider}` })
+        .setTimestamp();
+      await thinking.edit({ content: null, embeds: [embed] });
+    } catch (err: any) {
+      await thinking.edit(`${EMOJIS.error} Error: ${err.message || 'AI unavailable.'}`);
+    }
   }
 }
 

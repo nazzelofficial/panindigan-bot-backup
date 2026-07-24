@@ -1,85 +1,57 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
-import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import { COLORS, EMOJIS } from '../../utils/Constants';
+import { weatherService } from '../../services/WeatherService';
 
-export class WeatherCommand extends BaseCommand {
+export class WeatherUtilityCommand extends BaseCommand {
   constructor() {
     const options: CommandOptions = {
       name: 'weather',
-      description: 'Get weather information for a location',
+      description: 'Display weather information for a location',
       category: 'utility',
       cooldown: 5,
       userPermissions: [],
       botPermissions: [],
       guildOnly: false,
-      slashCommand: true,
+      slashCommand: false,
       prefixCommand: true,
       aliases: [],
-      examples: ['/weather Manila', '/weather Tokyo', 'p!weather New York'],
+      examples: ['p!weather Manila'],
     };
     super(options);
   }
 
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const location = interaction.options.getString('location');
-    
-    if (!location) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide a location.')
-        .setTimestamp();
-
-      await interaction.reply({ embeds: [errorEmbed] });
-      return;
-    }
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.info} 🌤️ Weather: ${location}`)
-      .setColor(COLORS.info)
-      .setDescription('This is a placeholder. Weather information will be implemented with a weather API.')
-      .addFields([
-        { name: 'Location', value: location, inline: true },
-        { name: 'Temperature', value: 'N/A', inline: true },
-        { name: 'Condition', value: 'N/A', inline: true },
-        { name: 'Humidity', value: 'N/A', inline: true },
-        { name: 'Wind', value: 'N/A', inline: true },
-      ])
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed] });
+  public buildSlashCommand(): SlashCommandBuilder {
+    return new SlashCommandBuilder().setName(this.name).setDescription(this.description) as SlashCommandBuilder;
   }
 
-  public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    await interaction.reply({ content: 'Use `/weather` from the info category.', ephemeral: true });
+  }
+
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const location = args.join(' ');
-
-    if (!location) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide a location.')
+    if (!location) return void message.reply(`${EMOJIS.error} Please provide a location.`);
+    const thinking = await message.reply(`${EMOJIS.info} Fetching weather...`);
+    try {
+      const data = await weatherService.getCurrentWeather(location);
+      const emoji = weatherService.getWeatherEmoji(data.description);
+      const embed = new EmbedBuilder()
+        .setTitle(`${emoji} Weather — ${data.city}, ${data.country}`)
+        .setColor(COLORS.info)
+        .addFields(
+          { name: '🌡️ Temperature', value: `${data.temperature}°C (feels like ${data.feelsLike}°C)`, inline: true },
+          { name: '💧 Humidity', value: `${data.humidity}%`, inline: true },
+          { name: '💨 Wind', value: `${data.windSpeed} km/h`, inline: true },
+          { name: '🌤️ Condition', value: data.description, inline: true },
+        )
+        .setThumbnail(data.iconUrl)
         .setTimestamp();
-
-      await message.reply({ embeds: [errorEmbed] });
-      return;
+      await thinking.edit({ content: null, embeds: [embed] });
+    } catch (err: any) {
+      await thinking.edit(`${EMOJIS.error} ${err.message || 'Failed to fetch weather.'}`);
     }
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.info} 🌤️ Weather: ${location}`)
-      .setColor(COLORS.info)
-      .setDescription('This is a placeholder. Weather information will be implemented with a weather API.')
-      .addFields([
-        { name: 'Location', value: location, inline: true },
-        { name: 'Temperature', value: 'N/A', inline: true },
-        { name: 'Condition', value: 'N/A', inline: true },
-        { name: 'Humidity', value: 'N/A', inline: true },
-        { name: 'Wind', value: 'N/A', inline: true },
-      ])
-      .setTimestamp();
-
-    await message.reply({ embeds: [embed] });
   }
 }
 
-export default WeatherCommand;
+export default WeatherUtilityCommand;

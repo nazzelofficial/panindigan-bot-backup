@@ -1,75 +1,76 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
-import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+import { PanindiganClient } from '../../structures/PanindiganClient';
 import { COLORS, EMOJIS } from '../../utils/Constants';
 
 export class RecipeCommand extends BaseCommand {
   constructor() {
     const options: CommandOptions = {
       name: 'recipe',
-      description: 'Generate a recipe using AI',
+      description: 'Get an AI-generated recipe for any dish',
       category: 'ai',
-      cooldown: 15,
+      cooldown: 8,
       userPermissions: [],
       botPermissions: [],
       guildOnly: false,
       slashCommand: true,
       prefixCommand: true,
-      aliases: ['generaterecipe', 'cook'],
-      examples: ['/recipe pasta', 'p!recipe chicken dinner'],
+      aliases: ['cook', 'dish'],
+      examples: ['/recipe Adobo', 'p!recipe Chocolate lava cake'],
     };
     super(options);
   }
 
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const dish = interaction.options.getString('dish') || '';
-    if (!dish) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide a dish for recipe generation.')
-        .setTimestamp();
-
-      await interaction.reply({ embeds: [errorEmbed] });
-      return;
-    }
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} 🍳 AI Recipe Generator`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Dish', value: dish, inline: false },
-        { name: 'Recipe', value: 'This is a placeholder. AI recipe generation will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed] });
+  public buildSlashCommand(): SlashCommandBuilder {
+    return new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .addStringOption(o => o.setName('dish').setDescription('Dish or food to get recipe for').setRequired(true))
+      .addStringOption(o => o.setName('servings').setDescription('Number of servings').setRequired(false)) as SlashCommandBuilder;
   }
 
-  public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
-    const dish = args.join(' ');
-
-    if (!dish) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide a dish for recipe generation.')
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    const dish = interaction.options.getString('dish', true);
+    const servings = interaction.options.getString('servings') || '4';
+    await interaction.deferReply();
+    try {
+      const client = interaction.client as PanindiganClient;
+      const response = await client.aiHandler.generateTaskResponse(
+        `Recipe for: ${dish} (${servings} servings)`,
+        `You are a professional chef. Provide a complete recipe for the requested dish. Include: 📋 Ingredients (with measurements for ${servings} servings), 👨‍🍳 Step-by-step instructions, ⏱️ Prep and cook time, 💡 Chef's tips and variations, 🌟 Nutritional highlights. Make it clear and easy to follow.`
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} 🍳 Recipe: ${dish}`)
+        .setColor(0xf97316)
+        .setDescription(response.content.slice(0, 4000))
+        .setFooter({ text: `Serves: ${servings} | Provider: ${response.provider}` })
         .setTimestamp();
-
-      await message.reply({ embeds: [errorEmbed] });
-      return;
+      await interaction.editReply({ embeds: [embed] });
+    } catch (err: any) {
+      await interaction.editReply({ content: `${EMOJIS.error} Error: ${err.message || 'AI unavailable.'}` });
     }
+  }
 
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} 🍳 AI Recipe Generator`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Dish', value: dish, inline: false },
-        { name: 'Recipe', value: 'This is a placeholder. AI recipe generation will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await message.reply({ embeds: [embed] });
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
+    const dish = args.join(' ');
+    if (!dish) return void message.reply(`${EMOJIS.error} Please provide a dish name.`);
+    const thinking = await message.reply(`${EMOJIS.ai} Finding recipe...`);
+    try {
+      const client = message.client as PanindiganClient;
+      const response = await client.aiHandler.generateTaskResponse(
+        `Recipe for: ${dish}`,
+        'Provide a complete recipe: ingredients with measurements, step-by-step instructions, prep/cook time, and chef tips.'
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} 🍳 Recipe: ${dish}`)
+        .setColor(0xf97316)
+        .setDescription(response.content.slice(0, 4000))
+        .setFooter({ text: `Provider: ${response.provider}` })
+        .setTimestamp();
+      await thinking.edit({ content: null, embeds: [embed] });
+    } catch (err: any) {
+      await thinking.edit(`${EMOJIS.error} Error: ${err.message || 'AI unavailable.'}`);
+    }
   }
 }
 

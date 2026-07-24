@@ -1,77 +1,80 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
-import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+import { PanindiganClient } from '../../structures/PanindiganClient';
 import { COLORS, EMOJIS } from '../../utils/Constants';
 
 export class SentimentCommand extends BaseCommand {
   constructor() {
     const options: CommandOptions = {
       name: 'sentiment',
-      description: 'Analyze sentiment using AI',
+      description: 'Analyze the sentiment of text using AI',
       category: 'ai',
-      cooldown: 10,
+      cooldown: 5,
       userPermissions: [],
       botPermissions: [],
       guildOnly: false,
       slashCommand: true,
       prefixCommand: true,
-      aliases: ['sentimentanalysis', 'mood'],
-      examples: ['/sentiment I love this bot', 'p!sentiment this is terrible'],
+      aliases: ['emotion', 'mood'],
+      examples: ['/sentiment I love this bot!', 'p!sentiment Today was terrible'],
     };
     super(options);
   }
 
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const text = interaction.options.getString('text') || '';
-    if (!text) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide text to analyze sentiment.')
-        .setTimestamp();
-
-      await interaction.reply({ embeds: [errorEmbed] });
-      return;
-    }
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} 😊 AI Sentiment Analysis`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Text', value: text, inline: false },
-        { name: 'Sentiment', value: 'This is a placeholder. AI sentiment analysis will be implemented with the AIHandler.', inline: true },
-        { name: 'Confidence', value: 'N/A', inline: true },
-      ])
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed] });
+  public buildSlashCommand(): SlashCommandBuilder {
+    return new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .addStringOption(o => o.setName('text').setDescription('Text to analyze').setRequired(true).setMaxLength(2000)) as SlashCommandBuilder;
   }
 
-  public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
-    const text = args.join(' ');
-
-    if (!text) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide text to analyze sentiment.')
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    const text = interaction.options.getString('text', true);
+    await interaction.deferReply();
+    try {
+      const client = interaction.client as PanindiganClient;
+      const response = await client.aiHandler.generateTaskResponse(
+        text,
+        'You are a sentiment analysis expert. Analyze the sentiment of the following text. Provide: 1) Overall sentiment (Positive/Negative/Neutral/Mixed) with a confidence score (0-100%). 2) Emotions detected (e.g., joy, anger, sadness, fear, surprise). 3) Key phrases driving the sentiment. 4) A brief explanation. Format clearly.'
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} 📊 Sentiment Analysis`)
+        .setColor(COLORS.info)
+        .addFields(
+          { name: '📝 Text', value: text.slice(0, 1024), inline: false },
+          { name: '📈 Analysis', value: response.content.slice(0, 3000), inline: false }
+        )
+        .setFooter({ text: `Provider: ${response.provider}` })
         .setTimestamp();
-
-      await message.reply({ embeds: [errorEmbed] });
-      return;
+      await interaction.editReply({ embeds: [embed] });
+    } catch (err: any) {
+      await interaction.editReply({ content: `${EMOJIS.error} Error: ${err.message || 'AI unavailable.'}` });
     }
+  }
 
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} 😊 AI Sentiment Analysis`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Text', value: text, inline: false },
-        { name: 'Sentiment', value: 'This is a placeholder. AI sentiment analysis will be implemented with the AIHandler.', inline: true },
-        { name: 'Confidence', value: 'N/A', inline: true },
-      ])
-      .setTimestamp();
-
-    await message.reply({ embeds: [embed] });
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
+    const text = args.join(' ');
+    if (!text) return void message.reply(`${EMOJIS.error} Please provide text to analyze.`);
+    const thinking = await message.reply(`${EMOJIS.ai} Analyzing sentiment...`);
+    try {
+      const client = message.client as PanindiganClient;
+      const response = await client.aiHandler.generateTaskResponse(
+        text,
+        'Analyze the sentiment: overall sentiment, emotions detected, key phrases, and brief explanation.'
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} 📊 Sentiment Analysis`)
+        .setColor(COLORS.info)
+        .addFields(
+          { name: '📝 Text', value: text.slice(0, 1024), inline: false },
+          { name: '📈 Analysis', value: response.content.slice(0, 3000), inline: false }
+        )
+        .setFooter({ text: `Provider: ${response.provider}` })
+        .setTimestamp();
+      await thinking.edit({ content: null, embeds: [embed] });
+    } catch (err: any) {
+      await thinking.edit(`${EMOJIS.error} Error: ${err.message || 'AI unavailable.'}`);
+    }
   }
 }
 

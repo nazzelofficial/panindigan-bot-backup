@@ -1,81 +1,94 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
-import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+import { PanindiganClient } from '../../structures/PanindiganClient';
 import { COLORS, EMOJIS } from '../../utils/Constants';
 
-export class AITranslateCommand extends BaseCommand {
+export class AiTranslateCommand extends BaseCommand {
   constructor() {
     const options: CommandOptions = {
       name: 'aitranslate',
-      description: 'AI-powered advanced translation',
+      description: 'Advanced AI translation with context and nuance',
       category: 'ai',
-      cooldown: 10,
+      cooldown: 8,
       userPermissions: [],
       botPermissions: [],
       guildOnly: false,
       slashCommand: true,
       prefixCommand: true,
-      aliases: ['advancedtranslate', 'smarttranslate'],
-      examples: ['/aitranslate Hello Spanish', 'p!aitranslate Hola English'],
+      aliases: ['smarttranslate'],
+      examples: ['/aitranslate Kumain ka na ba? | English', 'p!aitranslate Hello friend | Filipino'],
     };
     super(options);
   }
 
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const text = interaction.options.getString('text') || '';
-    const language = interaction.options.getString('language') || 'English';
-
-    if (!text) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide text to translate.')
-        .setTimestamp();
-
-      await interaction.reply({ embeds: [errorEmbed] });
-      return;
-    }
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} 🌐 AI Advanced Translation`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Original', value: text, inline: false },
-        { name: 'Target Language', value: language, inline: true },
-        { name: 'Translation', value: 'This is a placeholder. AI advanced translation will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed] });
+  public buildSlashCommand(): SlashCommandBuilder {
+    return new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .addStringOption(o => o.setName('text').setDescription('Text to translate').setRequired(true).setMaxLength(2000))
+      .addStringOption(o => o.setName('language').setDescription('Target language').setRequired(true))
+      .addStringOption(o => o.setName('style').setDescription('Translation style').setRequired(false)
+        .addChoices(
+          { name: 'Formal', value: 'formal' },
+          { name: 'Casual', value: 'casual' },
+          { name: 'Literal', value: 'literal' },
+          { name: 'Natural (default)', value: 'natural' }
+        )) as SlashCommandBuilder;
   }
 
-  public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
-    const text = args.slice(0, -1).join(' ');
-    const language = args[args.length - 1] || 'English';
-
-    if (!text) {
-      const errorEmbed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Error`)
-        .setColor(COLORS.error)
-        .setDescription('Please provide text to translate.')
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    const text = interaction.options.getString('text', true);
+    const targetLang = interaction.options.getString('language', true);
+    const style = interaction.options.getString('style') || 'natural';
+    await interaction.deferReply();
+    try {
+      const client = interaction.client as PanindiganClient;
+      const response = await client.aiHandler.generateTaskResponse(
+        text,
+        `You are an expert translator. Translate the following text to ${targetLang} in a ${style} style. After the translation, briefly note any cultural nuances, idiomatic expressions, or alternative translations worth knowing.`
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} 🌐 Advanced Translation`)
+        .setColor(COLORS.info)
+        .addFields(
+          { name: '📝 Original', value: text.slice(0, 1024), inline: false },
+          { name: `🌍 ${targetLang} (${style})`, value: response.content.slice(0, 3500), inline: false }
+        )
+        .setFooter({ text: `Provider: ${response.provider}` })
         .setTimestamp();
-
-      await message.reply({ embeds: [errorEmbed] });
-      return;
+      await interaction.editReply({ embeds: [embed] });
+    } catch (err: any) {
+      await interaction.editReply({ content: `${EMOJIS.error} Error: ${err.message || 'AI unavailable.'}` });
     }
+  }
 
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.ai} 🌐 AI Advanced Translation`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'Original', value: text, inline: false },
-        { name: 'Target Language', value: language, inline: true },
-        { name: 'Translation', value: 'This is a placeholder. AI advanced translation will be implemented with the AIHandler.', inline: false },
-      ])
-      .setTimestamp();
-
-    await message.reply({ embeds: [embed] });
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
+    const input = args.join(' ');
+    const parts = input.split('|');
+    const text = parts[0]?.trim();
+    const targetLang = parts[1]?.trim() || 'English';
+    if (!text) return void message.reply(`${EMOJIS.error} Usage: \`p!aitranslate <text> | <language>\``);
+    const thinking = await message.reply(`${EMOJIS.ai} Translating...`);
+    try {
+      const client = message.client as PanindiganClient;
+      const response = await client.aiHandler.generateTaskResponse(
+        text,
+        `You are an expert translator. Translate the text to ${targetLang} naturally, noting any cultural nuances.`
+      );
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.ai} 🌐 Advanced Translation → ${targetLang}`)
+        .setColor(COLORS.info)
+        .addFields(
+          { name: '📝 Original', value: text.slice(0, 1024), inline: false },
+          { name: `🌍 ${targetLang}`, value: response.content.slice(0, 3500), inline: false }
+        )
+        .setFooter({ text: `Provider: ${response.provider}` })
+        .setTimestamp();
+      await thinking.edit({ content: null, embeds: [embed] });
+    } catch (err: any) {
+      await thinking.edit(`${EMOJIS.error} Error: ${err.message || 'AI unavailable.'}`);
+    }
   }
 }
 
-export default AITranslateCommand;
+export default AiTranslateCommand;
