@@ -1,0 +1,280 @@
+{
+  "configVersion": "0.1",
+  "features": {
+    "music": true,
+    "ai": true,
+    "economy": true,
+    "leveling": true,
+    "moderation": true
+  },
+  "bot": {
+    "name": "Panindigan",
+    "description": "All-in-one Discord bot para sa lahat",
+    "prefix": "p!",
+    "defaultLanguage": "fil",
+    "supportServerUrl": "https://discord.gg/panindigan",
+    "inviteUrl": "https://discord.com/oauth2/authorize"
+  },
+  "loader": {
+    "enablePrefixCommands": true,
+    "enableSlashCommands": true,
+    "recursive": true,
+    "extensions": [".ts", ".js"],
+    "rejectDuplicateNames": true,
+    "validateOnStartup": true
+  },
+  "sharding": {
+    "enabled": true,
+    "strategy": "auto",
+    "shardCount": "auto",
+    "maxGuildsPerShard": 2500,
+    "respawn": true,
+    "spawnTimeoutMs": 30000,
+    "logPerShard": true
+  },
+  "presence": {
+    "enabled": true,
+    "perShard": true,
+    "updateIntervalSeconds": 30,
+    "status": "online",
+    "activities": [
+      {
+        "type": "playing",
+        "text": "/help | Shard {shardId} | {guildCount} servers"
+      },
+      {
+        "type": "watching",
+        "text": "over {memberCount} members | Shard {shardId}"
+      },
+      {
+        "type": "playing",
+        "text": "Para sa mga Pilipino | Shard {shardId}"
+      }
+    ]
+  },
+  "databases": {
+    "postgresql": {
+      "urlEnv": "POSTGRES_URL",
+      "poolMin": 2,
+      "poolMax": 20,
+      "connectionTimeoutMs": 30000,
+      "idleTimeoutMs": 600000
+    },
+    "mongodb": {
+      "uriEnv": "MONGODB_URI",
+      "poolSize": 10,
+      "connectTimeoutMs": 30000,
+      "collections": {
+        "aiMemory": "ai_conversations",
+        "tags": "server_tags",
+        "logs": "event_logs",
+        "analytics": "bot_analytics"
+      }
+    },
+    "redis": {
+      "urlEnv": "REDIS_URL",
+      "keyPrefix": "panindigan:",
+      "defaultTtlSeconds": 300,
+      "cooldownTtlSeconds": 86400
+    }
+  },
+  "premium": {
+    "tiers": {
+      "bronze": {
+        "price": 49,
+        "currency": "PHP",
+        "billingCycle": "lifetime",
+        "label": "🥉 Bronze",
+        "description": "Unlock essential premium features"
+      },
+      "silver": {
+        "price": 99,
+        "currency": "PHP",
+        "billingCycle": "lifetime",
+        "label": "⭐ Silver",
+        "description": "Everything in Bronze, plus enhanced AI, music, and utility features"
+      },
+      "gold": {
+        "price": 199,
+        "currency": "PHP",
+        "billingCycle": "lifetime",
+        "label": "💎 Gold",
+        "description": "Everything in Silver, plus advanced tools, automation, and productivity features"
+      },
+      "diamond": {
+        "price": 399,
+        "currency": "PHP",
+        "billingCycle": "lifetime",
+        "label": "👑 Diamond",
+        "description": "Everything in Gold, plus all premium features, VIP benefits, priority support, and early access to new features"
+      }
+    },
+    "trial": {
+      "enabled": true,
+      "durationDays": 7,
+      "tier": "diamond",
+      "oneTimePerUser": true,
+      "requiresAccount": true,
+      "description": "Experience all Diamond features • No credit card required"
+    }
+  },
+  "moderation": {
+    "defaultMuteDuration": "10m",
+    "maxWarningsBeforeAction": 3,
+    "warningActions": {
+      "3": "mute_1h",
+      "5": "kick",
+      "7": "tempban_1d",
+      "10": "ban"
+    },
+    "automodSensitivity": "medium",
+    "antispam": {
+      "threshold": 5,
+      "intervalMs": 5000
+    },
+    "maxPurgeAmount": 1000,
+    "antiNuke": {
+      "enabled": false,
+      "banThreshold": 3,
+      "kickThreshold": 5,
+      "channelDeleteThreshold": 3,
+      "roleDeleteThreshold": 3,
+      "timeWindowSeconds": 10
+    }
+  },
+  "economy": {
+    "currencySymbol": "₱",
+    "currencyName": "Piso",
+    "startingBalance": 500,
+    "rewards": {
+      "daily": { "min": 100, "max": 500 },
+      "weekly": { "min": 1000, "max": 5000 },
+      "work": { "min": 50, "max": 300 }
+    },
+    "cooldowns": {
+      "work": "1h",
+      "crime": "2h"
+    },
+    "crimeSuccessRate": 0.6,
+    "robSuccessRate": 0.4,
+    "bankInterestRate": 0.01,
+    "taxRate": 0.05
+  },
+  "leveling": {
+    "enabled": true,
+    "xpPerMessage": { "min": 15, "max": 25 },
+    "xpCooldownSeconds": 60,
+    "levelUpNotification": true,
+    "stackRoles": true,
+    "voiceXpPerMinute": 5
+  },
+  "music": {
+    "defaultVolume": 80,
+    "queueLimits": {
+      "default": 200,
+      "gold": 1000,
+      "diamond": -1
+    },
+    "maxSongDurationSeconds": 18000,
+    "inactivityTimeoutMs": 300000,
+    "sources": {
+      "youtube": true,
+      "spotify": true,
+      "soundcloud": true,
+      "appleMusic": true,
+      "deezer": true,
+      "tidal": true
+    },
+    "leaveOnEmpty": true,
+    "leaveOnEmptyCooldownMs": 30000
+  },
+  "ai": {
+    "providers": {
+      "primary": "openai",
+      "fallback": [
+        "groq",
+        "gemini",
+        "anthropic"
+      ]
+    },
+    "defaultModel": "gpt-4o",
+    "maxTokens": {
+      "default": 2048,
+      "diamond": 8192
+    },
+    "temperature": 0.8,
+    "imageModel": "dall-e-3",
+    "imageSize": "1024x1024",
+    "streamResponses": true,
+    "conversationMemoryMessages": {
+      "free": 5,
+      "bronze": 20,
+      "silver": 35,
+      "gold": 50,
+      "diamond": -1
+    },
+    "dailyImageLimit": {
+      "free": 0,
+      "bronze": 5,
+      "silver": 15,
+      "gold": 40,
+      "diamond": -1
+    },
+    "memoryStorage": "mongodb",
+    "systemPrompt": "Ako si Panindigan, isang matulungin at masayang Discord bot na nagsasalita ng Filipino at English."
+  },
+  "cooldowns": {
+    "defaultSeconds": 3,
+    "byCategorySeconds": {
+      "music": 2,
+      "economy": 5,
+      "ai": 10,
+      "games": 5,
+      "moderation": 3,
+      "owner": 0
+    },
+    "premiumMultipliers": {
+      "bronze": 0.7,
+      "silver": 0.6,
+      "gold": 0.5,
+      "diamond": 0
+    }
+  },
+  "logging": {
+    "level": "info",
+    "format": "json",
+    "rotation": {
+      "enabled": true,
+      "maxFiles": "14d",
+      "maxSize": "20m"
+    },
+    "auditOwnerCommands": true,
+    "mongodb": {
+      "enabled": true,
+      "collection": "event_logs"
+    }
+  },
+  "rateLimits": {
+    "commandsPerMinute": {
+      "default": 30,
+      "bronze": 40,
+      "silver": 60,
+      "gold": 80,
+      "diamond": 100
+    },
+    "aiRequestsPerHour": {
+      "default": 5,
+      "diamond": -1
+    },
+    "musicSearchesPerMinute": 10
+  },
+  "runtime": {
+    "maintenance": {
+      "enabled": false,
+      "message": "Si Panindigan ay kasalukuyang nasa maintenance. Sandali lang po...",
+      "allowOwner": true
+    },
+    "debug": false,
+    "betaFeatures": false
+  }
+}

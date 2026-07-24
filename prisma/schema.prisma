@@ -1,0 +1,279 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_URL")
+}
+
+model Guild {
+  id                String   @id @default(cuid())
+  guildId           String   @unique
+  prefix            String   @default("p!")
+  language          String   @default("fil")
+  welcomeChannelId  String?
+  welcomeMessage    String?
+  goodbyeChannelId  String?
+  goodbyeMessage    String?
+  logChannelId      String?
+  autoRoleId        String?
+  botRoleId         String?
+  musicChannelId    String?
+  djRoleId          String?
+  levelRoleId       String?
+  countingChannelId String?
+  starboardChannelId String?
+  starboardEmoji    String   @default("⭐")
+  starboardThreshold Int     @default(3)
+  aiProvider        String   @default("openai")
+  aiModel           String   @default("gpt-4o")
+  aiSystemPrompt    String?
+  premiumTier       String?  @default("free")
+  premiumExpiresAt  DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  users             User[]
+  economy           Economy?
+  leveling          Leveling?
+  music             Music?
+  moderation        Moderation?
+  premium           Premium?
+  giveaways         Giveaway[]
+  applications      Application[]
+
+  @@map("guilds")
+}
+
+model User {
+  id                String   @id @default(cuid())
+  userId            String
+  guildId           String
+  guild             Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  
+  walletBalance     BigInt   @default(500)
+  bankBalance       BigInt   @default(0)
+  xp                Int      @default(0)
+  level             Int      @default(0)
+  dailyStreak       Int      @default(0)
+  lastDaily         DateTime?
+  lastWeekly        DateTime?
+  lastWork          DateTime?
+  lastCrime         DateTime?
+  lastRob           DateTime?
+  lastBeg           DateTime?
+  lastFish          DateTime?
+  lastHunt          DateTime?
+  lastMine          DateTime?
+  lastFarm          DateTime?
+  
+  warnings          Int      @default(0)
+  isMuted           Boolean  @default(false)
+  muteExpiresAt     DateTime?
+  
+  premiumTier       String?  @default("free")
+  premiumExpiresAt  DateTime?
+  trialUsed         Boolean  @default(false)
+  
+  birthday          DateTime?
+  bio               String?
+  customStatus      String?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  economy           Economy?
+  leveling          Leveling?
+  music             Music?
+  moderation        Moderation?
+  premium           Premium?
+  giveawayEntries   GiveawayEntry[]
+  applications      Application[]
+
+  @@unique([userId, guildId])
+  @@index([userId])
+  @@index([guildId])
+  @@map("users")
+}
+
+model Economy {
+  id                String   @id @default(cuid())
+  guildId           String   @unique
+  guild             Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  inventory         Json     @default("[]")
+  job               String?
+  jobLevel          Int      @default(1)
+  jobExperience     Int      @default(0)
+  
+  loanAmount        BigInt   @default(0)
+  loanDueDate       DateTime?
+  
+  properties        Json     @default("[]")
+  investments       Json     @default("[]")
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("economy")
+}
+
+model Leveling {
+  id                String   @id @default(cuid())
+  guildId           String   @unique
+  guild             Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  xp                Int      @default(0)
+  level             Int      @default(0)
+  totalMessages     Int      @default(0)
+  voiceMinutes      Int      @default(0)
+  
+  rankCardColor     String   @default("#5865F2")
+  rankCardBg        String?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("leveling")
+}
+
+model Music {
+  id                String   @id @default(cuid())
+  guildId           String   @unique
+  guild             Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  playlists         Json     @default("[]")
+  musicHistory      Json     @default("[]")
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("music")
+}
+
+model Moderation {
+  id                String   @id @default(cuid())
+  guildId           String   @unique
+  guild             Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  warnings          Json     @default("[]")
+  cases             Json     @default("[]")
+  notes             Json     @default("[]")
+  
+  isBlacklisted     Boolean  @default(false)
+  blacklistReason   String?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("moderation")
+}
+
+model Premium {
+  id                String   @id @default(cuid())
+  guildId           String   @unique
+  guild             Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  tier              String   @default("free")
+  key               String?  @unique
+  activatedAt       DateTime?
+  expiresAt         DateTime?
+  isPermanent       Boolean  @default(false)
+  
+  aiImageCount      Int      @default(0)
+  aiImageResetDate  DateTime?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("premium")
+}
+
+model Giveaway {
+  id                String   @id @default(cuid())
+  guildId           String
+  guild             Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  
+  channelId         String
+  messageId         String?
+  prize             String
+  winnerCount       Int      @default(1)
+  endsAt            DateTime
+  endedAt           DateTime?
+  winners           Json     @default("[]")
+  
+  requiredRoleId    String?
+  requiredLevel     Int?
+  bonusRoles        Json     @default("[]")
+  blacklistRoles    Json     @default("[]")
+  
+  isPaused          Boolean  @default(false)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  entries           GiveawayEntry[]
+
+  @@map("giveaways")
+}
+
+model GiveawayEntry {
+  id                String   @id @default(cuid())
+  giveawayId        String
+  giveaway          Giveaway @relation(fields: [giveawayId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guildId           String
+  
+  entryCount        Int      @default(1)
+  enteredAt         DateTime @default(now())
+
+  @@unique([giveawayId, userId])
+  @@map("giveaway_entries")
+}
+
+model Application {
+  id                String   @id @default(cuid())
+  guildId           String
+  guild             Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  formId            String
+  formName          String
+  responses         Json
+  status            String   @default("pending")
+  reviewedBy        String?
+  reviewedAt        DateTime?
+  reviewNotes       String?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("applications")
+}
+
+model PremiumKey {
+  id                String   @id @default(cuid())
+  key               String   @unique
+  tier              String
+  createdBy         String
+  activatedBy       String?
+  activatedAt       DateTime?
+  isPermanent       Boolean  @default(true)
+  
+  createdAt         DateTime @default(now())
+
+  @@map("premium_keys")
+}

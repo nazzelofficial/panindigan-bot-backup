@@ -1,0 +1,565 @@
+{
+  "commands": {
+    "help": {
+      "name": "help",
+      "description": "Display help information",
+      "category": "help",
+      "examples": ["/help", "/help moderation", "p!help"]
+    },
+    "ping": {
+      "name": "ping",
+      "description": "Check the bot's latency",
+      "category": "info",
+      "examples": ["/ping", "p!ping"]
+    },
+    "avatar": {
+      "name": "avatar",
+      "description": "Display a user's avatar",
+      "category": "info",
+      "examples": ["/avatar", "/avatar @user", "p!avatar @user"]
+    },
+    "userinfo": {
+      "name": "userinfo",
+      "description": "Display information about a user",
+      "category": "info",
+      "examples": ["/userinfo", "/userinfo @user", "p!userinfo @user"]
+    },
+    "serverinfo": {
+      "name": "serverinfo",
+      "description": "Display information about the server",
+      "category": "info",
+      "examples": ["/serverinfo", "p!serverinfo"]
+    },
+    "roleinfo": {
+      "name": "roleinfo",
+      "description": "Display information about a role",
+      "category": "info",
+      "examples": ["/roleinfo @role", "p!roleinfo @role"]
+    },
+    "channelinfo": {
+      "name": "channelinfo",
+      "description": "Display information about a channel",
+      "category": "info",
+      "examples": ["/channelinfo", "/channelinfo #general", "p!channelinfo #general"]
+    },
+    "emojiinfo": {
+      "name": "emojiinfo",
+      "description": "Display information about an emoji",
+      "category": "info",
+      "examples": ["/emojiinfo :emoji:", "p!emojiinfo :emoji:"]
+    },
+    "inviteinfo": {
+      "name": "inviteinfo",
+      "description": "Display information about an invite",
+      "category": "info",
+      "examples": ["/inviteinfo https://discord.gg/code", "p!inviteinfo https://discord.gg/code"]
+    },
+    "stats": {
+      "name": "stats",
+      "description": "Display bot statistics",
+      "category": "info",
+      "examples": ["/stats", "p!stats"]
+    },
+    "botinfo": {
+      "name": "botinfo",
+      "description": "Display information about the bot",
+      "category": "info",
+      "examples": ["/botinfo", "p!botinfo"]
+    },
+    "banner": {
+      "name": "banner",
+      "description": "Display a user's banner",
+      "category": "info",
+      "examples": ["/banner", "/banner @user", "p!banner @user"]
+    },
+    "uptime": {
+      "name": "uptime",
+      "description": "Display the bot's uptime",
+      "category": "info",
+      "examples": ["/uptime", "p!uptime"]
+    },
+    "permissions": {
+      "name": "permissions",
+      "description": "Display permissions for a user or role",
+      "category": "info",
+      "examples": ["/permissions", "/permissions @user", "p!permissions @role"]
+    },
+    "icon": {
+      "name": "icon",
+      "description": "Display the server icon",
+      "category": "info",
+      "examples": ["/icon", "p!icon"]
+    },
+    "id": {
+      "name": "id",
+      "description": "Display the ID of a user, channel, or role",
+      "category": "info",
+      "examples": ["/id", "/id @user", "p!id @user"]
+    },
+    "roles": {
+      "name": "roles",
+      "description": "List all roles in the server",
+      "category": "info",
+      "examples": ["/roles", "p!roles"]
+    },
+    "channels": {
+      "name": "channels",
+      "description": "List all channels in the server",
+      "category": "info",
+      "examples": ["/channels", "p!channels"]
+    },
+    "members": {
+      "name": "members",
+      "description": "Display member statistics for the server",
+      "category": "info",
+      "examples": ["/members", "p!members"]
+    },
+    "bans": {
+      "name": "bans",
+      "description": "List banned users in the server",
+      "category": "info",
+      "examples": ["/bans", "p!bans"]
+    },
+    "emojis": {
+      "name": "emojis",
+      "description": "List all emojis in the server",
+      "category": "info",
+      "examples": ["/emojis", "p!emojis"]
+    },
+    "boostinfo": {
+      "name": "boostinfo",
+      "description": "Display server boost information",
+      "category": "info",
+      "examples": ["/boostinfo", "p!boostinfo"]
+    },
+    "region": {
+      "name": "region",
+      "description": "Display the server region",
+      "category": "info",
+      "examples": ["/region", "p!region"]
+    },
+    "weather": {
+      "name": "weather",
+      "description": "Get weather information for a location",
+      "category": "info",
+      "examples": ["/weather Manila", "/weather Tokyo", "p!weather New York"]
+    },
+    "snipe": {
+      "name": "snipe",
+      "description": "Show the last deleted message in the channel",
+      "category": "info",
+      "examples": ["/snipe", "p!snipe"]
+    },
+    "editsnipe": {
+      "name": "editsnipe",
+      "description": "Show the last edited message in the channel",
+      "category": "info",
+      "examples": ["/editsnipe", "p!editsnipe"]
+    },
+    "level": {
+      "name": "level",
+      "description": "Display your level or another user's level",
+      "category": "info",
+      "examples": ["/level", "/level @user", "p!level"]
+    },
+    "leaderboard": {
+      "name": "leaderboard",
+      "description": "Display the server leaderboard",
+      "category": "info",
+      "examples": ["/leaderboard", "p!leaderboard"]
+    },
+    "profile": {
+      "name": "profile",
+      "description": "Display a user's profile",
+      "category": "info",
+      "examples": ["/profile", "/profile @user", "p!profile"]
+    },
+    "rep": {
+      "name": "rep",
+      "description": "Give reputation to a user",
+      "category": "info",
+      "examples": ["/rep @user", "p!rep @user"]
+    },
+    "marry": {
+      "name": "marry",
+      "description": "Propose marriage to a user",
+      "category": "info",
+      "examples": ["/marry @user", "p!marry @user"]
+    },
+    "divorce": {
+      "name": "divorce",
+      "description": "Divorce your current spouse",
+      "category": "info",
+      "examples": ["/divorce", "p!divorce"]
+    },
+    "birthday": {
+      "name": "birthday",
+      "description": "Set or view your birthday",
+      "category": "info",
+      "examples": ["/birthday 1990-01-15", "/birthday view", "p!birthday 1990-01-15"]
+    },
+    "poll": {
+      "name": "poll",
+      "description": "Create a poll with reactions",
+      "category": "info",
+      "examples": ["/poll What should we eat today?", "p!poll Best game?"]
+    },
+    "remind": {
+      "name": "remind",
+      "description": "Set a reminder for yourself",
+      "category": "info",
+      "examples": ["/remind 30m Take a break", "p!remind 1h Meeting"]
+    },
+    "calc": {
+      "name": "calc",
+      "description": "Perform a mathematical calculation",
+      "category": "info",
+      "examples": ["/calc 2+2", "/calc 10*5", "p!calc (5+3)*2"]
+    },
+    "translate": {
+      "name": "translate",
+      "description": "Translate text to another language",
+      "category": "info",
+      "examples": ["/translate Hello es", "/translate Bonjour en", "p!translate Hola en"]
+    },
+    "urban": {
+      "name": "urban",
+      "description": "Search Urban Dictionary for a term",
+      "category": "info",
+      "examples": ["/urban yeet", "/urban sus", "p!urban based"]
+    },
+    "wikipedia": {
+      "name": "wikipedia",
+      "description": "Search Wikipedia for information",
+      "category": "info",
+      "examples": ["/wikipedia Philippines", "/wiki JavaScript", "p!wikipedia Discord"]
+    },
+    "timestamp": {
+      "name": "timestamp",
+      "description": "Generate a Discord timestamp",
+      "category": "info",
+      "examples": ["/timestamp", "/timestamp 2024-01-01", "p!timestamp 2024-12-25"]
+    },
+    "vote": {
+      "name": "vote",
+      "description": "Get links to vote for the bot",
+      "category": "info",
+      "examples": ["/vote", "p!vote"]
+    },
+    "support": {
+      "name": "support",
+      "description": "Get a link to the support server",
+      "category": "info",
+      "examples": ["/support", "p!support"]
+    },
+    "invite": {
+      "name": "invite",
+      "description": "Get the bot's invite link",
+      "category": "info",
+      "examples": ["/invite", "p!invite"]
+    },
+    "donate": {
+      "name": "donate",
+      "description": "Get donation information",
+      "category": "info",
+      "examples": ["/donate", "p!donate"]
+    },
+    "github": {
+      "name": "github",
+      "description": "Get information about a GitHub user or repository",
+      "category": "info",
+      "examples": ["/github username", "/github username/repo", "p!github username"]
+    },
+    "shard": {
+      "name": "shard",
+      "description": "Display shard information",
+      "category": "info",
+      "examples": ["/shard", "p!shard"]
+    },
+    "rolecolor": {
+      "name": "rolecolor",
+      "description": "Display the color of a role",
+      "category": "info",
+      "examples": ["/rolecolor @role", "p!rolecolor @role"]
+    },
+    "nitro": {
+      "name": "nitro",
+      "description": "Display information about Discord Nitro",
+      "category": "info",
+      "examples": ["/nitro", "p!nitro"]
+    },
+    "time": {
+      "name": "time",
+      "description": "Display the current time in a timezone",
+      "category": "info",
+      "examples": ["/time", "/time Asia/Manila", "p!time America/New_York"]
+    },
+    "snowflake": {
+      "name": "snowflake",
+      "description": "Decode a Discord snowflake ID",
+      "category": "info",
+      "examples": ["/snowflake 123456789012345678", "p!snowflake 123456789012345678"]
+    },
+    "news": {
+      "name": "news",
+      "description": "Get the latest news",
+      "category": "info",
+      "examples": ["/news", "/news tech", "p!news"]
+    },
+    "crypto": {
+      "name": "crypto",
+      "description": "Get cryptocurrency price information",
+      "category": "info",
+      "examples": ["/crypto BTC", "/crypto ETH", "p!crypto DOGE"]
+    },
+    "stock": {
+      "name": "stock",
+      "description": "Get stock price information",
+      "category": "info",
+      "examples": ["/stock AAPL", "/stock TSLA", "p!stock GOOGL"]
+    },
+    "country": {
+      "name": "country",
+      "description": "Get information about a country",
+      "category": "info",
+      "examples": ["/country Philippines", "/country Japan", "p!country USA"]
+    },
+    "servericon": {
+      "name": "servericon",
+      "description": "Display the server's icon",
+      "category": "info",
+      "examples": ["/servericon", "p!servericon"]
+    },
+    "audit": {
+      "name": "audit",
+      "description": "Display recent audit log entries",
+      "category": "info",
+      "examples": ["/audit", "p!audit"]
+    },
+    "inviteleaderboard": {
+      "name": "inviteleaderboard",
+      "description": "Display the server invite leaderboard",
+      "category": "info",
+      "examples": ["/inviteleaderboard", "p!inviteleaderboard"]
+    },
+    "messagestats": {
+      "name": "messagestats",
+      "description": "Display server message statistics",
+      "category": "info",
+      "examples": ["/messagestats", "p!messagestats"]
+    },
+    "boosthistory": {
+      "name": "boosthistory",
+      "description": "Display server boost history",
+      "category": "info",
+      "examples": ["/boosthistory", "p!boosthistory"]
+    },
+    "activitylog": {
+      "name": "activitylog",
+      "description": "Display recent server activity",
+      "category": "info",
+      "examples": ["/activitylog", "p!activitylog"]
+    },
+    "growthstats": {
+      "name": "growthstats",
+      "description": "Display server growth statistics",
+      "category": "info",
+      "examples": ["/growthstats", "p!growthstats"]
+    },
+    "afk": {
+      "name": "afk",
+      "description": "Set yourself as AFK (Away From Keyboard)",
+      "category": "utility",
+      "examples": ["/afk", "/afk eating lunch", "p!afk working"]
+    },
+    "clear": {
+      "name": "clear",
+      "description": "Delete a specified number of messages",
+      "category": "utility",
+      "examples": ["/clear 10", "p!clear 50"]
+    },
+    "lock": {
+      "name": "lock",
+      "description": "Lock the current channel",
+      "category": "utility",
+      "examples": ["/lock", "p!lock"]
+    },
+    "unlock": {
+      "name": "unlock",
+      "description": "Unlock the current channel",
+      "category": "utility",
+      "examples": ["/unlock", "p!unlock"]
+    },
+    "slowmode": {
+      "name": "slowmode",
+      "description": "Set slowmode for the current channel",
+      "category": "utility",
+      "examples": ["/slowmode 5", "/slowmode off", "p!slowmode 10"]
+    },
+    "nick": {
+      "name": "nick",
+      "description": "Change a user's nickname",
+      "category": "utility",
+      "examples": ["/nick @user NewNick", "/nick @user reset", "p!nick @user NewNick"]
+    },
+    "announce": {
+      "name": "announce",
+      "description": "Make an announcement in the current channel",
+      "category": "utility",
+      "examples": ["/announce Hello everyone!", "p!announce Important update"]
+    },
+    "embed": {
+      "name": "embed",
+      "description": "Create a custom embed message",
+      "category": "utility",
+      "examples": ["/embed title description", "p!embed Hello World This is a test"]
+    },
+    "say": {
+      "name": "say",
+      "description": "Make the bot say something",
+      "category": "utility",
+      "examples": ["/say Hello everyone!", "p!say Important announcement"]
+    },
+    "quote": {
+      "name": "quote",
+      "description": "Quote a message",
+      "category": "utility",
+      "examples": ["/quote messageid", "p!quote messageid"]
+    },
+    "steal": {
+      "name": "steal",
+      "description": "Steal an emoji from another server",
+      "category": "utility",
+      "examples": ["/steal :emoji:", "p!steal :emoji:"]
+    },
+    "create-role": {
+      "name": "create-role",
+      "description": "Create a new role",
+      "category": "utility",
+      "examples": ["/create-role VIP", "/create-role Moderator #FF0000", "p!create-role VIP"]
+    },
+    "delete-role": {
+      "name": "delete-role",
+      "description": "Delete a role",
+      "category": "utility",
+      "examples": ["/delete-role @role", "p!delete-role @role"]
+    },
+    "create-channel": {
+      "name": "create-channel",
+      "description": "Create a new channel",
+      "category": "utility",
+      "examples": ["/create-channel general text", "/create-channel voice voice", "p!create-channel general text"]
+    },
+    "delete-channel": {
+      "name": "delete-channel",
+      "description": "Delete a channel",
+      "category": "utility",
+      "examples": ["/delete-channel #channel", "p!delete-channel #channel"]
+    },
+    "role-add": {
+      "name": "role-add",
+      "description": "Add a role to a user",
+      "category": "utility",
+      "examples": ["/role-add @user @role", "p!role-add @user @role"]
+    },
+    "role-remove": {
+      "name": "role-remove",
+      "description": "Remove a role from a user",
+      "category": "utility",
+      "examples": ["/role-remove @user @role", "p!role-remove @user @role"]
+    },
+    "mute": {
+      "name": "mute",
+      "description": "Mute a user in the server",
+      "category": "utility",
+      "examples": ["/mute @user", "/mute @user 1h", "p!mute @user"]
+    },
+    "unmute": {
+      "name": "unmute",
+      "description": "Unmute a user in the server",
+      "category": "utility",
+      "examples": ["/unmute @user", "p!unmute @user"]
+    },
+    "deafen": {
+      "name": "deafen",
+      "description": "Deafen a user in voice channels",
+      "category": "utility",
+      "examples": ["/deafen @user", "p!deafen @user"]
+    },
+    "undeafen": {
+      "name": "undeafen",
+      "description": "Undeafen a user in voice channels",
+      "category": "utility",
+      "examples": ["/undeafen @user", "p!undeafen @user"]
+    },
+    "kick": {
+      "name": "kick",
+      "description": "Kick a user from the server",
+      "category": "utility",
+      "examples": ["/kick @user", "/kick @user Breaking rules", "p!kick @user"]
+    },
+    "ban": {
+      "name": "ban",
+      "description": "Ban a user from the server",
+      "category": "utility",
+      "examples": ["/ban @user", "/ban @user Breaking rules", "p!ban @user"]
+    },
+    "unban": {
+      "name": "unban",
+      "description": "Unban a user from the server",
+      "category": "utility",
+      "examples": ["/unban userid", "p!unban userid"]
+    },
+    "move": {
+      "name": "move",
+      "description": "Move a user to another voice channel",
+      "category": "utility",
+      "examples": ["/move @user #channel", "p!move @user #channel"]
+    },
+    "prune": {
+      "name": "prune",
+      "description": "Remove inactive members from the server",
+      "category": "utility",
+      "examples": ["/prune 30", "/prune 30days", "p!prune 30"]
+    }
+  },
+  "errors": {
+    "missing_permissions": "You don't have permission to use this command.",
+    "bot_missing_permissions": "I don't have the required permissions to execute this command.",
+    "invalid_user": "Invalid user provided.",
+    "invalid_role": "Invalid role provided.",
+    "invalid_channel": "Invalid channel provided.",
+    "invalid_number": "Please provide a valid number.",
+    "invalid_time": "Invalid time format. Use format like 30m, 1h, 2d.",
+    "cooldown": "Please wait {time} before using this command again.",
+    "unknown_error": "An unknown error occurred."
+  },
+  "success": {
+    "command_executed": "Command executed successfully.",
+    "role_added": "Role added successfully.",
+    "role_removed": "Role removed successfully.",
+    "channel_locked": "Channel locked successfully.",
+    "channel_unlocked": "Channel unlocked successfully.",
+    "messages_cleared": "Messages cleared successfully."
+  },
+  "categories": {
+    "help": "Help",
+    "moderation": "Moderation",
+    "admin": "Admin/Setup",
+    "music": "Music",
+    "economy": "Economy",
+    "games": "Games",
+    "fun": "Fun",
+    "ai": "AI",
+    "info": "Info",
+    "utility": "Utility",
+    "social": "Social",
+    "leveling": "Leveling",
+    "giveaway": "Giveaway",
+    "image": "Image",
+    "starboard": "Starboard",
+    "applications": "Applications",
+    "premium": "Premium",
+    "owner": "Owner"
+  }
+}

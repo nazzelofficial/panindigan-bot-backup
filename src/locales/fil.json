@@ -1,0 +1,565 @@
+{
+  "commands": {
+    "help": {
+      "name": "help",
+      "description": "Ipakita ang impormasyon ng tulong",
+      "category": "help",
+      "examples": ["/help", "/help moderation", "p!help"]
+    },
+    "ping": {
+      "name": "ping",
+      "description": "Suriin ang latency ng bot",
+      "category": "info",
+      "examples": ["/ping", "p!ping"]
+    },
+    "avatar": {
+      "name": "avatar",
+      "description": "Ipakita ang avatar ng isang user",
+      "category": "info",
+      "examples": ["/avatar", "/avatar @user", "p!avatar @user"]
+    },
+    "userinfo": {
+      "name": "userinfo",
+      "description": "Ipakita ang impormasyon tungkol sa isang user",
+      "category": "info",
+      "examples": ["/userinfo", "/userinfo @user", "p!userinfo @user"]
+    },
+    "serverinfo": {
+      "name": "serverinfo",
+      "description": "Ipakita ang impormasyon tungkol sa server",
+      "category": "info",
+      "examples": ["/serverinfo", "p!serverinfo"]
+    },
+    "roleinfo": {
+      "name": "roleinfo",
+      "description": "Ipakita ang impormasyon tungkol sa isang role",
+      "category": "info",
+      "examples": ["/roleinfo @role", "p!roleinfo @role"]
+    },
+    "channelinfo": {
+      "name": "channelinfo",
+      "description": "Ipakita ang impormasyon tungkol sa isang channel",
+      "category": "info",
+      "examples": ["/channelinfo", "/channelinfo #general", "p!channelinfo #general"]
+    },
+    "emojiinfo": {
+      "name": "emojiinfo",
+      "description": "Ipakita ang impormasyon tungkol sa isang emoji",
+      "category": "info",
+      "examples": ["/emojiinfo :emoji:", "p!emojiinfo :emoji:"]
+    },
+    "inviteinfo": {
+      "name": "inviteinfo",
+      "description": "Ipakita ang impormasyon tungkol sa isang invite",
+      "category": "info",
+      "examples": ["/inviteinfo https://discord.gg/code", "p!inviteinfo https://discord.gg/code"]
+    },
+    "stats": {
+      "name": "stats",
+      "description": "Ipakita ang estadistika ng bot",
+      "category": "info",
+      "examples": ["/stats", "p!stats"]
+    },
+    "botinfo": {
+      "name": "botinfo",
+      "description": "Ipakita ang impormasyon tungkol sa bot",
+      "category": "info",
+      "examples": ["/botinfo", "p!botinfo"]
+    },
+    "banner": {
+      "name": "banner",
+      "description": "Ipakita ang banner ng isang user",
+      "category": "info",
+      "examples": ["/banner", "/banner @user", "p!banner @user"]
+    },
+    "uptime": {
+      "name": "uptime",
+      "description": "Ipakita ang uptime ng bot",
+      "category": "info",
+      "examples": ["/uptime", "p!uptime"]
+    },
+    "permissions": {
+      "name": "permissions",
+      "description": "Ipakita ang permissions ng isang user o role",
+      "category": "info",
+      "examples": ["/permissions", "/permissions @user", "p!permissions @role"]
+    },
+    "icon": {
+      "name": "icon",
+      "description": "Ipakita ang icon ng server",
+      "category": "info",
+      "examples": ["/icon", "p!icon"]
+    },
+    "id": {
+      "name": "id",
+      "description": "Ipakita ang ID ng isang user, channel, o role",
+      "category": "info",
+      "examples": ["/id", "/id @user", "p!id @user"]
+    },
+    "roles": {
+      "name": "roles",
+      "description": "Ilista ang lahat ng roles sa server",
+      "category": "info",
+      "examples": ["/roles", "p!roles"]
+    },
+    "channels": {
+      "name": "channels",
+      "description": "Ilista ang lahat ng channels sa server",
+      "category": "info",
+      "examples": ["/channels", "p!channels"]
+    },
+    "members": {
+      "name": "members",
+      "description": "Ipakita ang estadistika ng mga miyembro ng server",
+      "category": "info",
+      "examples": ["/members", "p!members"]
+    },
+    "bans": {
+      "name": "bans",
+      "description": "Ilista ang mga na-ban na users sa server",
+      "category": "info",
+      "examples": ["/bans", "p!bans"]
+    },
+    "emojis": {
+      "name": "emojis",
+      "description": "Ilista ang lahat ng emojis sa server",
+      "category": "info",
+      "examples": ["/emojis", "p!emojis"]
+    },
+    "boostinfo": {
+      "name": "boostinfo",
+      "description": "Ipakita ang impormasyon ng server boost",
+      "category": "info",
+      "examples": ["/boostinfo", "p!boostinfo"]
+    },
+    "region": {
+      "name": "region",
+      "description": "Ipakita ang rehiyon ng server",
+      "category": "info",
+      "examples": ["/region", "p!region"]
+    },
+    "weather": {
+      "name": "weather",
+      "description": "Kunin ang impormasyon ng panahon para sa isang lokasyon",
+      "category": "info",
+      "examples": ["/weather Manila", "/weather Tokyo", "p!weather New York"]
+    },
+    "snipe": {
+      "name": "snipe",
+      "description": "Ipakita ang huling tinanggal na mensahe sa channel",
+      "category": "info",
+      "examples": ["/snipe", "p!snipe"]
+    },
+    "editsnipe": {
+      "name": "editsnipe",
+      "description": "Ipakita ang huling na-edit na mensahe sa channel",
+      "category": "info",
+      "examples": ["/editsnipe", "p!editsnipe"]
+    },
+    "level": {
+      "name": "level",
+      "description": "Ipakita ang iyong level o level ng ibang user",
+      "category": "info",
+      "examples": ["/level", "/level @user", "p!level"]
+    },
+    "leaderboard": {
+      "name": "leaderboard",
+      "description": "Ipakita ang leaderboard ng server",
+      "category": "info",
+      "examples": ["/leaderboard", "p!leaderboard"]
+    },
+    "profile": {
+      "name": "profile",
+      "description": "Ipakita ang profile ng isang user",
+      "category": "info",
+      "examples": ["/profile", "/profile @user", "p!profile"]
+    },
+    "rep": {
+      "name": "rep",
+      "description": "Bigyan ng reputation ang isang user",
+      "category": "info",
+      "examples": ["/rep @user", "p!rep @user"]
+    },
+    "marry": {
+      "name": "marry",
+      "description": "Magpakasal sa isang user",
+      "category": "info",
+      "examples": ["/marry @user", "p!marry @user"]
+    },
+    "divorce": {
+      "name": "divorce",
+      "description": "Hiwalay sa iyong asawa",
+      "category": "info",
+      "examples": ["/divorce", "p!divorce"]
+    },
+    "birthday": {
+      "name": "birthday",
+      "description": "Itakda o tingnan ang iyong birthday",
+      "category": "info",
+      "examples": ["/birthday 1990-01-15", "/birthday view", "p!birthday 1990-01-15"]
+    },
+    "poll": {
+      "name": "poll",
+      "description": "Gumawa ng poll na may reactions",
+      "category": "info",
+      "examples": ["/poll Ano ang dapat nating kainin?", "p!poll Anong game?"]
+    },
+    "remind": {
+      "name": "remind",
+      "description": "Magtakda ng reminder para sa iyong sarili",
+      "category": "info",
+      "examples": ["/remind 30m Magpahinga ka muna", "p!remind 1h Meeting"]
+    },
+    "calc": {
+      "name": "calc",
+      "description": "Gumawa ng kalkulasyon sa matematika",
+      "category": "info",
+      "examples": ["/calc 2+2", "/calc 10*5", "p!calc (5+3)*2"]
+    },
+    "translate": {
+      "name": "translate",
+      "description": "Isalin ang teksto sa ibang wika",
+      "category": "info",
+      "examples": ["/translate Hello es", "/translate Bonjour en", "p!translate Hola en"]
+    },
+    "urban": {
+      "name": "urban",
+      "description": "Maghanap sa Urban Dictionary para sa isang termino",
+      "category": "info",
+      "examples": ["/urban yeet", "/urban sus", "p!urban based"]
+    },
+    "wikipedia": {
+      "name": "wikipedia",
+      "description": "Maghanap sa Wikipedia para sa impormasyon",
+      "category": "info",
+      "examples": ["/wikipedia Philippines", "/wiki JavaScript", "p!wikipedia Discord"]
+    },
+    "timestamp": {
+      "name": "timestamp",
+      "description": "Gumawa ng Discord timestamp",
+      "category": "info",
+      "examples": ["/timestamp", "/timestamp 2024-01-01", "p!timestamp 2024-12-25"]
+    },
+    "vote": {
+      "name": "vote",
+      "description": "Kunin ang mga link para bumoto para sa bot",
+      "category": "info",
+      "examples": ["/vote", "p!vote"]
+    },
+    "support": {
+      "name": "support",
+      "description": "Kunin ang link sa support server",
+      "category": "info",
+      "examples": ["/support", "p!support"]
+    },
+    "invite": {
+      "name": "invite",
+      "description": "Kunin ang invite link ng bot",
+      "category": "info",
+      "examples": ["/invite", "p!invite"]
+    },
+    "donate": {
+      "name": "donate",
+      "description": "Kunin ang impormasyon ng donasyon",
+      "category": "info",
+      "examples": ["/donate", "p!donate"]
+    },
+    "github": {
+      "name": "github",
+      "description": "Kunin ang impormasyon tungkol sa GitHub user o repository",
+      "category": "info",
+      "examples": ["/github username", "/github username/repo", "p!github username"]
+    },
+    "shard": {
+      "name": "shard",
+      "description": "Ipakita ang impormasyon ng shard",
+      "category": "info",
+      "examples": ["/shard", "p!shard"]
+    },
+    "rolecolor": {
+      "name": "rolecolor",
+      "description": "Ipakita ang kulay ng isang role",
+      "category": "info",
+      "examples": ["/rolecolor @role", "p!rolecolor @role"]
+    },
+    "nitro": {
+      "name": "nitro",
+      "description": "Ipakita ang impormasyon tungkol sa Discord Nitro",
+      "category": "info",
+      "examples": ["/nitro", "p!nitro"]
+    },
+    "time": {
+      "name": "time",
+      "description": "Ipakita ang kasalukuyang oras sa isang timezone",
+      "category": "info",
+      "examples": ["/time", "/time Asia/Manila", "p!time America/New_York"]
+    },
+    "snowflake": {
+      "name": "snowflake",
+      "description": "I-decode ang Discord snowflake ID",
+      "category": "info",
+      "examples": ["/snowflake 123456789012345678", "p!snowflake 123456789012345678"]
+    },
+    "news": {
+      "name": "news",
+      "description": "Kunin ang pinakabagong balita",
+      "category": "info",
+      "examples": ["/news", "/news tech", "p!news"]
+    },
+    "crypto": {
+      "name": "crypto",
+      "description": "Kunin ang impormasyon ng presyo ng cryptocurrency",
+      "category": "info",
+      "examples": ["/crypto BTC", "/crypto ETH", "p!crypto DOGE"]
+    },
+    "stock": {
+      "name": "stock",
+      "description": "Kunin ang impormasyon ng presyo ng stock",
+      "category": "info",
+      "examples": ["/stock AAPL", "/stock TSLA", "p!stock GOOGL"]
+    },
+    "country": {
+      "name": "country",
+      "description": "Kunin ang impormasyon tungkol sa isang bansa",
+      "category": "info",
+      "examples": ["/country Philippines", "/country Japan", "p!country USA"]
+    },
+    "servericon": {
+      "name": "servericon",
+      "description": "Ipakita ang icon ng server",
+      "category": "info",
+      "examples": ["/servericon", "p!servericon"]
+    },
+    "audit": {
+      "name": "audit",
+      "description": "Ipakita ang mga kamakailang audit log entries",
+      "category": "info",
+      "examples": ["/audit", "p!audit"]
+    },
+    "inviteleaderboard": {
+      "name": "inviteleaderboard",
+      "description": "Ipakita ang invite leaderboard ng server",
+      "category": "info",
+      "examples": ["/inviteleaderboard", "p!inviteleaderboard"]
+    },
+    "messagestats": {
+      "name": "messagestats",
+      "description": "Ipakita ang estadistika ng mensahe ng server",
+      "category": "info",
+      "examples": ["/messagestats", "p!messagestats"]
+    },
+    "boosthistory": {
+      "name": "boosthistory",
+      "description": "Ipakita ang kasaysayan ng server boost",
+      "category": "info",
+      "examples": ["/boosthistory", "p!boosthistory"]
+    },
+    "activitylog": {
+      "name": "activitylog",
+      "description": "Ipakita ang kamakailang aktibidad ng server",
+      "category": "info",
+      "examples": ["/activitylog", "p!activitylog"]
+    },
+    "growthstats": {
+      "name": "growthstats",
+      "description": "Ipakita ang estadistika ng paglaki ng server",
+      "category": "info",
+      "examples": ["/growthstats", "p!growthstats"]
+    },
+    "afk": {
+      "name": "afk",
+      "description": "Itakda ang iyong sarili bilang AFK (Away From Keyboard)",
+      "category": "utility",
+      "examples": ["/afk", "/afk kumakain", "p!afk nagtatrabaho"]
+    },
+    "clear": {
+      "name": "clear",
+      "description": "Tanggalin ang tinukoy na bilang ng mga mensahe",
+      "category": "utility",
+      "examples": ["/clear 10", "p!clear 50"]
+    },
+    "lock": {
+      "name": "lock",
+      "description": "I-lock ang kasalukuyang channel",
+      "category": "utility",
+      "examples": ["/lock", "p!lock"]
+    },
+    "unlock": {
+      "name": "unlock",
+      "description": "I-unlock ang kasalukuyang channel",
+      "category": "utility",
+      "examples": ["/unlock", "p!unlock"]
+    },
+    "slowmode": {
+      "name": "slowmode",
+      "description": "Itakda ang slowmode para sa kasalukuyang channel",
+      "category": "utility",
+      "examples": ["/slowmode 5", "/slowmode off", "p!slowmode 10"]
+    },
+    "nick": {
+      "name": "nick",
+      "description": "Baguhin ang nickname ng isang user",
+      "category": "utility",
+      "examples": ["/nick @user BagongNick", "/nick @user reset", "p!nick @user BagongNick"]
+    },
+    "announce": {
+      "name": "announce",
+      "description": "Gumawa ng anunsyo sa kasalukuyang channel",
+      "category": "utility",
+      "examples": ["/announce Hello everyone!", "p!announce Mahalagang update"]
+    },
+    "embed": {
+      "name": "embed",
+      "description": "Gumawa ng custom na embed na mensahe",
+      "category": "utility",
+      "examples": ["/embed title description", "p!embed Hello World Ito ay isang test"]
+    },
+    "say": {
+      "name": "say",
+      "description": "Pahintulutan ang bot na magsalita",
+      "category": "utility",
+      "examples": ["/say Hello everyone!", "p!say Mahalagang anunsyo"]
+    },
+    "quote": {
+      "name": "quote",
+      "description": "Quote ang isang mensahe",
+      "category": "utility",
+      "examples": ["/quote messageid", "p!quote messageid"]
+    },
+    "steal": {
+      "name": "steal",
+      "description": "Magnakaw ng emoji mula sa ibang server",
+      "category": "utility",
+      "examples": ["/steal :emoji:", "p!steal :emoji:"]
+    },
+    "create-role": {
+      "name": "create-role",
+      "description": "Gumawa ng bagong role",
+      "category": "utility",
+      "examples": ["/create-role VIP", "/create-role Moderator #FF0000", "p!create-role VIP"]
+    },
+    "delete-role": {
+      "name": "delete-role",
+      "description": "Tanggalin ang isang role",
+      "category": "utility",
+      "examples": ["/delete-role @role", "p!delete-role @role"]
+    },
+    "create-channel": {
+      "name": "create-channel",
+      "description": "Gumawa ng bagong channel",
+      "category": "utility",
+      "examples": ["/create-channel general text", "/create-channel voice voice", "p!create-channel general text"]
+    },
+    "delete-channel": {
+      "name": "delete-channel",
+      "description": "Tanggalin ang isang channel",
+      "category": "utility",
+      "examples": ["/delete-channel #channel", "p!delete-channel #channel"]
+    },
+    "role-add": {
+      "name": "role-add",
+      "description": "Magdagdag ng role sa isang user",
+      "category": "utility",
+      "examples": ["/role-add @user @role", "p!role-add @user @role"]
+    },
+    "role-remove": {
+      "name": "role-remove",
+      "description": "Tanggalin ang role mula sa isang user",
+      "category": "utility",
+      "examples": ["/role-remove @user @role", "p!role-remove @user @role"]
+    },
+    "mute": {
+      "name": "mute",
+      "description": "I-mute ang isang user sa server",
+      "category": "utility",
+      "examples": ["/mute @user", "/mute @user 1h", "p!mute @user"]
+    },
+    "unmute": {
+      "name": "unmute",
+      "description": "I-unmute ang isang user sa server",
+      "category": "utility",
+      "examples": ["/unmute @user", "p!unmute @user"]
+    },
+    "deafen": {
+      "name": "deafen",
+      "description": "I-deafen ang isang user sa voice channels",
+      "category": "utility",
+      "examples": ["/deafen @user", "p!deafen @user"]
+    },
+    "undeafen": {
+      "name": "undeafen",
+      "description": "I-undeafen ang isang user sa voice channels",
+      "category": "utility",
+      "examples": ["/undeafen @user", "p!undeafen @user"]
+    },
+    "kick": {
+      "name": "kick",
+      "description": "I-kick ang isang user mula sa server",
+      "category": "utility",
+      "examples": ["/kick @user", "/kick @user Violation", "p!kick @user"]
+    },
+    "ban": {
+      "name": "ban",
+      "description": "I-ban ang isang user mula sa server",
+      "category": "utility",
+      "examples": ["/ban @user", "/ban @user Violation", "p!ban @user"]
+    },
+    "unban": {
+      "name": "unban",
+      "description": "I-unban ang isang user mula sa server",
+      "category": "utility",
+      "examples": ["/unban userid", "p!unban userid"]
+    },
+    "move": {
+      "name": "move",
+      "description": "Ilipat ang isang user sa ibang voice channel",
+      "category": "utility",
+      "examples": ["/move @user #channel", "p!move @user #channel"]
+    },
+    "prune": {
+      "name": "prune",
+      "description": "Alisin ang mga hindi aktibong miyembro mula sa server",
+      "category": "utility",
+      "examples": ["/prune 30", "/prune 30days", "p!prune 30"]
+    }
+  },
+  "errors": {
+    "missing_permissions": "Wala kang permisyong gamitin ang command na ito.",
+    "bot_missing_permissions": "Wala akong kinakailangang permisyong isagawa ang command na ito.",
+    "invalid_user": "Hindi valid ang ibinigay na user.",
+    "invalid_role": "Hindi valid ang ibinigay na role.",
+    "invalid_channel": "Hindi valid ang ibinigay na channel.",
+    "invalid_number": "Mangyaring magbigay ng valid na numero.",
+    "invalid_time": "Hindi valid ang format ng oras. Gamitin ang format na 30m, 1h, 2d.",
+    "cooldown": "Mangyaring maghintay ng {time} bago gamitin muli ang command na ito.",
+    "unknown_error": "Nagkaroon ng hindi kilalang error."
+  },
+  "success": {
+    "command_executed": "Matagumpay na naisagawa ang command.",
+    "role_added": "Matagumpay na naidagdag ang role.",
+    "role_removed": "Matagumpay na natanggal ang role.",
+    "channel_locked": "Matagumpay na na-lock ang channel.",
+    "channel_unlocked": "Matagumpay na na-unlock ang channel.",
+    "messages_cleared": "Matagumpay na naclear ang mga mensahe."
+  },
+  "categories": {
+    "help": "Tulong",
+    "moderation": "Moderasyon",
+    "admin": "Admin/Setup",
+    "music": "Musika",
+    "economy": "Ekonomiya",
+    "games": "Laro",
+    "fun": "Katuwaan",
+    "ai": "AI",
+    "info": "Impormasyon",
+    "utility": "Utility",
+    "social": "Sosyal",
+    "leveling": "Leveling",
+    "giveaway": "Giveaway",
+    "image": "Larawan",
+    "starboard": "Starboard",
+    "applications": "Aplikasyon",
+    "premium": "Premium",
+    "owner": "May-ari"
+  }
+}

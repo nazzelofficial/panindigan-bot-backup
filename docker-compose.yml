@@ -1,0 +1,102 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: panindigan-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-panindigan}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: ${POSTGRES_DB:-panindigan}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - panindigan-network
+
+  # MongoDB Database
+  mongodb:
+    image: mongo:7
+    container_name: panindigan-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-panindigan}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-changeme}
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - panindigan-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: panindigan-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - panindigan-network
+
+  # Lavalink (Music)
+  lavalink:
+    image: ghcr.io/lavalink-devs/lavalink:4
+    container_name: panindigan-lavalink
+    restart: unless-stopped
+    depends_on:
+      - redis
+    environment:
+      - SERVER_PORT=2333
+      - LAVALINK_SERVER_PASSWORD=${LAVALINK_PASSWORD:-youshallnotpass}
+    volumes:
+      - ./lavalink/application.yml:/opt/Lavalink/application.yml:ro
+    ports:
+      - "2333:2333"
+    networks:
+      - panindigan-network
+
+  # Panindigan Bot
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: panindigan-bot
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - mongodb
+      - redis
+      - lavalink
+    environment:
+      - NODE_ENV=production
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - POSTGRES_URL=postgresql://${POSTGRES_USER:-panindigan}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-panindigan}
+      - MONGO_URL=mongodb://${MONGO_USER:-panindigan}:${MONGO_PASSWORD:-changeme}@mongodb:27017/${MONGO_DB:-panindigan}
+      - REDIS_URL=redis://redis:6379
+      - LAVALINK_HOST=lavalink
+      - LAVALINK_PORT=2333
+      - LAVALINK_PASSWORD=${LAVALINK_PASSWORD:-youshallnotpass}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - panindigan-network
+
+volumes:
+  postgres_data:
+  mongodb_data:
+  redis_data:
+
+networks:
+  panindigan-network:
+    driver: bridge

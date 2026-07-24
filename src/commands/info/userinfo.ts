@@ -1,0 +1,79 @@
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+import { ChatInputCommandInteraction, Message, EmbedBuilder, GuildMember, User } from 'discord.js';
+import { COLORS, EMOJIS } from '../../utils/Constants';
+import { Formatter } from '../../utils/Formatter';
+
+export class UserInfoCommand extends BaseCommand {
+  constructor() {
+    const options: CommandOptions = {
+      name: 'userinfo',
+      description: 'Display detailed information about a user',
+      category: 'info',
+      cooldown: 5,
+      userPermissions: [],
+      botPermissions: [],
+      guildOnly: false,
+      slashCommand: true,
+      prefixCommand: true,
+      aliases: ['whois', 'ui', 'user'],
+      examples: ['/userinfo', '/userinfo @user', 'p!userinfo @user'],
+    };
+    super(options);
+  }
+
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    const target = interaction.options.getUser('user') || interaction.user;
+    const member = interaction.options.getMember('user') as GuildMember | null;
+
+    const embed = new EmbedBuilder()
+      .setTitle(`${EMOJIS.info} User Information`)
+      .setColor(COLORS.info)
+      .setThumbnail(target.displayAvatarURL({ size: 256, extension: 'png' }))
+      .addFields([
+        { name: 'Username', value: target.username, inline: true },
+        { name: 'Display Name', value: target.displayName, inline: true },
+        { name: 'ID', value: target.id, inline: true },
+        { name: 'Bot', value: target.bot ? 'Yes' : 'No', inline: true },
+        { name: 'Created', value: Formatter.formatDate(target.createdAt), inline: true },
+      ])
+      .setTimestamp();
+
+    if (member) {
+      embed.addFields([
+        { name: 'Joined Server', value: Formatter.formatDate(member.joinedAt!), inline: true },
+        { name: 'Roles', value: member.roles.cache.map(role => role.name).join(', ') || 'None', inline: false },
+      ]);
+    }
+
+    await interaction.reply({ embeds: [embed] });
+  }
+
+  public async executePrefix(message: Message): Promise<void> {
+    const target = message.mentions.users.first() || message.author;
+    const member = message.mentions.members?.first() || message.member as GuildMember;
+
+    const embed = new EmbedBuilder()
+      .setTitle(`${EMOJIS.info} User Information`)
+      .setColor(COLORS.info)
+      .setThumbnail(target.displayAvatarURL({ size: 256, extension: 'png' }))
+      .addFields([
+        { name: 'Username', value: target.username, inline: true },
+        { name: 'Display Name', value: target.displayName, inline: true },
+        { name: 'ID', value: target.id, inline: true },
+        { name: 'Bot', value: target.bot ? 'Yes' : 'No', inline: true },
+        { name: 'Created', value: Formatter.formatDate(target.createdAt), inline: true },
+      ])
+      .setTimestamp();
+
+    if (member && 'joinedAt' in member) {
+      embed.addFields([
+        { name: 'Joined Server', value: Formatter.formatDate(member.joinedAt!), inline: true },
+        { name: 'Roles', value: member.roles.cache.map(role => role.name).join(', ') || 'None', inline: false },
+      ]);
+    }
+
+    await message.reply({ embeds: [embed] });
+  }
+}
+
+export default UserInfoCommand;

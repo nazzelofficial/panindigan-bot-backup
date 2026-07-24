@@ -1,0 +1,110 @@
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
+import { COLORS, EMOJIS } from '../../utils/Constants';
+
+export class QueueLimitCommand extends BaseCommand {
+  constructor() {
+    const options: CommandOptions = {
+      name: 'queuelimit',
+      description: 'Set the maximum queue size',
+      category: 'music',
+      cooldown: 5,
+      userPermissions: [PermissionFlagsBits.ManageGuild],
+      botPermissions: [PermissionFlagsBits.Connect, PermissionFlagsBits.Speak],
+      guildOnly: true,
+      slashCommand: true,
+      prefixCommand: true,
+      aliases: ['maxqueue', 'limitqueue'],
+      examples: ['/queuelimit 50', 'p!queuelimit 100'],
+    };
+    super(options);
+  }
+
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    const limit = interaction.options.getInteger('limit');
+
+    if (limit === null || limit < 1 || limit > 500) {
+      await interaction.reply({ content: '❌ Please provide a valid limit between 1 and 500.', ephemeral: true });
+      return;
+    }
+
+    if (!interaction.guildId) return;
+
+    try {
+      const client = interaction.client as any;
+      const musicManager = client.musicManager;
+
+      if (!musicManager) {
+        await interaction.reply({ content: '❌ Music system is not available.', ephemeral: true });
+        return;
+      }
+
+      const player = musicManager.get(interaction.guildId);
+
+      if (!player) {
+        await interaction.reply({ content: '❌ Nothing is currently playing.', ephemeral: true });
+        return;
+      }
+
+      player.queueLimit = limit;
+
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.music} Queue Limit Set`)
+        .setColor(COLORS.success)
+        .addFields([
+          { name: 'Limit', value: limit.toString(), inline: true },
+          { name: 'Set by', value: interaction.user.tag, inline: true },
+        ])
+        .setTimestamp();
+
+      await interaction.reply({ embeds: [embed] });
+    } catch (error) {
+      await interaction.reply({ content: '❌ Failed to set queue limit.', ephemeral: true });
+    }
+  }
+
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
+    const limit = parseInt(args[0]);
+
+    if (isNaN(limit) || limit < 1 || limit > 500) {
+      await message.reply('❌ Please provide a valid limit between 1 and 500.');
+      return;
+    }
+
+    if (!message.guildId) return;
+
+    try {
+      const client = message.client as any;
+      const musicManager = client.musicManager;
+
+      if (!musicManager) {
+        await message.reply('❌ Music system is not available.');
+        return;
+      }
+
+      const player = musicManager.get(message.guildId);
+
+      if (!player) {
+        await message.reply('❌ Nothing is currently playing.');
+        return;
+      }
+
+      player.queueLimit = limit;
+
+      const embed = new EmbedBuilder()
+        .setTitle(`${EMOJIS.music} Queue Limit Set`)
+        .setColor(COLORS.success)
+        .addFields([
+          { name: 'Limit', value: limit.toString(), inline: true },
+          { name: 'Set by', value: message.author.tag, inline: true },
+        ])
+        .setTimestamp();
+
+      await message.reply({ embeds: [embed] });
+    } catch (error) {
+      await message.reply('❌ Failed to set queue limit.');
+    }
+  }
+}
+
+export default QueueLimitCommand;
