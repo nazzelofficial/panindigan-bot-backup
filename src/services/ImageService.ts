@@ -52,14 +52,41 @@ export class ImageService {
   }
 
   public async getGif(tag: string): Promise<string> {
-    if (!this.giphyKey) {
-      // Fallback to trending
-      return `https://media.giphy.com/media/placeholder/giphy.gif`;
+    // Try Giphy if key is available
+    if (this.giphyKey) {
+      try {
+        const res = await fetch(
+          `${GIPHY_BASE}?api_key=${this.giphyKey}&tag=${encodeURIComponent(tag)}&rating=pg-13`,
+        );
+        if (res.ok) {
+          const data: any = await res.json();
+          const url = data.data?.images?.original?.url || '';
+          if (url) return url;
+        }
+      } catch { /* fall through to nekos.best */ }
     }
-    const res = await fetch(`${GIPHY_BASE}?api_key=${this.giphyKey}&tag=${encodeURIComponent(tag)}&rating=pg-13`);
-    if (!res.ok) throw new Error('Failed to fetch GIF.');
-    const data: any = await res.json();
-    return data.data?.images?.original?.url || '';
+
+    // Fallback: nekos.best GIF API (free, no key required)
+    // Maps generic tags to supported nekos.best endpoints
+    const nekoEndpointMap: Record<string, string> = {
+      hug: 'hug', pat: 'pat', kiss: 'kiss', slap: 'slap', wave: 'wave',
+      cry: 'cry', punch: 'punch', poke: 'poke', cuddle: 'cuddle',
+      dance: 'dance', laugh: 'laugh', bite: 'bite', blush: 'blush',
+      boop: 'boop', highfive: 'highfive', lick: 'lick', stare: 'stare',
+      nom: 'nom', smile: 'smile', celebrate: 'celebrate',
+    };
+    const endpoint = nekoEndpointMap[tag.toLowerCase()] || 'nod';
+    try {
+      const res = await fetch(`https://nekos.best/api/v2/${endpoint}`);
+      if (res.ok) {
+        const data: any = await res.json();
+        const url = data.results?.[0]?.url || '';
+        if (url) return url;
+      }
+    } catch { /* fall through */ }
+
+    // Final fallback: tenorapi search via public endpoint
+    throw new Error(`No GIF found for tag: ${tag}. Please set GIPHY_API_KEY for full GIF support.`);
   }
 
   public async generateRankCard(options: Parameters<typeof ImageGenerator.generateRankCard>[0]): Promise<Buffer> {

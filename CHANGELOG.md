@@ -22,14 +22,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - AI (65 commands)
   - Info (48 commands)
   - Utility (65 commands)
-  - Social (80 commands) - Pending implementation
-  - Leveling (25 commands) - Pending implementation
-  - Giveaway (22 commands) - Pending implementation
-  - Image (30 commands) - Pending implementation
-  - Starboard (12 commands) - Pending implementation
-  - Applications (18 commands) - Pending implementation
-  - Premium (30 commands) - Pending implementation
-  - Owner (122 commands) - Pending implementation
+  - Social (80 commands)
+  - Leveling (25 commands)
+  - Giveaway (22 commands)
+  - Image (30 commands)
+  - Starboard (12 commands)
+  - Applications (18 commands)
+  - Premium (30 commands)
+  - Owner (122 commands)
+
+### Fixed
+- **`src/commands/ai/email.ts`** — Replaced stub with full AI email generator using `AIHandler.generateTaskResponse()`; slash options for topic, tone (professional/casual/formal/friendly/persuasive), and recipient
+- **`src/commands/ai/question.ts`** — Replaced stub with full AI question generator supporting question types (discussion/trivia/debate/icebreaker/interview/philosophical) and configurable count; parses numbered-list responses
+- **`src/commands/utility/birthday.ts`** — Replaced stub with full CRUD birthday system (set/view/list/remove) backed by `User.birthday` in PostgreSQL via Prisma; shows countdown in days
+- **`src/commands/utility/leaderboard.ts`** — Replaced stub with paginated XP leaderboard reading from the `Leveling` table; interactive prev/next buttons; rank medal formatting
+- **`src/commands/utility/level.ts`** — Replaced stub with live level card reading from the `Leveling` table; shows level, XP, visual progress bar, server rank, and message/voice stats
+- **`src/commands/utility/marry.ts`** — Replaced stub with full interactive proposal flow using Discord buttons; creates `Couple` record in Prisma; checks for existing marriages; updates `User.spouseId` and `User.marriedAt`
+- **`src/commands/utility/divorce.ts`** — Replaced stub with confirmation button flow; deletes `Couple` record and clears spouse fields on both users in Prisma
+- **`src/commands/utility/profile.ts`** — Replaced stub with aggregated profile card pulling from `User`, `Economy`, `Leveling`, `Couple`, and `Premium` tables; displays level, wallet/bank/networth, rep, partner, premium tier, bio, and birthday
+- **`src/commands/utility/rep.ts`** — Replaced stub with full reputation system; give/view subcommands; 24-hour cooldown via `User.lastRepGiven`; increments `User.repPoints`; shows server rank by rep count
+- **`src/services/ImageService.ts`** — Replaced hardcoded placeholder GIF URL with a real fallback chain: Giphy API (when key is set) → nekos.best free API → descriptive error thrown
 
 ### Features
 - Multi-database support (PostgreSQL, MongoDB, Redis)
@@ -111,10 +123,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Extensible command architecture
 
 ### Known Issues
-- Some commands have placeholder implementations pending API integration
-- Social, Leveling, Giveaway, Image, Starboard, Applications, Premium, and Owner commands pending implementation
+- `@sapphire/discord.js-utilities@^3.2.3` has no matching npm version — `npm install` fails until the version pin is corrected
+- `Guild.xpMultiplier` and `Guild.levelUpMessage` fields referenced in `levelconfig.ts` are not yet in `prisma/schema.prisma` — writes silently no-op until the schema is migrated
 - AI services require API keys to function
-- Music features require Lavalink server
+- Music features require a running Lavalink server
 
 ### Dependencies
 - discord.js ^14.14.0
@@ -126,34 +138,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - @google/generative-ai ^0.2.0
 - groq-sdk ^0.3.0
 - @discordjs/voice ^0.16.0
-- And many more...
-
-### Configuration
-- Environment variable support
-- Config.json for bot settings
-- Premium tier configuration
-- Cooldown and rate limit settings
-- Runtime options
-
-### Performance
-- Efficient command loading
-- Caching with Redis
-- Database connection pooling
-- Sharding for scalability
-- Optimized database queries
-
-### Testing
-- Placeholder for test suite
-- Manual testing procedures
-- Command validation
-- Error handling verification
-
-### Deployment
-- Docker image optimization
-- Multi-stage build process
-- Non-root container user
-- Signal handling with dumb-init
-- Volume management for persistence
+- And many more…
 
 ---
 
@@ -184,12 +169,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
-### 0.1.0 (2026-07-24)
-- Initial release
-- Core infrastructure complete
+### 0.1.0 (2024-07-24)
+- Initial release with core infrastructure complete
 - 900+ commands planned across 18 categories
-- 7 categories fully implemented (Help, Moderation, Admin, Music, Economy, Games, Fun, AI, Info, Utility)
-- 8 categories pending implementation (Social, Leveling, Giveaway, Image, Starboard, Applications, Premium, Owner)
+- All previously stubbed utility and AI commands replaced with full implementations backed by Prisma, Discord buttons, and live AI calls
+- ImageService GIF fallback replaced with real API chain (Giphy → nekos.best)
 
 ---
 
