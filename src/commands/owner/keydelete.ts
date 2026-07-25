@@ -1,0 +1,22 @@
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
+import { COLORS } from '../../utils/Constants';
+import getMongoClient from '../../database/mongodb/client';
+
+export class KeydeleteCommand extends BaseCommand {
+  constructor() {
+    super({ name: 'keydelete', description: 'Delete a premium key from the database', category: 'owner', premiumTier: 'free', cooldown: 0, guildOnly: false, ownerOnly: true, slashCommand: true, prefixCommand: true, aliases: ['kdel'], examples: ['p!keydelete XXXX-XXXX-XXXX-XXXX'] } as CommandOptions);
+  }
+  private async run(i: ChatInputCommandInteraction | null, m: Message | null, key: string): Promise<void> {
+    const send = async (e: EmbedBuilder) => { if (i) await i.reply({ embeds: [e], flags: 64 }); else await m!.reply({ embeds: [e] }); };
+    if (!key) return send(new EmbedBuilder().setColor(COLORS.error).setDescription('❌ Provide a key.'));
+    const db = await getMongoClient();
+    const result = await db.collection('premium_keys').deleteOne({ key });
+    await send(new EmbedBuilder().setColor(result.deletedCount ? COLORS.success : COLORS.error)
+      .setTitle(result.deletedCount ? '✅ Key Deleted' : '❌ Key Not Found')
+      .setDescription(result.deletedCount ? `Key \`${key}\` has been deleted.` : `Key \`${key}\` was not found.`));
+  }
+  public async executeSlash(i: ChatInputCommandInteraction): Promise<void> { await this.run(i, null, i.options.getString('key', true)); }
+  public async executePrefix(m: Message, args: string[]): Promise<void> { await this.run(null, m, args[0]); }
+}
+export default KeydeleteCommand;
