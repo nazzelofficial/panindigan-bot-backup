@@ -228,7 +228,9 @@ Panindigan ay fully sharded — handa para sa libo-libong server.
 🎵 Playing  /help | Shard 0 | 1,234 servers
 🛡️ Watching over 45,231 members | Shard 1
 🇵🇭 Para sa mga Pilipino | Shard 2
+
 ```
+
 
 ### Project Structure
 ```
@@ -285,6 +287,7 @@ panindigan-bot/
 ├── Dockerfile
 ├── package.json
 └── tsconfig.json
+
 ```
 
 ### Available Scripts
