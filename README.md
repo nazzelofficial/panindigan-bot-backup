@@ -1,9 +1,11 @@
 # 🤖 Panindigan — All-in-One Discord Bot
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)](https://www.typescriptlang.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-20.x-green)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-24.x-green)](https://nodejs.org/)
 [![Discord.js](https://img.shields.io/badge/Discord.js-14.x-5865F2)](https://discord.js.org/)
+[![Lavalink](https://img.shields.io/badge/Lavalink-4.x-red)](https://github.com/lavalink-devs/Lavalink)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
+[![Version](https://img.shields.io/badge/Version-0.1.1-orange)](CHANGELOG.md)
 
 Panindigan is a powerful, feature-rich Discord bot built with TypeScript, Discord.js v14, and modern best practices. With over 900 commands across 18 categories, it provides comprehensive moderation, entertainment, music, economy, and utility features for Discord servers.
 
@@ -60,11 +62,12 @@ Panindigan is a powerful, feature-rich Discord bot built with TypeScript, Discor
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 20.x or higher
-- PostgreSQL 16.x or higher
-- MongoDB 7.x or higher
-- Redis 7.x or higher
-- Lavalink 4.x (for music features)
+- Node.js v24.x or higher
+- pnpm v11.15.1 or higher
+- PostgreSQL v16.x or higher
+- MongoDB v7.x or higher
+- Redis v7.x or higher
+- Lavalink v4.x (for music features)
 - Discord Bot Token
 
 ### Installation
@@ -92,25 +95,36 @@ DISCORD_TOKEN=your_bot_token_here
 CLIENT_ID=your_client_id_here
 
 # Database
-POSTGRES_URL=postgresql://user:password@localhost:5432/panindigan
-MONGO_URL=mongodb://user:password@localhost:27017/panindigan
-REDIS_URL=redis://localhost:6379
+# ========== DISCORD ==========
+DISCORD_TOKEN=your_bot_token_here
+DISCORD_CLIENT_ID=your_client_id
 
-# Lavalink
+# ========== DATABASES ==========
+POSTGRES_URL=postgresql://user:pass@host:5432/panindigan
+MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/panindigan
+REDIS_URL=redis://user:pass@host:6379
+
+# ========== AI PROVIDERS (optional — only needed for AI commands) ==========
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+GEMINI_API_KEY=AIza...
+GROQ_API_KEY=gsk_...
+
+# ========== LAVALINK (optional — only needed for music) ==========
 LAVALINK_HOST=localhost
 LAVALINK_PORT=2333
-LAVALINK_PASSWORD=your_lavalink_password
+LAVALINK_PASSWORD=youshallnotpass
+LAVALINK_SECURE=false
 
-# AI Services (Optional)
-OPENAI_API_KEY=your_openai_key
-ANTHROPIC_API_KEY=your_anthropic_key
-GEMINI_API_KEY=your_gemini_key
-GROQ_API_KEY=your_groq_key
+# ========== BOT OWNERS ==========
+OWNER_IDS=123456789012345678,987654321098765432
 
-# Bot Configuration
-PREFIX=p!
-OWNER_ID=your_user_id
-SUPPORT_SERVER=your_support_server_id
+# ========== OPTIONAL ==========
+LOG_LEVEL=info              # debug | info | warn | error
+LOG_WEBHOOK_URL=https://discord.com/api/webhooks/...
+SESSION_SECRET=change_this_to_a_long_random_string
+NODE_ENV=production
+
 ```
 
 4. **Run database migrations**
@@ -195,58 +209,82 @@ p!chat Hello, how are you?
 
 ## 🛠️ Development
 
+```
+
+---
+
+## 🔷 Sharding System
+
+Panindigan ay fully sharded — handa para sa libo-libong server.
+
+- Discord ay nag-re-require ng sharding kapag ang bot ay nasa 2,500+ servers
+- Bawat shard ay isang hiwalay na proseso na nagmamanage ng subset ng mga server
+- `ShardingManager` ang nagko-coordinate sa lahat ng shards
+- Per-shard dedicated log files at presence rotation (every 30 seconds)
+- Auto-respawn kapag namatay ang shard
+
+**Bot Presence (per shard, auto-rotating):**
+```
+🎵 Playing  /help | Shard 0 | 1,234 servers
+🛡️ Watching over 45,231 members | Shard 1
+🇵🇭 Para sa mga Pilipino | Shard 2
+```
+
 ### Project Structure
 ```
 panindigan-bot/
 ├── src/
-│   ├── commands/          # Command implementations
-│   │   ├── help/
-│   │   ├── moderation/
-│   │   ├── admin/
-│   │   ├── music/
-│   │   ├── economy/
-│   │   ├── games/
-│   │   ├── fun/
-│   │   ├── ai/
-│   │   ├── info/
-│   │   ├── utility/
-│   │   ├── social/
-│   │   ├── leveling/
-│   │   ├── giveaway/
-│   │   ├── image/
-│   │   ├── starboard/
-│   │   ├── applications/
-│   │   ├── premium/
-│   │   └── owner/
-│   ├── structures/        # Core structures
-│   │   ├── BaseCommand.ts
-│   │   ├── Client.ts
-│   │   └── Shard.ts
-│   ├── handlers/          # Event handlers
-│   │   ├── CommandHandler.ts
-│   │   ├── EventHandler.ts
-│   │   └── CooldownHandler.ts
-│   ├── services/          # External services
-│   │   ├── AI/
-│   │   ├── Database/
-│   │   └── Music/
-│   ├── utils/             # Utilities
-│   │   ├── Logger.ts
-│   │   ├── Formatter.ts
-│   │   └── Constants.ts
-│   ├── locales/           # Language files
-│   │   ├── en.json
-│   │   └── fil.json
-│   └── index.ts           # Entry point
-├── prisma/                # Prisma schema
-├── lavalink/              # Lavalink config
-├── logs/                  # Log files
+│   ├── bot/
+│   │   ├── index.ts              # Single shard (dev entry)
+│   │   └── shard.ts              # ShardingManager (production entry)
+│   ├── commands/                 # 900+ commands (18 categories)
+│   │   ├── admin/                # 45 commands
+│   │   ├── ai/                   # 65 commands
+│   │   ├── applications/         # 18 commands
+│   │   ├── economy/              # 80 commands
+│   │   ├── fun/                  # 68 commands
+│   │   ├── games/                # 65 commands
+│   │   ├── giveaway/             # 22 commands (all FREE)
+│   │   ├── help/                 # 15 commands
+│   │   ├── image/                # 30 commands
+│   │   ├── info/                 # 48 commands
+│   │   ├── leveling/             # 25 commands
+│   │   ├── moderation/           # 50 commands
+│   │   ├── music/                # 60 commands
+│   │   ├── owner/                # 122 commands
+│   │   ├── premium/              # 30 commands
+│   │   ├── social/               # 80 commands
+│   │   ├── starboard/            # 12 commands
+│   │   └── utility/              # 65 commands
+│   ├── database/
+│   │   ├── mongodb/
+│   │   │   ├── client.ts
+│   │   │   └── collections/      # AiMemory, Tags, EventLogs, Analytics, Starboard
+│   │   ├── postgresql/
+│   │   │   ├── client.ts
+│   │   │   └── models/           # Guild, User, Economy, Moderation, Premium, Music, Leveling, Giveaway, Applications
+│   │   └── redis/
+│   │       └── client.ts
+│   ├── events/                   # Discord event handlers (20+ events)
+│   ├── features/
+│   │   └── couple/               # Couple system shared services
+│   ├── handlers/                 # CommandHandler, EventHandler, AIHandler, CooldownHandler, etc.
+│   ├── locales/
+│   │   ├── en.json               # English translations
+│   │   └── fil.json              # Filipino translations
+│   ├── services/                 # AI, Image, Weather, News, Stock, Spotify
+│   ├── structures/               # BaseCommand, PanindiganClient, AIEngine, MusicPlayer, Paginator
+│   └── utils/                    # Logger, Formatter, Permissions, Constants, ShardUtils
+├── prisma/
+│   └── schema.prisma             # Full PostgreSQL schema (543 lines)
+├── lavalink/
+│   └── application.yml           # Lavalink server config
+├── config.json                   # Non-sensitive bot configuration
+├── ecosystem.config.js           # PM2 configuration
+├── docker-compose.yml            # Includes PostgreSQL, MongoDB, Redis, Lavalink
 ├── Dockerfile
-├── docker-compose.yml
 ├── package.json
-├── tsconfig.json
-├── CHANGELOG.md
-├── README.md
+└── tsconfig.json
 ```
 
 ### Available Scripts
@@ -308,6 +346,41 @@ export default CommandNameCommand;
 
 2. The command will be automatically loaded by the CommandHandler.
 
+---
+
+## 📊 Professional Logging System
+
+Winston-powered structured logging na may shard awareness, daily rotation, at remote monitoring.
+
+### Log Levels (via `LOG_LEVEL` env var)
+
+| Level | Symbol | When |
+|---|---|---|
+| ERROR | 🔴 | Critical errors, crashes, unhandled exceptions |
+| WARN | 🟠 | Non-critical issues, high latency, deprecated usage |
+| INFO | 🟡 | General events, command executions, guild events |
+| DEBUG | 🟢 | Detailed trace logs para sa development |
+
+### Log Files (14-day retention, 20MB rotation)
+
+```
+logs/
+├── combined-YYYY-MM-DD.log    ← All logs (JSON)
+├── error-YYYY-MM-DD.log       ← Error-only logs
+├── info-YYYY-MM-DD.log        ← Info and above
+└── shards/
+    ├── shard-0-YYYY-MM-DD.log
+    └── shard-N-YYYY-MM-DD.log
+```
+
+### Child Loggers (per module)
+Every subsystem has its own child logger for easy filtering:
+`bot`, `commands`, `events`, `music`, `database`, `mongodb`, `postgresql`, `redis`, `economy`, `moderation`, `tickets`, `giveaways`, `ai`, `leveling`, `starboard`, `premium`, `automod`, `antinuke`, `shard`
+
+### Discord Webhook Alerts
+Set `LOG_WEBHOOK_URL` to forward `error`/`fatal` logs to a private staff channel in real time (rate-limited/batched to avoid spam).
+
+### Tailing Logs in Production
 ## 🤝 Contributing
 
 Contributions are welcome! Please follow these guidelines:
