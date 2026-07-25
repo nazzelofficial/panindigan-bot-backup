@@ -1,6 +1,10 @@
 # 🤖 Panindigan — All-in-One Discord Bot
 
+
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8+-blue)](https://www.typescriptlang.org/)
+
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+
 [![Node.js](https://img.shields.io/badge/Node.js-24.x-green)](https://nodejs.org/)
 [![Discord.js](https://img.shields.io/badge/Discord.js-14.x-5865F2)](https://discord.js.org/)
 [![Lavalink](https://img.shields.io/badge/Lavalink-4.x-red)](https://github.com/lavalink-devs/Lavalink)
@@ -198,7 +202,12 @@ cd panindigan-bot
 
 2. **Install dependencies**
 ```bash
+
 pnpm install
+npm install
+pnpm install
+bun install
+
 ```
 
 3. **Configure environment variables**
@@ -210,12 +219,25 @@ Set these directly on your hosting platform (Railway, Render, VPS, etc.) — **n
 DISCORD_TOKEN=your_bot_token_here
 DISCORD_CLIENT_ID=your_client_id
 
+
 # ========== DATABASES ==========
 DATABASE_URL=postgresql://user:pass@host:5432/panindigan
 POSTGRES_URL=postgresql://user:pass@host:5432/panindigan
 MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/panindigan
 REDIS_URL=redis://user:pass@host:6379
 
+=======
+# Database
+# ========== DISCORD ==========
+DISCORD_TOKEN=your_bot_token_here
+DISCORD_CLIENT_ID=your_client_id
+
+# ========== DATABASES ==========
+POSTGRES_URL=postgresql://user:pass@host:5432/panindigan
+MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/panindigan
+REDIS_URL=redis://user:pass@host:6379
+
+>>>>>>> 03df72d2397de7ce4b97f92510cc2d4a05d383e0
 # ========== AI PROVIDERS (optional — only needed for AI commands) ==========
 OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
@@ -230,12 +252,22 @@ LAVALINK_SECURE=false
 
 # ========== BOT OWNERS ==========
 OWNER_IDS=123456789012345678,987654321098765432
+<<<<<<< HEAD
 
 # ========== OPTIONAL ==========
 LOG_LEVEL=info              # debug | info | warn | error
 LOG_WEBHOOK_URL=https://discord.com/api/webhooks/...
 SESSION_SECRET=change_this_to_a_long_random_string
 NODE_ENV=production
+=======
+
+# ========== OPTIONAL ==========
+LOG_LEVEL=info              # debug | info | warn | error
+LOG_WEBHOOK_URL=https://discord.com/api/webhooks/...
+SESSION_SECRET=change_this_to_a_long_random_string
+NODE_ENV=production
+
+>>>>>>> 03df72d2397de7ce4b97f92510cc2d4a05d383e0
 ```
 
 4. **Generate Prisma client**
@@ -366,6 +398,73 @@ Panindigan ay fully sharded — handa para sa libo-libong server.
 
 ## 📁 Project Structure
 
+### Slash Commands
+```
+/help
+/ping
+/play query: song_name
+/ban user: @user
+```
+
+### Examples
+
+**Moderation:**
+```bash
+p!ban @user Breaking rules
+p!mute @user 1h
+p!clear 50
+```
+
+**Music:**
+```bash
+p!play Despacito
+p!queue
+p!skip
+p!volume 75
+```
+
+**Economy:**
+```bash
+p!balance
+p!daily
+p!shop
+p!buy item_id
+```
+
+**AI:**
+```bash
+p!ask What is the meaning of life?
+p!image A beautiful sunset
+p!chat Hello, how are you?
+```
+
+## 🛠️ Development
+
+```
+
+---
+
+## 🔷 Sharding System
+
+Panindigan ay fully sharded — handa para sa libo-libong server.
+
+- Discord ay nag-re-require ng sharding kapag ang bot ay nasa 2,500+ servers
+- Bawat shard ay isang hiwalay na proseso na nagmamanage ng subset ng mga server
+- `ShardingManager` ang nagko-coordinate sa lahat ng shards
+- Per-shard dedicated log files at presence rotation (every 30 seconds)
+- Auto-respawn kapag namatay ang shard
+
+**Bot Presence (per shard, auto-rotating):**
+```
+🎵 Playing  /help | Shard 0 | 1,234 servers
+🛡️ Watching over 45,231 members | Shard 1
+🇵🇭 Para sa mga Pilipino | Shard 2
+
+```
+
+
+### Project Structure
+
 ```
 panindigan-bot/
 ├── src/
@@ -420,6 +519,8 @@ panindigan-bot/
 ├── Dockerfile
 ├── package.json
 └── tsconfig.json
+
+
 ```
 
 ---
@@ -532,8 +633,42 @@ export default class MyCommand extends BaseCommand {
 
 3. The `CommandHandler` will automatically load it on next startup.
 
+
 ---
 
+## 📊 Professional Logging System
+
+Winston-powered structured logging na may shard awareness, daily rotation, at remote monitoring.
+
+### Log Levels (via `LOG_LEVEL` env var)
+
+| Level | Symbol | When |
+|---|---|---|
+| ERROR | 🔴 | Critical errors, crashes, unhandled exceptions |
+| WARN | 🟠 | Non-critical issues, high latency, deprecated usage |
+| INFO | 🟡 | General events, command executions, guild events |
+| DEBUG | 🟢 | Detailed trace logs para sa development |
+
+### Log Files (14-day retention, 20MB rotation)
+
+```
+logs/
+├── combined-YYYY-MM-DD.log    ← All logs (JSON)
+├── error-YYYY-MM-DD.log       ← Error-only logs
+├── info-YYYY-MM-DD.log        ← Info and above
+└── shards/
+    ├── shard-0-YYYY-MM-DD.log
+    └── shard-N-YYYY-MM-DD.log
+```
+
+### Child Loggers (per module)
+Every subsystem has its own child logger for easy filtering:
+`bot`, `commands`, `events`, `music`, `database`, `mongodb`, `postgresql`, `redis`, `economy`, `moderation`, `tickets`, `giveaways`, `ai`, `leveling`, `starboard`, `premium`, `automod`, `antinuke`, `shard`
+
+### Discord Webhook Alerts
+Set `LOG_WEBHOOK_URL` to forward `error`/`fatal` logs to a private staff channel in real time (rate-limited/batched to avoid spam).
+
+### Tailing Logs in Production
 ## 🤝 Contributing
 
 Contributions are welcome!
@@ -580,6 +715,8 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 
 - [Invite Bot](https://discord.com/oauth2/authorize)
 - [Vote on Top.gg](https://top.gg)
+- [Vote for Bot](https://top.gg)
+- [Donate](https://patreon.com)
 - [GitHub](https://github.com/nazzelofficial/panindigan-bot)
 
 ---
