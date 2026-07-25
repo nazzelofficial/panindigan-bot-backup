@@ -308,46 +308,45 @@ npm run lint        # Run ESLint
 npm run format      # Format code with Prettier
 ```
 
-### Adding Commands
+### Adding a New Command
 
-1. Create a new command file in the appropriate category folder:
+1. Create a file in the correct category folder: `src/commands/<category>/<name>.ts`
+2. Extend `BaseCommand`:
+
 ```typescript
-// src/commands/category/commandname.ts
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
-import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { BaseCommand } from '../../structures/BaseCommand';
+import { SlashCommandBuilder } from 'discord.js';
 
-export class CommandNameCommand extends BaseCommand {
+export default class MyCommand extends BaseCommand {
   constructor() {
-    const options: CommandOptions = {
-      name: 'commandname',
-      description: 'Command description',
-      category: 'category',
-      cooldown: 5,
-      userPermissions: [],
-      botPermissions: [],
-      guildOnly: true,
+    super({
+      name: 'mycommand',
+      description: 'Does something cool',
+      category: 'utility',
+      aliases: ['mc'],
+      premiumTier: 'free',          // 'free' | 'bronze' | 'silver' | 'gold' | 'diamond'
       slashCommand: true,
       prefixCommand: true,
-      aliases: [],
-      examples: ['/commandname', 'p!commandname'],
-    };
-    super(options);
+    });
   }
 
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    // Implementation
+  buildSlashCommand() {
+    return new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description);
   }
 
-  public async executePrefix(message: Message): Promise<void> {
-    // Implementation
+  async executeSlash(interaction) {
+    await interaction.reply('Hello!');
+  }
+
+  async executePrefix(message, args) {
+    await message.reply('Hello!');
   }
 }
-
-export default CommandNameCommand;
 ```
 
-2. The command will be automatically loaded by the CommandHandler.
+3. The `CommandHandler` will automatically load it on next startup.
 
 ---
 
