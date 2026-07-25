@@ -405,9 +405,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- [Discord.js](https://discord.js.org/) - Amazing Discord API library
-- [Prisma](https://www.prisma.io/) - Next-generation ORM
-- [Lavalink](https://github.com/lavalink-devs/Lavalink) - Audio streaming
+- [Discord.js](https://discord.js.org/) — Amazing Discord API library
+- [Lavalink](https://github.com/lavalink-devs/Lavalink) — Audio streaming
+- [Prisma](https://www.prisma.io/) — Next-generation ORM
+- [Kazagumo](https://github.com/kazugumo/Kazagumo) — Lavalink queue manager
+- [Winston](https://github.com/winstonjs/winston) — Professional logging
 - All contributors and supporters
 
 ## 📞 Support
@@ -421,7 +423,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Invite Bot](https://discord.com/oauth2/authorize)
 - [Vote for Bot](https://top.gg)
 - [Donate](https://patreon.com)
-- [GitHub](https://github.com/nazzelofficial/panindigan-bot
+- [GitHub](https://github.com/nazzelofficial/panindigan-bot)
 
 ---
 
