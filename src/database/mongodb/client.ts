@@ -1,4 +1,5 @@
 import { MongoClient, Db, Collection } from 'mongodb';
+import { loggers } from '../../utils/Logger';
 import config from '../../../config.json';
 
 let mongoClient: MongoClient | null = null;
@@ -10,7 +11,7 @@ export async function connectMongoDB(): Promise<Db> {
   }
 
   const mongoUri = process.env[config.databases.mongodb.uriEnv];
-  
+
   if (!mongoUri) {
     throw new Error(`MongoDB URI not found in environment variable: ${config.databases.mongodb.uriEnv}`);
   }
@@ -20,11 +21,19 @@ export async function connectMongoDB(): Promise<Db> {
     connectTimeoutMS: config.databases.mongodb.connectTimeoutMs,
   });
 
+  mongoClient.on('error', (err) => {
+    loggers.mongodb.error('MongoDB client error', { errorMessage: err.message, stack: err.stack });
+  });
+
+  mongoClient.on('serverClosed', () => {
+    loggers.mongodb.warn('MongoDB server connection closed');
+  });
+
   await mongoClient.connect();
   mongoDb = mongoClient.db();
 
-  console.log('✅ MongoDB connected successfully');
-  
+  loggers.mongodb.info('MongoDB connected successfully');
+
   return mongoDb;
 }
 
@@ -45,7 +54,7 @@ export async function disconnectMongoDB(): Promise<void> {
     await mongoClient.close();
     mongoClient = null;
     mongoDb = null;
-    console.log('🔌 MongoDB disconnected');
+    loggers.mongodb.info('MongoDB disconnected');
   }
 }
 

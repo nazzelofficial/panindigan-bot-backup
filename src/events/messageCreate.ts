@@ -4,7 +4,7 @@ import { PanindiganClient } from '../structures/PanindiganClient';
 import { checkCooldown } from '../handlers/CooldownHandler';
 import { getUserPremiumTier } from '../handlers/PremiumHandler';
 import { Permissions } from '../utils/Permissions';
-import { logger } from '../utils/Logger';
+import { loggers, logCommandExecution } from '../utils/Logger';
 import config from '../../config.json';
 
 export const event: Event = {
@@ -22,8 +22,9 @@ export const event: Event = {
 
     const command = client.commands.get(commandName);
     if (!command) return;
-
     if (!command.prefixCommand) return;
+
+    const startTime = Date.now();
 
     try {
       if (config.runtime.maintenance.enabled && !client.isOwner(message.author.id)) {
@@ -50,13 +51,15 @@ export const event: Event = {
         const botPerms = Permissions.hasBotPermission(message.member, command.botPermissions);
         if (!botPerms.hasPermission) {
           await message.reply(
-            `❌ I am missing the following permissions: ${Permissions.getMissingPermissionNames(botPerms.missing).join(', ')}`
+            `❌ I am missing the following permissions: ${Permissions.getMissingPermissionNames(botPerms.missing).join(', ')}`,
           );
           return;
         }
       }
 
-      const premiumTier = message.guild ? await getUserPremiumTier(message.author.id, message.guild.id) : 'free';
+      const premiumTier = message.guild
+        ? await getUserPremiumTier(message.author.id, message.guild.id)
+        : 'free';
 
       if (command.premiumTier !== 'free' && command.premiumTier !== premiumTier) {
         await message.reply(`❌ This command requires ${command.premiumTier.toUpperCase()} premium or higher.`);
@@ -68,7 +71,7 @@ export const event: Event = {
         message.author.id,
         message.guild?.id || 'dm',
         command.name,
-        premiumTier
+        premiumTier,
       );
 
       if (!cooldownCheck.canRun) {
@@ -76,31 +79,40 @@ export const event: Event = {
         return;
       }
 
-      const startTime = Date.now();
       await command.executePrefix(message, args);
       const executionTime = Date.now() - startTime;
 
-      logger.info('Prefix command executed', {
-        shardId: client.shardId,
-        guildId: message.guild?.id || 'dm',
-        userId: message.author.id,
-        command: command.name,
+      logCommandExecution(
+        client.shardId,
+        message.guild?.id || 'dm',
+        message.author.id,
+        command.name,
         args,
         executionTime,
-        success: true,
-      });
+        true,
+      );
     } catch (error) {
-      console.error(`Error executing command ${command.name}:`, error);
+      const executionTime = Date.now() - startTime;
 
-      logger.info('Prefix command executed', {
-        shardId: client.shardId,
+      loggers.commands.error('Error executing prefix command', {
+        command: command.name,
         guildId: message.guild?.id || 'dm',
         userId: message.author.id,
-        command: command.name,
-        args,
-        executionTime: 0,
-        success: false,
+        shardId: client.shardId,
+        executionTimeMs: executionTime,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
       });
+
+      logCommandExecution(
+        client.shardId,
+        message.guild?.id || 'dm',
+        message.author.id,
+        command.name,
+        args,
+        executionTime,
+        false,
+      );
 
       await message.reply('❌ An error occurred while executing this command.');
     }

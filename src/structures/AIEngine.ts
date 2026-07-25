@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import Groq from 'groq-sdk';
 import { getCollection } from '../database/mongodb/client';
+import { loggers } from '../utils/Logger';
 
 export interface AIMessage {
   role: 'user' | 'assistant' | 'system';
@@ -276,7 +277,7 @@ export class AIEngine {
         { upsert: true }
       );
     } catch (err) {
-      console.error('Failed to save AI message:', err);
+      loggers.ai.error('Failed to save AI message', { userId, guildId, errorMessage: String(err) });
     }
   }
 
@@ -289,7 +290,7 @@ export class AIEngine {
         { upsert: true }
       );
     } catch (err) {
-      console.error('Failed to clear AI history:', err);
+      loggers.ai.error('Failed to clear AI history', { userId, guildId, errorMessage: String(err) });
     }
   }
 

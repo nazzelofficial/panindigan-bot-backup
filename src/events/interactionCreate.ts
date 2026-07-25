@@ -4,7 +4,7 @@ import { PanindiganClient } from '../structures/PanindiganClient';
 import { checkCooldown } from '../handlers/CooldownHandler';
 import { getUserPremiumTier } from '../handlers/PremiumHandler';
 import { Permissions } from '../utils/Permissions';
-import { logger } from '../utils/Logger';
+import { loggers, logCommandExecution } from '../utils/Logger';
 import config from '../../config.json';
 
 export const event: Event = {
@@ -16,12 +16,11 @@ export const event: Event = {
     const command = client.commands.get(interaction.commandName);
     if (!command) return;
 
+    const startTime = Date.now();
+
     try {
       if (config.runtime.maintenance.enabled && !client.isOwner(interaction.user.id)) {
-        await interaction.reply({
-          content: config.runtime.maintenance.message,
-          ephemeral: true,
-        });
+        await interaction.reply({ content: config.runtime.maintenance.message, ephemeral: true });
         return;
       }
 
@@ -61,7 +60,9 @@ export const event: Event = {
         }
       }
 
-      const premiumTier = interaction.guild ? await getUserPremiumTier(interaction.user.id, interaction.guild.id) : 'free';
+      const premiumTier = interaction.guild
+        ? await getUserPremiumTier(interaction.user.id, interaction.guild.id)
+        : 'free';
 
       if (command.premiumTier !== 'free' && command.premiumTier !== premiumTier) {
         await interaction.reply({
@@ -76,7 +77,7 @@ export const event: Event = {
         interaction.user.id,
         interaction.guild?.id || 'dm',
         command.name,
-        premiumTier
+        premiumTier,
       );
 
       if (!cooldownCheck.canRun) {
@@ -87,7 +88,6 @@ export const event: Event = {
         return;
       }
 
-      const startTime = Date.now();
       await command.executeSlash(interaction as ChatInputCommandInteraction);
       const executionTime = Date.now() - startTime;
 
@@ -98,23 +98,32 @@ export const event: Event = {
         command.name,
         [],
         executionTime,
-        true
+        true,
       );
     } catch (error) {
-      console.error(`Error executing command ${command.name}:`, error);
-      
+      const executionTime = Date.now() - startTime;
+
+      loggers.commands.error('Error executing slash command', {
+        command: command.name,
+        guildId: interaction.guild?.id || 'dm',
+        userId: interaction.user.id,
+        shardId: client.shardId,
+        executionTimeMs: executionTime,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+
       logCommandExecution(
         client.shardId,
         interaction.guild?.id || 'dm',
         interaction.user.id,
         command.name,
         [],
-        0,
-        false
+        executionTime,
+        false,
       );
 
       const errorMessage = '❌ An error occurred while executing this command.';
-
       if (interaction.replied || interaction.deferred) {
         await interaction.followUp({ content: errorMessage, ephemeral: true });
       } else {
@@ -123,23 +132,3 @@ export const event: Event = {
     }
   },
 };
-
-function logCommandExecution(
-  shardId: number,
-  guildId: string,
-  userId: string,
-  command: string,
-  args: string[],
-  executionTime: number,
-  success: boolean
-): void {
-  logger.info('Slash command executed', {
-    shardId,
-    guildId,
-    userId,
-    command,
-    args,
-    executionTime,
-    success,
-  });
-}

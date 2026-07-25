@@ -1,4 +1,5 @@
 import { getPrismaClient } from '../database/postgresql/client';
+import { loggers } from '../utils/Logger';
 import config from '../../config.json';
 
 export function calculateLevelFromXP(xp: number): number {
@@ -98,7 +99,7 @@ export async function addXP(
 
     return { newXP, newLevel, leveledUp, oldLevel: currentLevel };
   } catch (error) {
-    console.error('Error adding XP:', error);
+    loggers.leveling.error('Error adding XP', { userId, guildId, errorMessage: String(error) });
     return { newXP: 0, newLevel: 0, leveledUp: false, oldLevel: 0 };
   }
 }
@@ -142,7 +143,7 @@ export async function addVoiceXP(
 
     return { newXP, newLevel, leveledUp };
   } catch (error) {
-    console.error('Error adding voice XP:', error);
+    loggers.leveling.error('Error adding voice XP', { userId, guildId, errorMessage: String(error) });
     return { newXP: 0, newLevel: 0, leveledUp: false };
   }
 }
@@ -177,7 +178,7 @@ export async function getLeaderboard(
       total,
     };
   } catch (error) {
-    console.error('Error fetching leaderboard:', error);
+    loggers.leveling.error('Error fetching leaderboard', { guildId, errorMessage: String(error) });
     return { entries: [], total: 0 };
   }
 }

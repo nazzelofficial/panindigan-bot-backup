@@ -1,5 +1,6 @@
 import { getPrismaClient } from '../database/postgresql/client';
 import { TextChannel, Guild, User } from 'discord.js';
+import { loggers } from '../utils/Logger';
 
 export interface GiveawayData {
   guildId: string;
@@ -33,7 +34,7 @@ export async function createGiveaway(data: GiveawayData): Promise<string> {
 
     return giveaway.id;
   } catch (error) {
-    console.error('Error creating giveaway:', error);
+    loggers.giveaways.error('Error creating giveaway', { guildId: data.guildId, errorMessage: String(error) });
     throw error;
   }
 }
@@ -77,7 +78,7 @@ export async function endGiveaway(giveawayId: string): Promise<string[]> {
 
     return winners;
   } catch (error) {
-    console.error('Error ending giveaway:', error);
+    loggers.giveaways.error('Error ending giveaway', { giveawayId, errorMessage: String(error) });
     throw error;
   }
 }
@@ -157,7 +158,7 @@ export async function enterGiveaway(
 
     return { success: true };
   } catch (error) {
-    console.error('Error entering giveaway:', error);
+    loggers.giveaways.error('Error entering giveaway', { giveawayId, userId, errorMessage: String(error) });
     return { success: false, error: 'Failed to enter giveaway' };
   }
 }
@@ -183,7 +184,7 @@ export async function getActiveGiveaways(guildId: string): Promise<any[]> {
       channelId: g.channelId,
     }));
   } catch (error) {
-    console.error('Error fetching active giveaways:', error);
+    loggers.giveaways.error('Error fetching active giveaways', { guildId, errorMessage: String(error) });
     return [];
   }
 }
@@ -203,7 +204,7 @@ export async function getGiveawayEntries(giveawayId: string): Promise<any[]> {
       enteredAt: e.enteredAt,
     }));
   } catch (error) {
-    console.error('Error fetching giveaway entries:', error);
+    loggers.giveaways.error('Error fetching giveaway entries', { giveawayId, errorMessage: String(error) });
     return [];
   }
 }

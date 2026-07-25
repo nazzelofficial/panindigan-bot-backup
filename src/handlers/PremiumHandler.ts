@@ -1,5 +1,6 @@
 import { getPrismaClient } from '../database/postgresql/client';
 import { PremiumTier } from '../structures/BaseCommand';
+import { loggers } from '../utils/Logger';
 import config from '../../config.json';
 
 export async function getUserPremiumTier(userId: string, guildId: string): Promise<PremiumTier> {
@@ -38,7 +39,7 @@ export async function getUserPremiumTier(userId: string, guildId: string): Promi
 
     return (premium.tier as PremiumTier) || 'free';
   } catch (error) {
-    console.error('Error fetching user premium tier:', error);
+    loggers.premium.error('Error fetching user premium tier', { userId, guildId, errorMessage: String(error) });
     return 'free';
   }
 }
@@ -64,7 +65,7 @@ export async function getGuildPremiumTier(guildId: string): Promise<PremiumTier>
 
     return (guild.premiumTier as PremiumTier) || 'free';
   } catch (error) {
-    console.error('Error fetching guild premium tier:', error);
+    loggers.premium.error('Error fetching guild premium tier', { guildId, errorMessage: String(error) });
     return 'free';
   }
 }
@@ -128,7 +129,7 @@ export async function activatePremiumKey(
 
     return { success: true, tier: premiumKey.tier as PremiumTier };
   } catch (error) {
-    console.error('Error activating premium key:', error);
+    loggers.premium.error('Error activating premium key', { userId, guildId, errorMessage: String(error) });
     return { success: false, error: 'Failed to activate premium key' };
   }
 }
@@ -171,7 +172,7 @@ export async function activateFreeTrial(
 
     return { success: true };
   } catch (error) {
-    console.error('Error activating free trial:', error);
+    loggers.premium.error('Error activating free trial', { userId, guildId, errorMessage: String(error) });
     return { success: false, error: 'Failed to activate free trial' };
   }
 }

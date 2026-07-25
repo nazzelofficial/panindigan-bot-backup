@@ -4,6 +4,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import Groq from 'groq-sdk';
 import { getCollection } from '../database/mongodb/client';
 import { aiMemoryCollectionName } from '../database/mongodb/collections/AiMemory';
+import { loggers } from '../utils/Logger';
 import config from '../../config.json';
 
 export interface AIResponse {
@@ -44,7 +45,7 @@ export class AIHandler {
       const doc = await collection.findOne({ userId, guildId });
       return doc?.messages || [];
     } catch (error) {
-      console.error('Error fetching conversation memory:', error);
+      loggers.ai.error('Error fetching conversation memory', { errorMessage: String(error) });
       return [];
     }
   }
@@ -76,7 +77,7 @@ export class AIHandler {
         { upsert: true }
       );
     } catch (error) {
-      console.error('Error saving conversation memory:', error);
+      loggers.ai.error('Error saving conversation memory', { errorMessage: String(error) });
     }
   }
 
@@ -227,7 +228,7 @@ export class AIHandler {
           response = await this.generateWithOpenAI(messagesForAI);
       }
     } catch (error) {
-      console.error(`Primary provider ${providers.primary} failed, trying fallback:`, error);
+      loggers.ai.warn(`Primary AI provider ${providers.primary} failed — trying fallback`, { errorMessage: String(error) });
       
       for (const fallbackProvider of providers.fallback) {
         try {
@@ -247,7 +248,7 @@ export class AIHandler {
           }
           break;
         } catch (fallbackError) {
-          console.error(`Fallback provider ${fallbackProvider} also failed:`, fallbackError);
+          loggers.ai.error(`Fallback AI provider ${fallbackProvider} failed`, { errorMessage: String(fallbackError) });
         }
       }
 
@@ -293,7 +294,7 @@ export class AIHandler {
       const collection = getCollection(aiMemoryCollectionName);
       await collection.deleteOne({ userId, guildId });
     } catch (error) {
-      console.error('Error clearing conversation memory:', error);
+      loggers.ai.error('Error clearing conversation memory', { errorMessage: String(error) });
     }
   }
 
@@ -333,7 +334,7 @@ export class AIHandler {
         }
         if (response) break;
       } catch (err) {
-        console.error(`Provider ${p} failed for task request:`, err);
+        loggers.ai.error(`AI provider ${p} failed for task request`, { errorMessage: String(err) });
       }
     }
 

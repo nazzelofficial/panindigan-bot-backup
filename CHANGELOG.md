@@ -5,6 +5,76 @@ All notable changes to Panindigan Bot will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+---
+
+## [0.1.1] - 2026-07-25
+
+### Added
+
+#### Professional Logging System (complete overhaul)
+- **`src/utils/Logger.ts`** — Full rewrite: child loggers per module/subsystem (`bot`, `commands`, `events`, `music`, `database`, `mongodb`, `postgresql`, `redis`, `economy`, `moderation`, `tickets`, `giveaways`, `ai`, `leveling`, `starboard`, `premium`, `automod`, `antinuke`, `shard`); `createModuleLogger()` for ad-hoc loggers
+- **LOG_LEVEL env var** — Configurable log level via `LOG_LEVEL` environment variable (overrides `config.json`); supports `debug`, `info`, `warn`, `error`
+- **Log redaction** — Automatic deep redaction of sensitive fields (tokens, passwords, API keys, DB URIs) at the logger config level — no per-call-site handling required
+- **Log sanitization** — User-provided strings are stripped of control characters and newlines before logging to prevent log injection
+- **Global error handlers** — `registerGlobalErrorHandlers()` installs `unhandledRejection` and `uncaughtException` handlers that log via the structured logger (with full stack trace) and exit cleanly, plus `SIGTERM`/`SIGINT` shutdown hooks
+- **Discord Webhook Transport** — `LOG_WEBHOOK_URL` env var enables real-time forwarding of `error`-level logs to a private Discord staff channel; rate-limited/batched (5 s) to prevent spam
+- **Periodic health-check logger** — `startHealthCheckLogger()` emits memory usage, uptime, guild count, and custom stats every 5 minutes to the combined log
+- **ISO 8601 timestamps** — Consistent `YYYY-MM-DDTHH:mm:ss.SSSZ` format in JSON output; human-readable `YYYY-MM-DD HH:mm:ss` in console
+
+#### PostgreSQL Model Files
+- **`src/database/postgresql/models/Guild.ts`** — `findOrCreateGuild`, `getGuild`, `updateGuild`, `deleteGuild`, `getGuildPrefix`, `getGuildLanguage`, `isGuildBlacklisted`
+- **`src/database/postgresql/models/User.ts`** — `findOrCreateUser`, `getUser`, `updateUser`, `getUsersByGuild`, `isGloballyBlacklisted`, `setAfk`, `getBirthday`, `getUpcomingBirthdays`
+- **`src/database/postgresql/models/Economy.ts`** — `findOrCreateEconomy`, `getEconomy`, `updateEconomy`, `adjustWallet`, `deposit`, `withdraw`, `getRichestUsers`, `isCooldownExpired`
+- **`src/database/postgresql/models/Moderation.ts`** — `findOrCreateModeration`, `getModeration`, `createCase` (auto-incremented caseId per guild), `getCase`, `getCasesByUser`, `editCase`, `softDeleteCase`, `getWarnings`, `addWarning`, `clearWarnings`
+- **`src/database/postgresql/models/Premium.ts`** — `getPremium`, `upsertPremium`, `generateKey` (with `PANI-XX-XXXXX-XXXXX-XXXXX` format), `revokeKey`, `getKeyInfo`, `listKeys`, `getAIImageCount`, `incrementAIImageCount`
+- **`src/database/postgresql/models/Music.ts`** — Full typed playlist CRUD: `findOrCreateMusic`, `getPlaylists`, `getPlaylist`, `createPlaylist`, `addToPlaylist`, `deletePlaylist`, `addToHistory`, `getFavorites`, `addFavorite`
+- **`src/database/postgresql/models/Leveling.ts`** — `findOrCreateLeveling`, `getLeveling`, `updateLeveling`, `getServerLeaderboard`, `getUserRank`, `getLevelCard`, `setXP`, `resetLeveling` (server-wide or per-user)
+- **`src/database/postgresql/models/Giveaway.ts`** — `createGiveaway`, `getGiveaway`, `getActiveGiveaways`, `getExpiredGiveaways`, `updateGiveaway`, `endGiveaway`, `deleteGiveaway`, `enterGiveaway`, `getEntries`, `pickWinners` (weighted by bonus entries), `getGiveawayHistory`
+- **`src/database/postgresql/models/Applications.ts`** — `createForm`, `getForm`, `listForms`, `updateForm`, `deleteForm`, `submitApplication`, `getApplication`, `getPendingApplications`, `reviewApplication`, `getUserApplications`, `exportResponses`
+
+### Changed
+
+#### Logger wired into all subsystems (console.log/error → structured loggers)
+- **`src/bot/index.ts`** — Replaced all `console.log`/`console.error` with `loggers.bot.*`; added startup/shutdown structured log with version, Node.js version, and env; registered global error handlers; started health-check logger; added graceful `SIGTERM`/`SIGINT` shutdown
+- **`src/bot/shard.ts`** — Replaced all `console.log`/`console.error` with `loggers.shard.*`; registered global error handlers
+- **`src/structures/PanindiganClient.ts`** — Replaced all `console.log`/`console.error` with `loggers.database.*` and `loggers.music.*`; added Lavalink node error/disconnect/ready event logging
+- **`src/database/mongodb/client.ts`** — Replaced `console.log` with `loggers.mongodb.*`; added `error` and `serverClosed` event logging
+- **`src/database/postgresql/client.ts`** — Replaced `console.log`/`console.error` with `loggers.postgresql.*`
+- **`src/database/redis/client.ts`** — Replaced `console.log`/`console.error` with `loggers.redis.*`; added `reconnecting` and `ready` event logging
+- **`src/handlers/CommandHandler.ts`** — Replaced all `console.log`/`console.warn`/`console.error` with `loggers.commands.*`; added per-file try/catch with error logging; improved load summary (`loaded`, `skipped`, `total`)
+- **`src/handlers/EventHandler.ts`** — Replaced all `console.log`/`console.warn`/`console.error` with `loggers.events.*`; added per-file try/catch with error logging
+- **`src/handlers/AIHandler.ts`** — Replaced all `console.error` with `loggers.ai.*`; provider failover now logs `warn` for primary failure, `error` for each failed fallback
+- **`src/handlers/PremiumHandler.ts`** — Replaced all `console.error` with `loggers.premium.*`; added structured context (userId, guildId) to all error logs
+- **`src/handlers/LevelingHandler.ts`** — Replaced all `console.error` with `loggers.leveling.*`; added structured context to all error logs
+- **`src/handlers/GiveawayHandler.ts`** — Replaced all `console.error` with `loggers.giveaways.*`; added structured context (giveawayId, guildId, userId) to all error logs
+- **`src/structures/AIEngine.ts`** — Replaced all `console.error` with `loggers.ai.*`
+- **`src/events/interactionCreate.ts`** — Replaced `console.error` with `loggers.commands.error` including structured context (command, guildId, userId, shardId, executionTimeMs)
+- **`src/events/messageCreate.ts`** — Replaced `console.error` with `loggers.commands.error` including structured context
+
+#### README.md — Complete rewrite
+- Added full tech stack table
+- Added database architecture section (PostgreSQL, MongoDB, Redis responsibilities)
+- Added AI provider table with supported models
+- Added premium tier table with pricing
+- Added complete command category table with counts
+- Added Docker deployment section
+- Added log tailing and querying guide
+- Added security checklist
+- Added development guide with `addCommand` example
+- Added sharding system documentation
+
+### Fixed
+- `src/database/postgresql/client.ts` — Removed `throw error` inside `.catch()` of a floating promise (was uncatchable); error is now properly logged and the throw propagates via the `getPrismaClient()` call site
+- `src/structures/PanindiganClient.ts` — Fixed `this.user?.setActivity()` with optional chaining (was `this.user.setActivity()` which could throw before the bot is ready)
+- `src/bot/shard.ts` — Fixed ESM `fileURLToPath` import to be compatible with CommonJS output (tsx dev path)
+
+### Known Issues
+- Music commands require a running Lavalink v4 server — without it the bot starts but music commands will fail gracefully
+- AI commands require at least one configured AI provider API key; the bot will start without them but AI commands will respond with an error
+- `prisma migrate` must be run once against the target PostgreSQL database before the bot can write economy/leveling/moderation data
+
+---
+
 ## [0.1.0] - 2026-07-24
 
 ### Added
@@ -30,20 +100,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Applications (18 commands)
   - Premium (30 commands)
   - Owner (122 commands)
-
-### Fixed
-- **`src/commands/ai/email.ts`** — Replaced stub with full AI email generator using `AIHandler.generateTaskResponse()`; slash options for topic, tone (professional/casual/formal/friendly/persuasive), and recipient
-- **`src/commands/ai/question.ts`** — Replaced stub with full AI question generator supporting question types (discussion/trivia/debate/icebreaker/interview/philosophical) and configurable count; parses numbered-list responses
-- **`src/commands/utility/birthday.ts`** — Replaced stub with full CRUD birthday system (set/view/list/remove) backed by `User.birthday` in PostgreSQL via Prisma; shows countdown in days
-- **`src/commands/utility/leaderboard.ts`** — Replaced stub with paginated XP leaderboard reading from the `Leveling` table; interactive prev/next buttons; rank medal formatting
-- **`src/commands/utility/level.ts`** — Replaced stub with live level card reading from the `Leveling` table; shows level, XP, visual progress bar, server rank, and message/voice stats
-- **`src/commands/utility/marry.ts`** — Replaced stub with full interactive proposal flow using Discord buttons; creates `Couple` record in Prisma; checks for existing marriages; updates `User.spouseId` and `User.marriedAt`
-- **`src/commands/utility/divorce.ts`** — Replaced stub with confirmation button flow; deletes `Couple` record and clears spouse fields on both users in Prisma
-- **`src/commands/utility/profile.ts`** — Replaced stub with aggregated profile card pulling from `User`, `Economy`, `Leveling`, `Couple`, and `Premium` tables; displays level, wallet/bank/networth, rep, partner, premium tier, bio, and birthday
-- **`src/commands/utility/rep.ts`** — Replaced stub with full reputation system; give/view subcommands; 24-hour cooldown via `User.lastRepGiven`; increments `User.repPoints`; shows server rank by rep count
-- **`src/services/ImageService.ts`** — Replaced hardcoded placeholder GIF URL with a real fallback chain: Giphy API (when key is set) → nekos.best free API → descriptive error thrown
-
-### Features
 - Multi-database support (PostgreSQL, MongoDB, Redis)
 - Multi-provider AI integration (OpenAI, Anthropic, Gemini, Groq)
 - Lavalink integration for high-quality music playback
@@ -52,128 +108,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive command cooldown and rate limiting
 - Sharding support for large-scale deployments
 - Docker and Docker Compose configurations
-- Professional logging and error handling
+- Professional logging with Winston + winston-daily-rotate-file
 
-### Database
-- PostgreSQL integration with Prisma ORM
-- MongoDB for flexible document storage
-- Redis for caching and rate limiting
-- Comprehensive database schemas for all features
-
-### AI Services
-- OpenAI GPT models integration
-- Anthropic Claude integration
-- Google Gemini integration
-- Groq AI integration
-- Extensible AI service architecture
-
-### Music
-- Lavalink 4.x integration
-- Support for YouTube, SoundCloud, Twitch, and more
-- Queue management and playlist support
-- Audio filters and effects
-- Volume control and seeking
-
-### Economy
-- Virtual currency system
-- Shops and trading
-- Daily rewards and bonuses
-- Gambling and games
-- Leaderboards and rankings
-
-### Premium System
-- Free tier with basic features
-- Bronze, Silver, Gold, Diamond tiers
-- One-time permanent purchase model
-- Exclusive features per tier
-- Fair and affordable pricing
-
-### Localization
-- English (en) language file
-- Filipino (fil) language file
-- Extensible locale system
-- Command descriptions in multiple languages
-
-### Infrastructure
-- Docker containerization
-- Docker Compose for easy deployment
-- Environment-based configuration
-- Health checks and monitoring
-- Automatic restarts
-
-### Documentation
-- Comprehensive README.md
-- Detailed installation instructions
-- Usage examples for all categories
-- Development guidelines
-- Contributing guidelines
-
-### Security
-- Secure environment variable handling
-- Permission-based command access
-- Rate limiting and cooldowns
-- Input validation and sanitization
-- Error handling and logging
-
-### Developer Experience
-- TypeScript for type safety
-- Hot reload in development
-- ESLint and Prettier configuration
-- Clear project structure
-- Extensible command architecture
-
-### Known Issues
-- `@sapphire/discord.js-utilities@^3.2.3` has no matching npm version — `npm install` fails until the version pin is corrected
-- `Guild.xpMultiplier` and `Guild.levelUpMessage` fields referenced in `levelconfig.ts` are not yet in `prisma/schema.prisma` — writes silently no-op until the schema is migrated
-- AI services require API keys to function
-- Music features require a running Lavalink server
-
-### Dependencies
-- discord.js ^14.14.0
-- @prisma/client ^5.10.0
-- mongodb ^6.3.0
-- redis ^4.6.0
-- openai ^4.24.0
-- @anthropic-ai/sdk ^0.17.0
-- @google/generative-ai ^0.2.0
-- groq-sdk ^0.3.0
-- @discordjs/voice ^0.16.0
-- And many more…
+### Fixed
+- **`src/commands/ai/email.ts`** — Replaced stub with full AI email generator
+- **`src/commands/ai/question.ts`** — Replaced stub with full AI question generator
+- **`src/commands/utility/birthday.ts`** — Replaced stub with full CRUD birthday system
+- **`src/commands/utility/leaderboard.ts`** — Replaced stub with paginated XP leaderboard
+- **`src/commands/utility/level.ts`** — Replaced stub with live level card
+- **`src/commands/utility/marry.ts`** — Replaced stub with full interactive proposal flow
+- **`src/commands/utility/divorce.ts`** — Replaced stub with confirmation button flow
+- **`src/commands/utility/profile.ts`** — Replaced stub with aggregated profile card
+- **`src/commands/utility/rep.ts`** — Replaced stub with full reputation system
+- **`src/services/ImageService.ts`** — Replaced hardcoded placeholder GIF with real API chain (Giphy → nekos.best)
 
 ---
 
 ## [Unreleased]
 
 ### Planned
-- Complete implementation of pending command categories
 - Web dashboard for server management
-- Advanced analytics and statistics
-- Custom command builder
-- Plugin system for extensions
-- More AI providers and models
-- Enhanced music features
-- Mobile app companion
+- Additional AI providers (Perplexity, Cohere, Together AI, Fireworks AI, Cerebras)
+- More music platform sources (Apple Music, Tidal, Deezer native support)
+- Enhanced image generation (SDXL, Flux, Ideogram support)
+- Mobile companion app
 - API for third-party integrations
-
-### Under Consideration
-- Voice channel activities
-- Custom emojis and stickers
-- Advanced moderation tools
-- Server templates
-- Role management automation
-- Scheduled commands
-- Cross-server communication
-- Advanced economy features
+- Plugin system for community extensions
+- Advanced server analytics dashboard
+- Cross-server economy (global marketplace)
+- Scheduled announcements and automation builder
 
 ---
 
 ## Version History
 
-### 0.1.0 (2024-07-24)
-- Initial release with core infrastructure complete
-- 900+ commands planned across 18 categories
-- All previously stubbed utility and AI commands replaced with full implementations backed by Prisma, Discord buttons, and live AI calls
-- ImageService GIF fallback replaced with real API chain (Giphy → nekos.best)
+| Version | Date | Summary |
+|---|---|---|
+| 0.1.1 | 2026-07-25 | Complete logging overhaul, PostgreSQL model layer, console → logger migration across all subsystems |
+| 0.1.0 | 2026-07-24 | Initial release — full 900+ command bot with 18 categories, multi-DB, multi-provider AI, sharding |
 
 ---
 
@@ -186,4 +158,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-**Note:** This changelog is maintained by the Panindigan development team. For detailed information about specific changes, please refer to the commit history on GitHub.
+*Maintained by the Panindigan development team. Para sa mga Pilipino at sa buong Discord community. 🇵🇭*

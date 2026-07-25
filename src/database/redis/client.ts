@@ -1,4 +1,5 @@
 import { createClient, RedisClientType } from 'redis';
+import { loggers } from '../../utils/Logger';
 import config from '../../../config.json';
 
 let redisClient: RedisClientType | null = null;
@@ -9,22 +10,28 @@ export async function connectRedis(): Promise<RedisClientType> {
   }
 
   const redisUrl = process.env[config.databases.redis.urlEnv];
-  
+
   if (!redisUrl) {
     throw new Error(`Redis URL not found in environment variable: ${config.databases.redis.urlEnv}`);
   }
 
-  redisClient = createClient({
-    url: redisUrl,
+  redisClient = createClient({ url: redisUrl }) as RedisClientType;
+
+  redisClient.on('error', (error: Error) => {
+    loggers.redis.error('Redis client error', { errorMessage: error.message, stack: error.stack });
   });
 
-  redisClient.on('error', (error) => {
-    console.error('Redis Client Error:', error);
+  redisClient.on('reconnecting', () => {
+    loggers.redis.warn('Redis client reconnecting…');
+  });
+
+  redisClient.on('ready', () => {
+    loggers.redis.debug('Redis client ready');
   });
 
   await redisClient.connect();
-  console.log('✅ Redis connected successfully');
-  
+  loggers.redis.info('Redis connected successfully');
+
   return redisClient;
 }
 
@@ -39,7 +46,7 @@ export async function disconnectRedis(): Promise<void> {
   if (redisClient && redisClient.isOpen) {
     await redisClient.quit();
     redisClient = null;
-    console.log('🔌 Redis disconnected');
+    loggers.redis.info('Redis disconnected');
   }
 }
 
@@ -54,16 +61,16 @@ export function getCacheKey(...parts: string[]): string {
 export async function setCache(
   key: string,
   value: string | number | Buffer,
-  ttlSeconds?: number
+  ttlSeconds?: number,
 ): Promise<void> {
   const client = getRedisClient();
   const ttl = ttlSeconds ?? config.databases.redis.defaultTtlSeconds;
-  await client.setEx(key, ttl, value);
+  await client.setEx(key, ttl, value as string);
 }
 
 export async function getCache(key: string): Promise<string | null> {
   const client = getRedisClient();
-  return await client.get(key);
+  return client.get(key);
 }
 
 export async function deleteCache(key: string): Promise<void> {
@@ -74,16 +81,14 @@ export async function deleteCache(key: string): Promise<void> {
 export async function deleteCachePattern(pattern: string): Promise<void> {
   const client = getRedisClient();
   const keys = await client.keys(pattern);
-  if (keys.length > 0) {
-    await client.del(keys);
-  }
+  if (keys.length > 0) await client.del(keys);
 }
 
 export async function setCooldown(
   userId: string,
   guildId: string,
   command: string,
-  ttlSeconds: number
+  ttlSeconds: number,
 ): Promise<void> {
   const key = getCacheKey('cooldown', userId, guildId, command);
   await setCache(key, '1', ttlSeconds);
@@ -92,7 +97,7 @@ export async function setCooldown(
 export async function getCooldown(
   userId: string,
   guildId: string,
-  command: string
+  command: string,
 ): Promise<number> {
   const key = getCacheKey('cooldown', userId, guildId, command);
   const client = getRedisClient();

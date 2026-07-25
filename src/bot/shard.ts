@@ -1,43 +1,55 @@
+import 'dotenv/config';
 import { ShardingManager } from 'discord.js';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { join } from 'path';
+import { loggers, registerGlobalErrorHandlers } from '../utils/Logger';
 import config from '../../config.json';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+registerGlobalErrorHandlers();
 
+// __dirname is available in CommonJS output (tsconfig "module": "commonjs")
 const manager = new ShardingManager(join(__dirname, 'index.js'), {
   token: process.env.DISCORD_TOKEN,
-  totalShards: config.sharding.shardCount === 'auto' ? 'auto' : config.sharding.shardCount as number,
+  totalShards:
+    config.sharding.shardCount === 'auto' ? 'auto' : (config.sharding.shardCount as number),
   respawn: config.sharding.respawn,
   shardArgs: process.argv.slice(2),
 });
 
 manager.on('shardCreate', (shard) => {
-  console.log(`🔷 Launched shard #${shard.id}`);
-  
+  loggers.shard.info('Shard launched', { shardId: shard.id });
+
   shard.on('ready', () => {
-    console.log(`✅ Shard #${shard.id} connected`);
+    loggers.shard.info('Shard connected', { shardId: shard.id });
   });
 
   shard.on('error', (error) => {
-    console.error(`❌ Shard #${shard.id} error:`, error);
+    loggers.shard.error('Shard error', {
+      shardId: shard.id,
+      errorMessage: error.message,
+      stack: error.stack,
+    });
   });
 
   shard.on('death', () => {
-    console.log(`💀 Shard #${shard.id} died`);
+    loggers.shard.warn('Shard died', { shardId: shard.id });
   });
 
   shard.on('reconnecting', () => {
-    console.log(`🔄 Shard #${shard.id} reconnecting`);
+    loggers.shard.info('Shard reconnecting', { shardId: shard.id });
   });
 });
 
-manager.spawn()
+manager
+  .spawn()
   .then(() => {
-    console.log(`🚀 All shards spawned successfully`);
+    loggers.shard.info('All shards spawned successfully', {
+      totalShards: manager.totalShards,
+    });
   })
-  .catch((error) => {
-    console.error('❌ Failed to spawn shards:', error);
+  .catch((error: Error) => {
+    loggers.shard.error('Failed to spawn shards', {
+      errorMessage: error.message,
+      stack: error.stack,
+    });
     process.exit(1);
   });
