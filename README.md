@@ -7,10 +7,6 @@
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 [![Version](https://img.shields.io/badge/Version-0.1.1-orange)](CHANGELOG.md)
  
-Panindigan is a powerful, feature-rich, all-in-one Discord bot built with TypeScript, Discord.js v14, and modern best practices. With over 900 commands across 18 categories, it provides comprehensive moderation, entertainment, music, economy, leveling, and utility features for Discord servers — with full support for both English and Filipino communities.
- 
-Designed to scale from small servers to communities with thousands of members, Panindigan runs on a fully sharded architecture backed by PostgreSQL, MongoDB, and Redis, with high-quality music streaming via Lavalink and multi-provider AI integration (OpenAI, Anthropic, Gemini, Groq) built right in.
- 
 ## ✨ Features
  
 ### 🎯 Command Categories
