@@ -81,6 +81,8 @@ cd panindigan-bot-backup
 2. **Install dependencies**
 ```bash
 npm install
+pnpm install
+bun install
 ```
 
 3. **Configure environment variables**
