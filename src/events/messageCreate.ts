@@ -80,7 +80,7 @@ export const event: Event = {
         return;
       }
 
-      await command.executePrefix(message, args);
+      await command.executePrefix(message, _args);
       const executionTime = Date.now() - startTime;
 
       logCommandExecution(
