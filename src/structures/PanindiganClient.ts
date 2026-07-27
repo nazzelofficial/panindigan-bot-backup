@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { Client, GatewayIntentBits, Collection, Partials } from 'discord.js';
 import { Kazagumo } from 'kazagumo';
-import { Shoukaku } from 'shoukaku';
+import { Connectors } from 'shoukaku';
 import { connectMongoDB } from '../database/mongodb/client.js';
 import { initializePrisma } from '../database/postgresql/client.js';
 import { connectRedis } from '../database/redis/client.js';
@@ -103,8 +103,9 @@ export class PanindiganClient extends Client {
           if (guild) guild.shard.send(packet);
         },
       },
-      new Shoukaku({ nodes }),
-      this,
+      new Connectors.DiscordJS(this),
+      nodes,
+      {},
     );
 
     this.kazagumo.on('playerStart', (player, track) => {

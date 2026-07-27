@@ -1,4 +1,4 @@
-modules = ["nodejs-20"]
+modules = ["nodejs-24"]
 
 [nix]
 channel = "stable-25_05"
@@ -32,3 +32,13 @@ outputType = "console"
 [[ports]]
 localPort = 3000
 externalPort = 80
+
+[[ports]]
+localPort = 3001
+externalPort = 3001
+
+[userenv]
+
+[userenv.shared]
+BOT_PREFIX = "p!"
+NODE_ENV = "development"
