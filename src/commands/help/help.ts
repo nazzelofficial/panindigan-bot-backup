@@ -52,7 +52,7 @@ export class HelpCommand extends BaseCommand {
   }
 
   public async executePrefix(message: Message, _args: string[]): Promise<void> {
-    const target = args[0];
+    const target = _args[0];
     
     if (target) {
       await this.showCommandHelp(message, target);

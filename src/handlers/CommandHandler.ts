@@ -28,8 +28,21 @@ export async function loadCommands(client: PanindiganClient): Promise<void> {
       const filePath = join(commandsPath, file);
       try {
         const commandModule = await import(filePath);
-        const command: BaseCommand =
-          commandModule.default || commandModule[Object.keys(commandModule)[0]];
+        const raw = commandModule.default || commandModule[Object.keys(commandModule)[0]];
+
+        // Commands may be exported as a class (constructor) or as an already-constructed instance.
+        let command: BaseCommand;
+        if (typeof raw === 'function') {
+          try {
+            command = new raw();
+          } catch (err) {
+            loggers.commands.warn('Skipped command file — constructor threw', { filePath, error: String(err) });
+            skipped++;
+            continue;
+          }
+        } else {
+          command = raw;
+        }
 
         if (!command || !(command instanceof BaseCommand)) {
           loggers.commands.warn('Skipped invalid command file', { filePath });
@@ -64,7 +77,13 @@ export async function loadCommands(client: PanindiganClient): Promise<void> {
   loggers.commands.info('Commands loaded', { loaded, skipped, total: client.commands.size });
 
   if (config.loader.enableSlashCommands) {
-    await registerSlashCommands(client);
+    try {
+      await registerSlashCommands(client);
+    } catch (err) {
+      loggers.commands.warn('Slash command registration failed — bot will continue without registered slash commands', {
+        errorMessage: err instanceof Error ? err.message : String(err),
+      });
+    }
   }
 }
 

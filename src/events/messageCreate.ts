@@ -16,9 +16,14 @@ export const event: Event = {
     if (!config.loader.enablePrefixCommands) return;
     if (message.author.bot) return;
 
-    const prefix = message.guild
-      ? await getGuildPrefix(message.guild.id)
-      : (process.env.BOT_PREFIX ?? config.bot.prefix);
+    let prefix: string;
+    try {
+      prefix = message.guild
+        ? await getGuildPrefix(message.guild.id)
+        : (process.env.BOT_PREFIX ?? config.bot.prefix);
+    } catch {
+      prefix = process.env.BOT_PREFIX ?? config.bot.prefix;
+    }
 
     if (!message.content.startsWith(prefix)) return;
 

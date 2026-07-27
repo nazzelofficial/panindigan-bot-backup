@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import pg from 'pg';
 import { loggers } from '../../utils/Logger.js';
 import config from '../../../config.json' with { type: 'json' };
 
@@ -23,7 +24,8 @@ export async function initializePrisma(): Promise<void> {
     );
   }
 
-  const adapter = new PrismaPg({ connectionString: postgresUrl });
+  const pool = new pg.Pool({ connectionString: postgresUrl, ssl: { rejectUnauthorized: false } });
+  const adapter = new PrismaPg(pool);
 
   prisma = new PrismaClient({
     adapter,
