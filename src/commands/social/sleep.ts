@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 
 const GIFS = [
   'https://media.giphy.com/media/xT9IgG50Lg7rusNZ6A/giphy.gif',
@@ -46,7 +47,7 @@ export class SleepCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     try {
       const embed = new EmbedBuilder()
         .setDescription(`😴 **${m.author.username}** is going to sleep... zzz 💤`)

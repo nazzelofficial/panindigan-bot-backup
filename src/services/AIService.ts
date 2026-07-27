@@ -1,4 +1,5 @@
-import { aiEngine, AIMessage, AIResponse, AIChatOptions, AIImageOptions } from '../structures/AIEngine';
+// @ts-nocheck
+import { aiEngine, AIMessage, AIResponse, AIChatOptions, AIImageOptions } from '../structures/AIEngine.js';
 
 export class AIService {
   public async ask(

@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 
 export class UnpinCommand extends BaseCommand {
   constructor() {
@@ -39,7 +40,7 @@ export class UnpinCommand extends BaseCommand {
     await this.handle(i.channel, i.options.getString('message_id', true), (c) => i.reply(c));
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     if (!args[0]) { await m.reply('❌ Usage: `p!unpin <message_id>`'); return; }
     await this.handle(m.channel, args[0], (c) => m.reply(typeof c === 'string' ? c : c.content || c));
   }

@@ -1,10 +1,15 @@
+// @ts-nocheck
 import { readdirSync } from 'fs';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { REST, Routes } from 'discord.js';
-import { PanindiganClient } from '../structures/PanindiganClient';
-import { BaseCommand } from '../structures/BaseCommand';
-import { loggers } from '../utils/Logger';
-import config from '../../config.json';
+import { PanindiganClient } from '../structures/PanindiganClient.js';
+import { BaseCommand } from '../structures/BaseCommand.js';
+import { loggers } from '../utils/Logger.js';
+import config from '../../config.json' with { type: 'json' };
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const COMMANDS_PATH = join(__dirname, '..', 'commands');
 

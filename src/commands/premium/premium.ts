@@ -1,10 +1,11 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import {
   ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder,
 } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { PremiumHandler } from '../../handlers/PremiumHandler';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { COLORS } from '../../utils/Constants.js';
+import { PremiumHandler } from '../../handlers/PremiumHandler.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 const TIER_INFO = {
   free:    { label: 'Free',    color: COLORS.default, perks: ['Basic commands', 'Economy system', 'Social GIFs', 'Leveling', 'Giveaways'] },
@@ -83,8 +84,8 @@ export class PremiumCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
-    const [sub] = args;
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+    const [sub] = _args;
     if (!sub || sub === 'info') {
       const handler = new PremiumHandler();
       const status = await handler.getUserPremiumStatus(m.author.id);

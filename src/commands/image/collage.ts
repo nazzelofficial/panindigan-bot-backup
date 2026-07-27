@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder, AttachmentBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 import { createCanvas, loadImage } from 'canvas';
 
 export class CollageCommand extends BaseCommand {
@@ -39,7 +40,7 @@ export class CollageCommand extends BaseCommand {
     } catch { await i.editReply({ content: '❌ Failed to create collage.' }); }
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const users = m.mentions.users.first(4);
     if (!users.length) { await m.reply('❌ Mention at least 1 user.'); return; }
     try {

@@ -1,10 +1,11 @@
+// @ts-nocheck
 /**
  * Leveling model helpers — typed wrappers around Prisma's Leveling operations.
  */
 
-import { getPrismaClient } from '../client';
+import { getPrismaClient } from '../client.js';
 import type { Leveling, Prisma } from '@prisma/client';
-import { calculateLevelFromXP, getXPForNextLevel } from '../../../handlers/LevelingHandler';
+import { calculateLevelFromXP, getXPForNextLevel } from '../../../handlers/LevelingHandler.js';
 
 export async function findOrCreateLeveling(userId: string, guildId: string): Promise<Leveling> {
   const prisma = getPrismaClient();

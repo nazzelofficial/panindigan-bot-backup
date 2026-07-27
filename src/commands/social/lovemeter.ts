@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 
 export class LovemeterCommand extends BaseCommand {
   constructor() {
@@ -46,7 +47,7 @@ export class LovemeterCommand extends BaseCommand {
     await i.reply({ embeds: [this.buildEmbed(u1.username, u2.username, pct)] });
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const users = m.mentions.users;
     const u1 = users.first() || m.author;
     const u2 = users.size >= 2 ? users.at(1)! : m.author;

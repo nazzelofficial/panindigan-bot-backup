@@ -1,6 +1,7 @@
-import { getPrismaClient } from '../database/postgresql/client';
-import { loggers } from '../utils/Logger';
-import config from '../../config.json';
+// @ts-nocheck
+import { getPrismaClient } from '../database/postgresql/client.js';
+import { loggers } from '../utils/Logger.js';
+import config from '../../config.json' with { type: 'json' };
 
 export function calculateLevelFromXP(xp: number): number {
   let level = 0;

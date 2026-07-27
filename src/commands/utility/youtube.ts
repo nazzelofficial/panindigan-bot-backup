@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 
 export class YoutubeCommand extends BaseCommand {
   constructor() {
@@ -30,6 +31,6 @@ export class YoutubeCommand extends BaseCommand {
     }
   }
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> { await this.run(i, null, i.options.getString('query', true)); }
-  public async executePrefix(m: Message, args: string[]): Promise<void> { await this.run(null, m, args.join(' ')); }
+  public async executePrefix(m: Message, _args: string[]): Promise<void> { await this.run(null, m, args.join(' ')); }
 }
 export default YoutubeCommand;

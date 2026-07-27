@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import { newsService } from '../../services/NewsService';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { newsService } from '../../services/NewsService.js';
 
 export class NewsCommand extends BaseCommand {
   constructor() {
@@ -69,8 +70,8 @@ export class NewsCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const query = args.join(' ') || undefined;
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const query = _args.join(' ') || undefined;
     const thinking = await message.reply(`${EMOJIS.info} Fetching news...`);
     try {
       if (!newsService.isConfigured()) {

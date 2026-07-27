@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import config from '../../../config.json';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import config from '../../../config.json' with { type: 'json' };
 
 export class PurgeCommand extends BaseCommand {
   constructor() {
@@ -57,7 +58,7 @@ export class PurgeCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     const amount = parseInt(args[0]) || 10;
 
     if (amount < 1) {

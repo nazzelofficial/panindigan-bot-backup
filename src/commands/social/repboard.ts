@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { COLORS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class RepboardCommand extends BaseCommand {
   constructor() {
@@ -21,7 +22,7 @@ export class RepboardCommand extends BaseCommand {
     await i.reply({ embeds: [embed] });
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const prisma = getPrismaClient();
     const top = await prisma.user.findMany({ where: { guildId: m.guildId!, repPoints: { gt: 0 } }, orderBy: { repPoints: 'desc' }, take: 10 });
     const lines = await Promise.all(top.map(async (u, idx) => {

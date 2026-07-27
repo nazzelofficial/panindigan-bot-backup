@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 
 const GIFS = [
   'https://media.giphy.com/media/5xaOcLGvzHxDKjufnLW/giphy.gif',
@@ -59,7 +60,7 @@ export class DanceCommand extends BaseCommand {
     await i.reply({ embeds: [embed] });
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const t = m.mentions.users.first();
     const embed = new EmbedBuilder()
       .setDescription(this.msg(m.author.username, t?.username))

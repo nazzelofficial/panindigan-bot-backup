@@ -1,6 +1,7 @@
-import { getPrismaClient } from '../../database/postgresql/client';
+// @ts-nocheck
+import { getPrismaClient } from '../../database/postgresql/client.js';
 import { EmbedBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 
 export interface CoupleProfile {
   userId1: string;

@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { PanindiganClient } from '../../structures/PanindiganClient';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { PanindiganClient } from '../../structures/PanindiganClient.js';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class AskCommand extends BaseCommand {
   constructor() {
@@ -54,8 +55,8 @@ export class AskCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const question = args.join(' ');
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const question = _args.join(' ');
     if (!question) return void message.reply(`${EMOJIS.error} Please provide a question.`);
     const thinking = await message.reply(`${EMOJIS.ai} Thinking...`);
     try {

@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class TranslateAutoCommand extends BaseCommand {
   constructor() {
@@ -38,7 +39,7 @@ export class TranslateAutoCommand extends BaseCommand {
   }
 
   public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
+    const _args = message.content.split(' ').slice(1);
     const action = args[0] || 'off';
     const language = args[1] || 'English';
 

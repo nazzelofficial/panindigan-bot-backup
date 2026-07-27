@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { COLORS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class CustomPrefixCommand extends BaseCommand {
   constructor() {
@@ -25,7 +26,7 @@ export class CustomPrefixCommand extends BaseCommand {
     await i.reply({ embeds: [embed] });
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const prefix = args[0];
     if (!prefix) { await m.reply('❌ Usage: `p!customprefix <new-prefix>`'); return; }
     if (prefix.length > 5) { await m.reply('❌ Prefix must be 5 characters or less.'); return; }

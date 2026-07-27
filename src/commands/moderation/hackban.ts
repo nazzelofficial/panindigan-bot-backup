@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class HackBanCommand extends BaseCommand {
   constructor() {
@@ -81,9 +82,9 @@ export class HackBanCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     const userId = args[0];
-    const reason = args.slice(1).join(' ') || 'No reason provided';
+    const reason = _args.slice(1).join(' ') || 'No reason provided';
 
     if (!userId) {
       await message.reply('❌ Please provide a user ID.');

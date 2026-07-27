@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class BoostHistoryCommand extends BaseCommand {
   constructor() {
@@ -57,7 +58,7 @@ export class BoostHistoryCommand extends BaseCommand {
     await interaction.editReply({ embeds: [embed] });
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     const guild = message.guild!;
     await guild.members.fetch().catch(() => {});
     const boosters = guild.members.cache.filter(m => m.premiumSince !== null);

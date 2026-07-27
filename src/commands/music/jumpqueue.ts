@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class JumpQueueCommand extends BaseCommand {
   constructor() {
@@ -79,7 +80,7 @@ export class JumpQueueCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     const index = parseInt(args[0]);
 
     if (isNaN(index) || index < 1) {

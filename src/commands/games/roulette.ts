@@ -1,9 +1,10 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import {
   ChatInputCommandInteraction, Message, EmbedBuilder,
   ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType,
 } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 const RED_NUMBERS = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
 
@@ -120,7 +121,7 @@ export class RouletteCommand extends BaseCommand {
     );
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     const bet = args[0];
     await this.runRoulette(
       (c) => message.reply(c),

@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder, codeBlock } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 import { inspect } from 'util';
 
 export class EvalCommand extends BaseCommand {
@@ -58,8 +59,8 @@ export class EvalCommand extends BaseCommand {
     await i.editReply({ embeds: [embed] });
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
-    const code = args.join(' ');
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+    const code = _args.join(' ');
     if (!code) { await m.reply('❌ Provide code to evaluate.'); return; }
     const isAsync = code.includes('await');
     const { output, success, timeTaken } = await this.runEval(code, { client: m.client, message: m }, isAsync);

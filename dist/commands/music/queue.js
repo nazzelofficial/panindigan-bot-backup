@@ -1,0 +1,117 @@
+// @ts-nocheck
+import { BaseCommand } from '../../structures/BaseCommand.js';
+import { EmbedBuilder, PermissionFlagsBits } from 'discord.js';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+export class QueueCommand extends BaseCommand {
+    constructor() {
+        const options = {
+            name: 'queue',
+            description: 'View the current music queue',
+            category: 'music',
+            cooldown: 5,
+            userPermissions: [PermissionFlagsBits.Connect],
+            botPermissions: [PermissionFlagsBits.Connect, PermissionFlagsBits.Speak],
+            guildOnly: true,
+            slashCommand: true,
+            prefixCommand: true,
+            aliases: ['q', 'playlist'],
+            examples: ['/queue', 'p!queue'],
+        };
+        super(options);
+    }
+    async executeSlash(interaction) {
+        if (!interaction.guild)
+            return;
+        try {
+            const client = interaction.client;
+            const musicManager = client.kazagumo;
+            if (!musicManager) {
+                await interaction.reply({ content: '❌ Music system is not available.', ephemeral: true });
+                return;
+            }
+            const player = client.kazagumo.players.get(interaction.guild.id);
+            if (!player || (!player.currentTrack && player.queue.length === 0)) {
+                await interaction.reply({ content: '❌ The queue is empty.', ephemeral: true });
+                return;
+            }
+            const queueList = player.queue.map((track, index) => `${index + 1}. ${track.title} (${track.duration || 'Unknown'})`).join('\n');
+            const embed = new EmbedBuilder()
+                .setTitle(`${EMOJIS.music} Music Queue`)
+                .setColor(COLORS.info)
+                .addFields([
+                { name: 'Now Playing', value: player.currentTrack?.title || 'None', inline: false },
+                { name: 'Queue Size', value: player.queue.length.toString(), inline: true },
+                { name: 'Total Duration', value: this.calculateTotalDuration(player.queue), inline: true },
+            ])
+                .setTimestamp();
+            if (queueList) {
+                embed.addField('Up Next', queueList.substring(0, 1024));
+            }
+            await interaction.reply({ embeds: [embed] });
+        }
+        catch (error) {
+            await interaction.reply({ content: '❌ Failed to fetch the queue.', ephemeral: true });
+        }
+    }
+    async executePrefix(message) {
+        if (!message.guild)
+            return;
+        try {
+            const client = message.client;
+            const musicManager = client.kazagumo;
+            if (!musicManager) {
+                await message.reply('❌ Music system is not available.');
+                return;
+            }
+            const player = client.kazagumo.players.get(message.guild.id);
+            if (!player || (!player.currentTrack && player.queue.length === 0)) {
+                await message.reply('❌ The queue is empty.');
+                return;
+            }
+            const queueList = player.queue.map((track, index) => `${index + 1}. ${track.title} (${track.duration || 'Unknown'})`).join('\n');
+            const embed = new EmbedBuilder()
+                .setTitle(`${EMOJIS.music} Music Queue`)
+                .setColor(COLORS.info)
+                .addFields([
+                { name: 'Now Playing', value: player.currentTrack?.title || 'None', inline: false },
+                { name: 'Queue Size', value: player.queue.length.toString(), inline: true },
+                { name: 'Total Duration', value: this.calculateTotalDuration(player.queue), inline: true },
+            ])
+                .setTimestamp();
+            if (queueList) {
+                embed.addField('Up Next', queueList.substring(0, 1024));
+            }
+            await message.reply({ embeds: [embed] });
+        }
+        catch (error) {
+            await message.reply('❌ Failed to fetch the queue.');
+        }
+    }
+    calculateTotalDuration(queue) {
+        let totalSeconds = 0;
+        for (const track of queue) {
+            if (track.duration) {
+                const parts = track.duration.split(':').map(Number);
+                if (parts.length === 2) {
+                    totalSeconds += parts[0] * 60 + parts[1];
+                }
+                else if (parts.length === 3) {
+                    totalSeconds += parts[0] * 3600 + parts[1] * 60 + parts[2];
+                }
+            }
+        }
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        if (hours > 0) {
+            return `${hours}h ${minutes}m ${seconds}s`;
+        }
+        else if (minutes > 0) {
+            return `${minutes}m ${seconds}s`;
+        }
+        else {
+            return `${seconds}s`;
+        }
+    }
+}
+export default QueueCommand;

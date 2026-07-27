@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { PanindiganClient } from '../../structures/PanindiganClient';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { PanindiganClient } from '../../structures/PanindiganClient.js';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class VisionCommand extends BaseCommand {
   constructor() {
@@ -66,7 +67,7 @@ export class VisionCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const attachment = m.attachments.first();
     if (!attachment) {
       return void m.reply(`${EMOJIS.error} Please attach an image to analyze.`);
@@ -75,7 +76,7 @@ export class VisionCommand extends BaseCommand {
       return void m.reply(`${EMOJIS.error} Please attach a valid image file (PNG, JPG, GIF, WEBP).`);
     }
 
-    const userPrompt = args.join(' ') || 'Describe this image in detail.';
+    const userPrompt = _args.join(' ') || 'Describe this image in detail.';
     const thinking = await m.reply(`${EMOJIS.ai} Analyzing image...`);
     try {
       const client = m.client as PanindiganClient;

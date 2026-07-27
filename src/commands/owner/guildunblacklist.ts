@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { COLORS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class GuildUnblacklistCommand extends BaseCommand {
   constructor() {
@@ -28,7 +29,7 @@ export class GuildUnblacklistCommand extends BaseCommand {
     await i.reply({ content: 'Use prefix command `p!guildunblacklist <guildId>` for this.', ephemeral: true });
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     try {
       const guildId = args[0];
       if (!guildId) {

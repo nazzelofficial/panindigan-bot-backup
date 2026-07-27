@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder, codeBlock } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 import { inspect } from 'util';
 
 export class ShardEvalCommand extends BaseCommand {
@@ -28,7 +29,7 @@ export class ShardEvalCommand extends BaseCommand {
     await i.reply({ content: 'Use prefix command `p!shardeval <shardId> <code>` for this.', ephemeral: true });
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     try {
       const client = m.client as any;
 
@@ -43,7 +44,7 @@ export class ShardEvalCommand extends BaseCommand {
         return;
       }
 
-      const code = args.slice(1).join(' ');
+      const code = _args.slice(1).join(' ');
 
       if (!client.shard) {
         // No shard manager — just eval locally

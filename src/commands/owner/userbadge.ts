@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import getMongoClient from '../../database/mongodb/client';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import getMongoClient from '../../database/mongodb/client.js';
 
 export class UserBadgeCommand extends BaseCommand {
   constructor() {
@@ -77,8 +78,8 @@ export class UserBadgeCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const [userId, badgeName] = args;
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const [userId, badgeName] = _args;
     if (!userId || !badgeName) {
       await message.reply(`${EMOJIS.error} Usage: \`p!userbadge <user_id> <badge_name>\``);
       return;

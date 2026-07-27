@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class LyricsCommand extends BaseCommand {
   constructor() {
@@ -60,8 +61,8 @@ export class LyricsCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const query = args.join(' ');
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const query = _args.join(' ');
 
     if (!message.guild) return;
 

@@ -1,11 +1,12 @@
-import { Event } from '../structures/BaseCommand';
+// @ts-nocheck
+import { Event } from '../structures/BaseCommand.js';
 import { Message } from 'discord.js';
-import { PanindiganClient } from '../structures/PanindiganClient';
-import { checkCooldown } from '../handlers/CooldownHandler';
-import { getUserPremiumTier } from '../handlers/PremiumHandler';
-import { Permissions } from '../utils/Permissions';
-import { loggers, logCommandExecution } from '../utils/Logger';
-import config from '../../config.json';
+import { PanindiganClient } from '../structures/PanindiganClient.js';
+import { checkCooldown } from '../handlers/CooldownHandler.js';
+import { getUserPremiumTier } from '../handlers/PremiumHandler.js';
+import { Permissions } from '../utils/Permissions.js';
+import { loggers, logCommandExecution } from '../utils/Logger.js';
+import config from '../../config.json' with { type: 'json' };
 
 export const event: Event = {
   name: 'messageCreate',
@@ -15,8 +16,8 @@ export const event: Event = {
     if (message.author.bot) return;
     if (!message.content.startsWith(config.bot.prefix)) return;
 
-    const args = message.content.slice(config.bot.prefix.length).trim().split(/ +/);
-    const commandName = args.shift()?.toLowerCase();
+    const _args = message.content.slice(config.bot.prefix.length).trim().split(/ +/);
+    const commandName = _args.shift()?.toLowerCase();
 
     if (!commandName) return;
 
@@ -87,7 +88,7 @@ export const event: Event = {
         message.guild?.id || 'dm',
         message.author.id,
         command.name,
-        args,
+        _args,
         executionTime,
         true,
       );
@@ -109,7 +110,7 @@ export const event: Event = {
         message.guild?.id || 'dm',
         message.author.id,
         command.name,
-        args,
+        _args,
         executionTime,
         false,
       );

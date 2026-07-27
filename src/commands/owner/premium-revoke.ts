@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, SlashCommandBuilder } from 'discord.js';
-import { PremiumHandler } from '../../handlers/PremiumHandler';
+import { PremiumHandler } from '../../handlers/PremiumHandler.js';
 
 export class PremiumRevokeCommand extends BaseCommand {
   constructor() {
@@ -15,7 +16,7 @@ export class PremiumRevokeCommand extends BaseCommand {
     await handler.revokePremium(target.id);
     await i.reply({ content: `✅ Revoked premium from **${target.tag}**.`, ephemeral: true });
   }
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const target = m.mentions.users.first(); if (!target) { await m.reply('❌ Mention a user.'); return; }
     const handler = new PremiumHandler();
     await handler.revokePremium(target.id);

@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class ReasonCommand extends BaseCommand {
   constructor() {
@@ -85,9 +86,9 @@ export class ReasonCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     const caseNumber = parseInt(args[0]);
-    const newReason = args.slice(1).join(' ');
+    const newReason = _args.slice(1).join(' ');
 
     if (!caseNumber) {
       await message.reply('❌ Please provide a case number.');

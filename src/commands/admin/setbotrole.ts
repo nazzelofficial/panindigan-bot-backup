@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { COLORS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class SetBotRoleCommand extends BaseCommand {
   constructor() {
@@ -40,9 +41,9 @@ export class SetBotRoleCommand extends BaseCommand {
     await this.handle(i.guildId!, role?.id || null, (c) => i.reply(c));
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const role = m.mentions.roles.first();
-    if (!args.length) {
+    if (!_args.length) {
       await m.reply('❌ Usage: `p!setbotrole @role` or `p!setbotrole disable`');
       return;
     }

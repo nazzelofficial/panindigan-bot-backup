@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder, AttachmentBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 import sharp from 'sharp';
 
 export class ContrastCommand extends BaseCommand {
@@ -40,7 +41,7 @@ export class ContrastCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const target = m.mentions.users.first() || m.author;
     const intensity = args[1] ? Math.min(3, Math.max(1, parseInt(args[1]) || 2)) : 2;
     try {

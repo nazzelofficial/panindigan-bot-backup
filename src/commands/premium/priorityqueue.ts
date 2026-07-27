@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { COLORS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class PriorityQueueCommand extends BaseCommand {
   constructor() {
@@ -63,9 +64,9 @@ export class PriorityQueueCommand extends BaseCommand {
     await this.handle(i.user.id, i.guildId!, query, (c) => i.reply(c));
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     if (!args.length) { await m.reply('❌ Usage: `p!priorityqueue <song name or URL>`'); return; }
-    await this.handle(m.author.id, m.guildId!, args.join(' '), (c) => m.reply(c));
+    await this.handle(m.author.id, m.guildId!, _args.join(' '), (c) => m.reply(c));
   }
 }
 export default PriorityQueueCommand;

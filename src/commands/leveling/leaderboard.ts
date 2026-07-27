@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { COLORS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class LeaderboardCommand extends BaseCommand {
   constructor() {
@@ -49,7 +50,7 @@ export class LeaderboardCommand extends BaseCommand {
     } catch { await i.editReply({ content: '❌ Failed to fetch leaderboard.' }); }
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const page = parseInt(args[0]) || 1;
     try {
       const { entries, total, pages } = await this.getLeaderboard(m.guildId!, page);

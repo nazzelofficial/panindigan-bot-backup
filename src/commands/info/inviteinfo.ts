@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, Invite } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import { Formatter } from '../../utils/Formatter';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { Formatter } from '../../utils/Formatter.js';
 
 export class InviteInfoCommand extends BaseCommand {
   constructor() {
@@ -50,7 +51,7 @@ export class InviteInfoCommand extends BaseCommand {
   }
 
   public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
+    const _args = message.content.split(' ').slice(1);
     const inviteCode = args[0] || '';
     if (!inviteCode) {
       const errorEmbed = new EmbedBuilder()

@@ -1,8 +1,9 @@
-import { Event } from '../structures/BaseCommand';
+// @ts-nocheck
+import { Event } from '../structures/BaseCommand.js';
 import { VoiceState, GuildMember } from 'discord.js';
-import { PanindiganClient } from '../structures/PanindiganClient';
-import { addVoiceXP } from '../handlers/LevelingHandler';
-import { logger } from '../utils/Logger';
+import { PanindiganClient } from '../structures/PanindiganClient.js';
+import { addVoiceXP } from '../handlers/LevelingHandler.js';
+import { logger } from '../utils/Logger.js';
 
 const voiceSessionStartTimes = new Map<string, number>();
 

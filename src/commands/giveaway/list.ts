@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { COLORS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class GiveawayListCommand extends BaseCommand {
   constructor() {
@@ -24,7 +25,7 @@ export class GiveawayListCommand extends BaseCommand {
     await i.editReply({ embeds: [embed] });
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const prisma = getPrismaClient();
     const giveaways = await prisma.giveaway.findMany({ where: { guildId: m.guildId!, active: true }, orderBy: { endsAt: 'asc' } });
     if (!giveaways.length) { await m.reply('📭 No active giveaways.'); return; }

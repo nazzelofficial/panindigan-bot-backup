@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { PanindiganClient } from '../../structures/PanindiganClient';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { PanindiganClient } from '../../structures/PanindiganClient.js';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class RecipeCommand extends BaseCommand {
   constructor() {
@@ -51,8 +52,8 @@ export class RecipeCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const dish = args.join(' ');
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const dish = _args.join(' ');
     if (!dish) return void message.reply(`${EMOJIS.error} Please provide a dish name.`);
     const thinking = await message.reply(`${EMOJIS.ai} Finding recipe...`);
     try {

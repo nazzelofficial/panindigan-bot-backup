@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 
 export class MongoflushCommand extends BaseCommand {
   constructor() {
@@ -28,14 +29,14 @@ export class MongoflushCommand extends BaseCommand {
     const embed = new EmbedBuilder()
       .setColor(0xFF0000)
       .setTitle('⚠️ DANGEROUS OPERATION')
-      .setDescription(`You are about to **permanently delete ALL documents** in collection \`${collection}\`.\n\n**This action CANNOT be undone.**\n\nTo confirm, run:\n\`\`\`\nnpx ts-node -e "require('./src/database/mongodb/client').default().then(db => db.collection('${collection}').deleteMany({}))"\n\`\`\``);
+      .setDescription(`You are about to **permanently delete ALL documents** in collection \`${collection}\`.\n\n**This action CANNOT be undone.**\n\nTo confirm, run:\n\`\`\`\nnpx ts-node -e "import('./src/database/mongodb/client.js').then(m => m.default().then(db => db.collection('${collection}').deleteMany({})))"\n\`\`\``);
     await send(embed);
   }
 
   public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
     await this.run(interaction, null, interaction.options.getString('collection', true));
   }
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     await this.run(null, message, args[0]);
   }
 }

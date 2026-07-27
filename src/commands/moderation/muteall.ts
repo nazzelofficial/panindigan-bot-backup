@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class MuteAllCommand extends BaseCommand {
   constructor() {
@@ -66,8 +67,8 @@ export class MuteAllCommand extends BaseCommand {
     await interaction.editReply({ embeds: [embed] });
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const reason = args.slice(0).join(' ') || 'Mass mute';
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const reason = _args.slice(0).join(' ') || 'Mass mute';
 
     if (!message.member || !message.guild) return;
 

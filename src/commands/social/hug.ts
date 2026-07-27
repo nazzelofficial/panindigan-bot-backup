@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 
 const GIFS = [
   'https://media.giphy.com/media/od5H3PmEG5EVq/giphy.gif',
@@ -36,15 +37,21 @@ export class HugCommand extends BaseCommand {
 
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> {
     const t = i.options.getUser('user', true);
-    if (t.id === i.user.id) { await i.reply({ content: '🥺 Hugging yourself? Okay, here's a virtual hug! 🤗', ephemeral: true }); return; }
-    if (t.bot) { await i.reply({ content: `🤖 *${i.user.username}* hugs the bot! Beep boop! 🤖`, ephemeral: false }); return; }
+    if (t.id === i.user.id) {
+      await i.reply({ content: '🥺 Hugging yourself? Okay, here\'s a virtual hug! 🤗', ephemeral: true });
+      return;
+    }
+    if (t.bot) {
+      await i.reply({ content: `🤖 *${i.user.username}* hugs the bot! Beep boop! 🤖`, ephemeral: false });
+      return;
+    }
     const embed = new EmbedBuilder()
       .setDescription(`💞 **${i.user.username}** hugs **${t.username}**!`)
       .setImage(this.gif()).setColor(COLORS.default).setFooter({ text: 'Panindigan Social' });
     await i.reply({ embeds: [embed] });
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const t = m.mentions.users.first();
     if (!t) { await m.reply('❌ Mention someone to hug!'); return; }
     if (t.id === m.author.id) { await m.reply('🥺 Hugging yourself? That\'s okay! 🤗'); return; }

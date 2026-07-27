@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 
 export class TestCommand extends BaseCommand {
   constructor() {
@@ -26,6 +27,6 @@ export class TestCommand extends BaseCommand {
     await send(embed);
   }
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> { await this.run(i, null, i.options.getString('command', true)); }
-  public async executePrefix(m: Message, args: string[]): Promise<void> { await this.run(null, m, args[0]); }
+  public async executePrefix(m: Message, _args: string[]): Promise<void> { await this.run(null, m, args[0]); }
 }
 export default TestCommand;

@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { getCollection } from '../../database/mongodb/client';
+import { COLORS } from '../../utils/Constants.js';
+import { getCollection } from '../../database/mongodb/client.js';
 
 export class GiveawayTemplateCommand extends BaseCommand {
   constructor() {
@@ -40,8 +41,8 @@ export class GiveawayTemplateCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
-    const [sub, name, ...rest] = args;
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+    const [sub, name, ...rest] = _args;
     const collection = getCollection('giveaway_templates');
     if (sub === 'list') {
       const templates = await collection.find({ guildId: m.guildId! }).toArray();

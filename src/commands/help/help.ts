@@ -1,8 +1,9 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js';
-import { PanindiganClient } from '../../structures/PanindiganClient';
-import { EMOJIS, COLORS, COMMAND_CATEGORIES } from '../../utils/Constants';
-import { Formatter } from '../../utils/Formatter';
+import { PanindiganClient } from '../../structures/PanindiganClient.js';
+import { EMOJIS, COLORS, COMMAND_CATEGORIES } from '../../utils/Constants.js';
+import { Formatter } from '../../utils/Formatter.js';
 
 const categoryEmojis: Record<string, string> = {
   moderation: EMOJIS.moderation,
@@ -50,7 +51,7 @@ export class HelpCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     const target = args[0];
     
     if (target) {

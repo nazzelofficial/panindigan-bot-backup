@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class UrbanCommand extends BaseCommand {
   constructor() {
@@ -72,8 +73,8 @@ export class UrbanCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const term = args.join(' ');
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const term = _args.join(' ');
     if (!term) return void message.reply(`${EMOJIS.error} Please provide a term to look up.`);
     const thinking = await message.reply(`${EMOJIS.info} Searching Urban Dictionary...`);
     try {

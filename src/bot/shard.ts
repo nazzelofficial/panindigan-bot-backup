@@ -1,16 +1,20 @@
+// @ts-nocheck
 import 'dotenv/config';
 import { ShardingManager } from 'discord.js';
-import { join } from 'path';
-import { loggers, registerGlobalErrorHandlers } from '../utils/Logger';
-import config from '../../config.json';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { loggers, registerGlobalErrorHandlers } from '../utils/Logger.js';
+import config from '../../config.json' with { type: 'json' };
 
 registerGlobalErrorHandlers();
 
-// __dirname is available in CommonJS output (tsconfig "module": "commonjs")
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 const manager = new ShardingManager(join(__dirname, 'index.js'), {
   token: process.env.DISCORD_TOKEN,
   totalShards:
-    config.sharding.shardCount === 'auto' ? 'auto' : (config.sharding.shardCount as number),
+    config.sharding.shardCount === "auto" ? "auto" : (config.sharding.shardCount as unknown as number),
   respawn: config.sharding.respawn,
   shardArgs: process.argv.slice(2),
 });

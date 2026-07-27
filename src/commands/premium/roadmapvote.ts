@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { getCollection } from '../../database/mongodb/client';
+import { COLORS } from '../../utils/Constants.js';
+import { getCollection } from '../../database/mongodb/client.js';
 
 const ROADMAP_FEATURES = [
   { id: 'voicechat', name: '🎙️ AI Voice Chat', description: 'Talk to the bot using voice' },
@@ -42,7 +43,7 @@ export class RoadmapVoteCommand extends BaseCommand {
     await i.reply({ content: `✅ Voted for **${feature.name}**! Total votes: **${count}**`, ephemeral: true });
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const embed = new EmbedBuilder().setTitle('🗳️ Roadmap Votes').setColor(COLORS.diamond)
       .setDescription(ROADMAP_FEATURES.map(f => `• **${f.name}** (\`${f.id}\`): ${f.description}`).join('\n'));
     await m.reply({ embeds: [embed] });

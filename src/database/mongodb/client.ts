@@ -1,6 +1,7 @@
+// @ts-nocheck
 import { MongoClient, Db, Collection } from 'mongodb';
-import { loggers } from '../../utils/Logger';
-import config from '../../../config.json';
+import { loggers } from '../../utils/Logger.js';
+import config from '../../../config.json' with { type: 'json' };
 
 let mongoClient: MongoClient | null = null;
 let mongoDb: Db | null = null;

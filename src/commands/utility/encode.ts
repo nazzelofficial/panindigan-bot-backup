@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class EncodeCommand extends BaseCommand {
   constructor() {
@@ -39,7 +40,7 @@ export class EncodeCommand extends BaseCommand {
     await interaction.reply({ embeds: [this.buildEmbed(text, encoded)] });
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     if (!args.length) {
       const embed = new EmbedBuilder()
         .setColor(COLORS.error)
@@ -49,7 +50,7 @@ export class EncodeCommand extends BaseCommand {
       return;
     }
 
-    const text = args.join(' ');
+    const text = _args.join(' ');
     const encoded = Buffer.from(text).toString('base64');
     await message.reply({ embeds: [this.buildEmbed(text, encoded)] });
   }

@@ -1,8 +1,9 @@
+// @ts-nocheck
 /**
  * Economy model helpers — typed wrappers around Prisma's Economy operations.
  */
 
-import { getPrismaClient } from '../client';
+import { getPrismaClient } from '../client.js';
 import type { Economy, Prisma } from '@prisma/client';
 
 export async function findOrCreateEconomy(userId: string, guildId: string): Promise<Economy> {

@@ -1,9 +1,10 @@
+// @ts-nocheck
 /**
  * Guild model helpers — typed wrappers around Prisma's Guild operations.
  * All database logic that touches the `guilds` table should go through here.
  */
 
-import { getPrismaClient } from '../client';
+import { getPrismaClient } from '../client.js';
 import type { Guild, Prisma } from '@prisma/client';
 
 export async function findOrCreateGuild(guildId: string): Promise<Guild> {

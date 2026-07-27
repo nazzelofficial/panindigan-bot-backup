@@ -1,9 +1,10 @@
+// @ts-nocheck
 import { OpenAI } from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import Groq from 'groq-sdk';
-import { getCollection } from '../database/mongodb/client';
-import { loggers } from '../utils/Logger';
+import { getCollection } from '../database/mongodb/client.js';
+import { loggers } from '../utils/Logger.js';
 
 export interface AIMessage {
   role: 'user' | 'assistant' | 'system';

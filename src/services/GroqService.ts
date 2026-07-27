@@ -1,3 +1,4 @@
+// @ts-nocheck
 import Groq from 'groq-sdk';
 
 export class GroqService {

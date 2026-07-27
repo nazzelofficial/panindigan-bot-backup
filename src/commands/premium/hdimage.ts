@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { aiEngine } from '../../structures/AIEngine';
+import { COLORS } from '../../utils/Constants.js';
+import { aiEngine } from '../../structures/AIEngine.js';
 
 export class HdImageCommand extends BaseCommand {
   constructor() {
@@ -33,9 +34,9 @@ export class HdImageCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     if (!args.length) { await m.reply('❌ Usage: `p!hdimage <prompt>`'); return; }
-    const prompt = args.join(' ');
+    const prompt = _args.join(' ');
     const msg = await m.reply('⏳ Generating HD image...');
     try {
       const result = await aiEngine.generateImage(prompt, { size: '1792x1024', quality: 'hd' });

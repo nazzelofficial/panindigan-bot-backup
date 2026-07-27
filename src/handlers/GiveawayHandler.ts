@@ -1,6 +1,7 @@
-import { getPrismaClient } from '../database/postgresql/client';
+// @ts-nocheck
+import { getPrismaClient } from '../database/postgresql/client.js';
 import { TextChannel, Guild, User } from 'discord.js';
-import { loggers } from '../utils/Logger';
+import { loggers } from '../utils/Logger.js';
 
 export interface GiveawayData {
   guildId: string;

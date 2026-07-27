@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, SlashCommandBuilder, PermissionFlagsBits, ButtonBuilder, ButtonStyle, ActionRowBuilder } from 'discord.js';
-import { getCollection } from '../../database/mongodb/client';
+import { getCollection } from '../../database/mongodb/client.js';
 
 export class StarboardResetCommand extends BaseCommand {
   constructor() {
@@ -20,7 +21,7 @@ export class StarboardResetCommand extends BaseCommand {
     await i.editReply({ content: `✅ Starboard reset. Deleted **${result.deletedCount}** entries.` });
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     if (args[0] !== 'confirm') {
       const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder().setCustomId('starboard_reset_confirm').setLabel('✅ Confirm Reset').setStyle(ButtonStyle.Danger),

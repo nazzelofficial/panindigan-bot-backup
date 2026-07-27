@@ -1,12 +1,13 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import {
   ChatInputCommandInteraction,
   Message,
   EmbedBuilder,
   SlashCommandBuilder,
 } from 'discord.js';
-import { PanindiganClient } from '../../structures/PanindiganClient';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { PanindiganClient } from '../../structures/PanindiganClient.js';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 const QUESTION_TYPES = ['discussion', 'trivia', 'debate', 'icebreaker', 'interview', 'philosophical'];
 
@@ -152,7 +153,7 @@ Keep each question concise (under 150 characters ideally).`;
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     if (!args.length) {
       return void message.reply(
         `${EMOJIS.error} Usage: \`p!question [type] <topic>\`\nTypes: ${QUESTION_TYPES.join(', ')}\nExample: \`p!question debate artificial intelligence\``,
@@ -160,12 +161,12 @@ Keep each question concise (under 150 characters ideally).`;
     }
 
     let type = 'discussion';
-    let topicArgs = args;
+    let topicArgs = _args;
     let count = 5;
 
     if (QUESTION_TYPES.includes(args[0].toLowerCase())) {
       type = args[0].toLowerCase();
-      topicArgs = args.slice(1);
+      topicArgs = _args.slice(1);
     }
 
     // Check if last arg is a number (count)

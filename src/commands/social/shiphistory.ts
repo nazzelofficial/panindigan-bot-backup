@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { coupleHistoryService } from '../../features/couple/CoupleHistoryService';
+import { COLORS } from '../../utils/Constants.js';
+import { coupleHistoryService } from '../../features/couple/CoupleHistoryService.js';
 
 export class ShipHistoryCommand extends BaseCommand {
   constructor() {
@@ -43,7 +44,7 @@ export class ShipHistoryCommand extends BaseCommand {
     await this.handle(u1.id, u2.id, i.guildId!, (c) => i.reply(c));
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const users = m.mentions.users;
     const u1 = users.first() || m.author;
     const u2 = users.size >= 2 ? users.at(1)! : m.author;

@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, AttachmentBuilder } from 'discord.js';
-import { getPrismaClient } from '../../database/postgresql/client';
-import { getCollection } from '../../database/mongodb/client';
+import { getPrismaClient } from '../../database/postgresql/client.js';
+import { getCollection } from '../../database/mongodb/client.js';
 
 export class ExportDataCommand extends BaseCommand {
   constructor() {

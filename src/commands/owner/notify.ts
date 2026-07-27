@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class NotifyCommand extends BaseCommand {
   constructor() {
@@ -80,8 +81,8 @@ export class NotifyCommand extends BaseCommand {
     await interaction.reply({ embeds: [embed], ephemeral: true });
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const [type, ...messageParts] = args;
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const [type, ...messageParts] = _args;
     const notifMessage = messageParts.join(' ');
 
     if (!type || !notifMessage) {

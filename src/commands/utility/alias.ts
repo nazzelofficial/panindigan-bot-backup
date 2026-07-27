@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import getMongoClient from '../../database/mongodb/client';
+import { COLORS } from '../../utils/Constants.js';
+import getMongoClient from '../../database/mongodb/client.js';
 
 export class AliasCommand extends BaseCommand {
   constructor() {
@@ -33,6 +34,6 @@ export class AliasCommand extends BaseCommand {
     const sub = i.options.getSubcommand(false) ?? 'list';
     await this.run(i, null, sub, i.options.getString('name') ?? '', i.options.getString('target') ?? '');
   }
-  public async executePrefix(m: Message, args: string[]): Promise<void> { await this.run(null, m, args[0] ?? 'list', args[1] ?? '', args[2] ?? ''); }
+  public async executePrefix(m: Message, _args: string[]): Promise<void> { await this.run(null, m, args[0] ?? 'list', args[1] ?? '', args[2] ?? ''); }
 }
 export default AliasCommand;

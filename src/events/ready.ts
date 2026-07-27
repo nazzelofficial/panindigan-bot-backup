@@ -1,6 +1,7 @@
-import { Event } from '../structures/BaseCommand';
-import { PanindiganClient } from '../structures/PanindiganClient';
-import { logger } from '../utils/Logger';
+// @ts-nocheck
+import { Event } from '../structures/BaseCommand.js';
+import { PanindiganClient } from '../structures/PanindiganClient.js';
+import { logger } from '../utils/Logger.js';
 
 export const event: Event = {
   name: 'ready',

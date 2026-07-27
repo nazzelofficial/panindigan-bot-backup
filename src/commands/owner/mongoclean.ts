@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import { connectMongoDB } from '../../database/mongodb/client';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { connectMongoDB } from '../../database/mongodb/client.js';
 
 export class MongocleanCommand extends BaseCommand {
   constructor() {

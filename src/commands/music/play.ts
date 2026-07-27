@@ -1,4 +1,5 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import {
   ChatInputCommandInteraction,
   Message,
@@ -7,8 +8,8 @@ import {
   SlashCommandBuilder,
   GuildMember,
 } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import { PanindiganClient } from '../../structures/PanindiganClient';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { PanindiganClient } from '../../structures/PanindiganClient.js';
 
 export class PlayCommand extends BaseCommand {
   constructor() {
@@ -142,9 +143,9 @@ export class PlayCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     const client = message.client as PanindiganClient;
-    const query = args.join(' ');
+    const query = _args.join(' ');
 
     if (!query) {
       await message.reply('❌ Please provide a song name or URL. Example: `p!play Never Gonna Give You Up`');

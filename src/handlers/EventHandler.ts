@@ -1,7 +1,12 @@
+// @ts-nocheck
 import { readdirSync } from 'fs';
-import { join } from 'path';
-import { PanindiganClient } from '../structures/PanindiganClient';
-import { loggers } from '../utils/Logger';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { PanindiganClient } from '../structures/PanindiganClient.js';
+import { loggers } from '../utils/Logger.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const EVENTS_PATH = join(__dirname, '..', 'events');
 

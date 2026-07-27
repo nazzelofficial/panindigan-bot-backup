@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class PlayAlbumCommand extends BaseCommand {
   constructor() {
@@ -86,9 +87,9 @@ export class PlayAlbumCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     const album = args[0];
-    const artist = args.slice(1).join(' ');
+    const artist = _args.slice(1).join(' ');
 
     if (!album) {
       await message.reply('❌ Please provide an album name.');

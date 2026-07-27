@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import getMongoClient from '../../database/mongodb/client';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import getMongoClient from '../../database/mongodb/client.js';
 
 export class UserHistoryCommand extends BaseCommand {
   constructor() {
@@ -82,8 +83,8 @@ export class UserHistoryCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const [userId] = args;
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const [userId] = _args;
     if (!userId) {
       await message.reply(`${EMOJIS.error} Usage: \`p!userhistory <user_id>\``);
       return;

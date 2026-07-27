@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class TradeCommand extends BaseCommand {
   constructor() {
@@ -86,9 +87,9 @@ export class TradeCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     const targetUser = message.mentions.users.first();
-    const itemName = args.slice(1).join(' ');
+    const itemName = _args.slice(1).join(' ');
 
     if (!targetUser || targetUser.id === message.author.id) {
       await message.reply('❌ You cannot trade with yourself.');

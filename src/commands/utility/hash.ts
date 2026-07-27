@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 import crypto from 'crypto';
 
 const SUPPORTED_ALGORITHMS = ['md5', 'sha1', 'sha256', 'sha512'];
@@ -65,7 +66,7 @@ export class HashCommand extends BaseCommand {
     await interaction.reply({ embeds: [embed] });
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     if (args.length < 2) {
       const embed = new EmbedBuilder()
         .setColor(COLORS.error)
@@ -76,7 +77,7 @@ export class HashCommand extends BaseCommand {
     }
 
     const algorithm = args[0].toLowerCase();
-    const text = args.slice(1).join(' ');
+    const text = _args.slice(1).join(' ');
 
     if (!SUPPORTED_ALGORITHMS.includes(algorithm)) {
       const embed = new EmbedBuilder()

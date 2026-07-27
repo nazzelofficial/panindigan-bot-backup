@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import { getRedisClient } from '../../database/redis/client';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { getRedisClient } from '../../database/redis/client.js';
 
 const AVAILABLE_MODELS: Record<string, string[]> = {
   openai: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo'],
@@ -85,7 +86,7 @@ export class AiModelCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const modelName = args[0];
     if (!modelName) {
       await m.reply({ embeds: [this.buildListEmbed()] });

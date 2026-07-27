@@ -1,0 +1,109 @@
+// @ts-nocheck
+import { BaseCommand } from '../../structures/BaseCommand.js';
+import { EmbedBuilder, PermissionFlagsBits } from 'discord.js';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+export class PauseCommand extends BaseCommand {
+    constructor() {
+        const options = {
+            name: 'pause',
+            description: 'Pause the currently playing song',
+            category: 'music',
+            cooldown: 3,
+            userPermissions: [PermissionFlagsBits.Connect],
+            botPermissions: [PermissionFlagsBits.Connect, PermissionFlagsBits.Speak],
+            guildOnly: true,
+            slashCommand: true,
+            prefixCommand: true,
+            aliases: ['stopmusic'],
+            examples: ['/pause', 'p!pause'],
+        };
+        super(options);
+    }
+    async executeSlash(interaction) {
+        if (!interaction.guild || !interaction.member)
+            return;
+        const voiceChannel = interaction.member.voice.channel;
+        if (!voiceChannel) {
+            await interaction.reply({ content: '❌ You need to be in a voice channel to pause music.', ephemeral: true });
+            return;
+        }
+        try {
+            const client = interaction.client;
+            const musicManager = client.kazagumo;
+            if (!musicManager) {
+                await interaction.reply({ content: '❌ Music system is not available.', ephemeral: true });
+                return;
+            }
+            const player = client.kazagumo.players.get(interaction.guild.id);
+            if (!player) {
+                await interaction.reply({ content: '❌ Nothing is currently playing.', ephemeral: true });
+                return;
+            }
+            if (player.voiceChannel !== voiceChannel.id) {
+                await interaction.reply({ content: '❌ You need to be in the same voice channel as the bot.', ephemeral: true });
+                return;
+            }
+            if (player.paused) {
+                await interaction.reply({ content: '❌ The music is already paused.', ephemeral: true });
+                return;
+            }
+            await player.pause();
+            const embed = new EmbedBuilder()
+                .setTitle(`${EMOJIS.music} Paused`)
+                .setColor(COLORS.warning)
+                .addFields([
+                { name: 'Track', value: player.currentTrack?.title || 'Unknown', inline: true },
+                { name: 'Paused by', value: interaction.user.tag, inline: true },
+            ])
+                .setTimestamp();
+            await interaction.reply({ embeds: [embed] });
+        }
+        catch (error) {
+            await interaction.reply({ content: '❌ Failed to pause the music.', ephemeral: true });
+        }
+    }
+    async executePrefix(message) {
+        if (!message.guild || !message.member)
+            return;
+        const voiceChannel = message.member.voice.channel;
+        if (!voiceChannel) {
+            await message.reply('❌ You need to be in a voice channel to pause music.');
+            return;
+        }
+        try {
+            const client = message.client;
+            const musicManager = client.kazagumo;
+            if (!musicManager) {
+                await message.reply('❌ Music system is not available.');
+                return;
+            }
+            const player = client.kazagumo.players.get(message.guild.id);
+            if (!player) {
+                await message.reply('❌ Nothing is currently playing.');
+                return;
+            }
+            if (player.voiceChannel !== voiceChannel.id) {
+                await message.reply('❌ You need to be in the same voice channel as the bot.');
+                return;
+            }
+            if (player.paused) {
+                await message.reply('❌ The music is already paused.');
+                return;
+            }
+            await player.pause();
+            const embed = new EmbedBuilder()
+                .setTitle(`${EMOJIS.music} Paused`)
+                .setColor(COLORS.warning)
+                .addFields([
+                { name: 'Track', value: player.currentTrack?.title || 'Unknown', inline: true },
+                { name: 'Paused by', value: message.author.tag, inline: true },
+            ])
+                .setTimestamp();
+            await message.reply({ embeds: [embed] });
+        }
+        catch (error) {
+            await message.reply('❌ Failed to pause the music.');
+        }
+    }
+}
+export default PauseCommand;

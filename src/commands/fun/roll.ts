@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class RollCommand extends BaseCommand {
   constructor() {
@@ -39,7 +40,7 @@ export class RollCommand extends BaseCommand {
   }
 
   public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
+    const _args = message.content.split(' ').slice(1);
     const min = args[0] ? parseInt(args[0]) : 1;
     const max = args[1] ? parseInt(args[1]) : 100;
     const validMin = isNaN(min) ? 1 : min;

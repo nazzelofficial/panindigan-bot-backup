@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class GiveawayPingCommand extends BaseCommand {
   constructor() {
@@ -21,7 +22,7 @@ export class GiveawayPingCommand extends BaseCommand {
     else await i.reply({ content: '✅ Giveaway ping role disabled.', ephemeral: true });
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const role = m.mentions.roles.first();
     const prisma = getPrismaClient();
     await prisma.guild.upsert({ where: { guildId: m.guildId! }, create: { guildId: m.guildId! }, update: { giveawayPingRoleId: role?.id || null } as any });

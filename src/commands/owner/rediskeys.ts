@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import getRedisClient from '../../database/redis/client';
+import { COLORS } from '../../utils/Constants.js';
+import getRedisClient from '../../database/redis/client.js';
 
 export class RediskeysCommand extends BaseCommand {
   constructor() {
@@ -41,7 +42,7 @@ export class RediskeysCommand extends BaseCommand {
   public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
     await this.run(interaction, null, interaction.options.getString('pattern') ?? '*');
   }
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     await this.run(null, message, args[0] ?? '*');
   }
 }

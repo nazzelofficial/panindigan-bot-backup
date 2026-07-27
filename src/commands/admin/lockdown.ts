@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits, OverwriteType } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class LockdownCommand extends BaseCommand {
   constructor() {
@@ -31,7 +32,7 @@ export class LockdownCommand extends BaseCommand {
   private async toggleLockdown(interaction: ChatInputCommandInteraction | Message): Promise<void> {
     if (!interaction.guild) return;
 
-    const prisma = await import('../../database/postgresql/client').then(m => m.getPrismaClient());
+    const prisma = await import('../../database/postgresql/client.js').then(m => m.getPrismaClient());
     const guild = await prisma.guild.findUnique({
       where: { guildId: interaction.guild.id },
     });

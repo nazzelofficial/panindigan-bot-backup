@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, AttachmentBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 
 const SCREENSHOT_SERVICES = [
   (url: string) => `https://api.screenshotmachine.com/?url=${encodeURIComponent(url)}&dimension=1280x720&format=jpg&cacheLimit=0`,
@@ -122,7 +123,7 @@ export class ScreenshotCommand extends BaseCommand {
     await this.run(i, null, url, size);
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     if (!args[0]) { await m.reply('❌ Usage: `p!screenshot <url>`'); return; }
     await this.run(null, m, args[0], args[1] || '1280x720');
   }

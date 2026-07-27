@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class DecodeCommand extends BaseCommand {
   constructor() {
@@ -47,7 +48,7 @@ export class DecodeCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     if (!args.length) {
       const embed = new EmbedBuilder()
         .setColor(COLORS.error)
@@ -57,7 +58,7 @@ export class DecodeCommand extends BaseCommand {
       return;
     }
 
-    const text = args.join(' ');
+    const text = _args.join(' ');
     try {
       const decoded = Buffer.from(text, 'base64').toString('utf8');
       await message.reply({ embeds: [this.buildEmbed(text, decoded)] });

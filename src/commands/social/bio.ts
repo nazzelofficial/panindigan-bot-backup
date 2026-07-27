@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { COLORS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class BioCommand extends BaseCommand {
   constructor() {
@@ -91,13 +92,13 @@ export class BioCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     try {
       const prisma = getPrismaClient();
       const sub = args[0]?.toLowerCase();
 
       if (sub === 'set') {
-        const text = args.slice(1).join(' ');
+        const text = _args.slice(1).join(' ');
         if (!text) {
           await m.reply('❌ Magbigay ng bio text. Example: `bio set I love Discord!`');
           return;

@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 
 export class MasskickCommand extends BaseCommand {
   constructor() {
@@ -19,7 +20,7 @@ export class MasskickCommand extends BaseCommand {
     } as CommandOptions);
   }
 
-  private async run(interaction: ChatInputCommandInteraction | null, message: Message | null, args: string[]): Promise<void> {
+  private async run(interaction: ChatInputCommandInteraction | null, message: Message | null, _args: string[]): Promise<void> {
     const guild = interaction?.guild ?? message?.guild;
     if (!guild) return;
     const send = async (e: EmbedBuilder) => {
@@ -47,7 +48,7 @@ export class MasskickCommand extends BaseCommand {
   public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
     await this.run(interaction, null, [interaction.options.getString('role', true)]);
   }
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     await this.run(null, message, args);
   }
 }

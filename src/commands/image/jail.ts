@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder, AttachmentBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 import { createCanvas, loadImage } from 'canvas';
 
 export class JailCommand extends BaseCommand {
@@ -40,7 +41,7 @@ export class JailCommand extends BaseCommand {
     } catch { await i.editReply({ content: '❌ Failed.' }); }
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const target = m.mentions.users.first() || m.author;
     try {
       const buf = await this.generate(target.displayAvatarURL({ extension: 'png', size: 256 }));

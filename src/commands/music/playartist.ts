@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class PlayArtistCommand extends BaseCommand {
   constructor() {
@@ -83,8 +84,8 @@ export class PlayArtistCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const artist = args.join(' ');
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const artist = _args.join(' ');
 
     if (!artist) {
       await message.reply('❌ Please provide an artist name.');

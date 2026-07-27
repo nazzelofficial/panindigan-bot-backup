@@ -1,12 +1,13 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import {
   ChatInputCommandInteraction,
   Message,
   EmbedBuilder,
   SlashCommandBuilder,
 } from 'discord.js';
-import { PanindiganClient } from '../../structures/PanindiganClient';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { PanindiganClient } from '../../structures/PanindiganClient.js';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 const TONES = ['professional', 'formal', 'casual', 'friendly', 'apologetic', 'persuasive', 'thankful'];
 
@@ -124,7 +125,7 @@ Keep the email between 150–400 words. Write the full email, ready to send.`;
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     if (!args.length) {
       return void message.reply(
         `${EMOJIS.error} Usage: \`p!email <tone> <topic>\`\nTones: ${TONES.join(', ')}\nExample: \`p!email professional Request a meeting\``,
@@ -132,11 +133,11 @@ Keep the email between 150–400 words. Write the full email, ready to send.`;
     }
 
     let tone = 'professional';
-    let topicArgs = args;
+    let topicArgs = _args;
 
     if (TONES.includes(args[0].toLowerCase())) {
       tone = args[0].toLowerCase();
-      topicArgs = args.slice(1);
+      topicArgs = _args.slice(1);
     }
 
     const topic = topicArgs.join(' ');

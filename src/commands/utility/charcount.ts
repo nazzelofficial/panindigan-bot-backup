@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class CharcountCommand extends BaseCommand {
   constructor() {
@@ -62,10 +63,10 @@ export class CharcountCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     try {
-      let text = args.join(' ');
-      // If no args, check for a replied message
+      let text = _args.join(' ');
+      // If no _args, check for a replied message
       if (!text && m.reference?.messageId) {
         const replied = await m.channel.messages.fetch(m.reference.messageId).catch(() => null);
         if (replied) text = replied.content;

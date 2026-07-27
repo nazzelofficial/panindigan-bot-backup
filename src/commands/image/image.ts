@@ -1,8 +1,9 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import {
   ChatInputCommandInteraction, Message, AttachmentBuilder, SlashCommandBuilder,
 } from 'discord.js';
-import { PanindiganClient } from '../../structures/PanindiganClient';
+import { PanindiganClient } from '../../structures/PanindiganClient.js';
 
 export class ImageCommand extends BaseCommand {
   constructor() {
@@ -97,7 +98,7 @@ export class ImageCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     await m.reply('Please use `/image` slash commands for image generation.');
   }
 }

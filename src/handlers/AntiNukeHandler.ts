@@ -1,10 +1,11 @@
+// @ts-nocheck
 import { Guild, GuildMember, PermissionFlagsBits, EmbedBuilder, AuditLogEvent } from 'discord.js';
-import { PanindiganClient } from '../structures/PanindiganClient';
-import { getPrismaClient } from '../database/postgresql/client';
-import { getRedisClient } from '../database/redis/client';
-import { getCollection } from '../database/mongodb/client';
-import { logger } from '../utils/Logger';
-import { COLORS } from '../utils/Constants';
+import { PanindiganClient } from '../structures/PanindiganClient.js';
+import { getPrismaClient } from '../database/postgresql/client.js';
+import { getRedisClient } from '../database/redis/client.js';
+import { getCollection } from '../database/mongodb/client.js';
+import { logger } from '../utils/Logger.js';
+import { COLORS } from '../utils/Constants.js';
 
 export type AntiNukeActionType =
   | 'ban'

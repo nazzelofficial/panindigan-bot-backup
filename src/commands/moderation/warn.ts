@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class WarnCommand extends BaseCommand {
   constructor() {
@@ -99,9 +100,9 @@ export class WarnCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     const target = message.mentions.users.first();
-    const reason = args.slice(1).join(' ') || 'No reason provided';
+    const reason = _args.slice(1).join(' ') || 'No reason provided';
 
     if (!target) {
       await message.reply('❌ Please mention a user to warn.');

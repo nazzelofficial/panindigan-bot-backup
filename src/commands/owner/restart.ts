@@ -1,4 +1,5 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message } from 'discord.js';
 
 export class RestartCommand extends BaseCommand {

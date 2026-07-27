@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 
 const LETTER_OPENINGS: string[] = [
   'Every moment with you feels like a beautiful dream I never want to wake from.',
@@ -99,7 +100,7 @@ export class LoveLetterCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     try {
       const target = m.mentions.users.first();
       if (!target) {
@@ -117,7 +118,7 @@ export class LoveLetterCommand extends BaseCommand {
         return;
       }
 
-      const personal = args.slice(1).join(' ') || undefined;
+      const personal = _args.slice(1).join(' ') || undefined;
       const letter = this.buildLetter(m.author.username, target.username, personal);
 
       const embed = new EmbedBuilder()

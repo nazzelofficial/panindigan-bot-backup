@@ -1,11 +1,12 @@
+// @ts-nocheck
 import { OpenAI } from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import Groq from 'groq-sdk';
-import { getCollection } from '../database/mongodb/client';
-import { aiMemoryCollectionName } from '../database/mongodb/collections/AiMemory';
-import { loggers } from '../utils/Logger';
-import config from '../../config.json';
+import { getCollection } from '../database/mongodb/client.js';
+import { aiMemoryCollectionName } from '../database/mongodb/collections/AiMemory.js';
+import { loggers } from '../utils/Logger.js';
+import config from '../../config.json' with { type: 'json' };
 
 export interface AIResponse {
   content: string;

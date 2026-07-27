@@ -1,8 +1,9 @@
-import { Event } from '../structures/BaseCommand';
+// @ts-nocheck
+import { Event } from '../structures/BaseCommand.js';
 import { MessageReaction, User, PartialMessageReaction, PartialUser, EmbedBuilder, TextChannel } from 'discord.js';
-import { PanindiganClient } from '../structures/PanindiganClient';
-import { COLORS } from '../utils/Constants';
-import { getCollection } from '../database/mongodb/client';
+import { PanindiganClient } from '../structures/PanindiganClient.js';
+import { COLORS } from '../utils/Constants.js';
+import { getCollection } from '../database/mongodb/client.js';
 
 export const event: Event = {
   name: 'messageReactionAdd',
@@ -22,7 +23,7 @@ export const event: Event = {
     const guildId = reaction.message.guild.id;
 
     try {
-      const { getPrismaClient } = await import('../database/postgresql/client');
+      const { getPrismaClient } = await import('../database/postgresql/client.js');
       const prisma = getPrismaClient();
       const guildData = await prisma.guild.findUnique({
         where: { guildId },

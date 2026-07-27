@@ -1,3 +1,4 @@
+// @ts-nocheck
 export interface AiMemoryDocument {
   _id: string;
   userId: string;

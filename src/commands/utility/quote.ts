@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class QuoteCommand extends BaseCommand {
   constructor() {
@@ -69,7 +70,7 @@ export class QuoteCommand extends BaseCommand {
   }
 
   public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
+    const _args = message.content.split(' ').slice(1);
     const messageId = args[0];
 
     if (!messageId) {

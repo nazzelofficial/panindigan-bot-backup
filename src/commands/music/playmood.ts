@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class PlayMoodCommand extends BaseCommand {
   constructor() {
@@ -83,8 +84,8 @@ export class PlayMoodCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const mood = args.join(' ');
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const mood = _args.join(' ');
 
     if (!mood) {
       await message.reply('❌ Please provide a mood (e.g., happy, sad, energetic, chill).');

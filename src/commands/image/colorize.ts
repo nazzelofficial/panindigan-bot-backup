@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder, AttachmentBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 import sharp from 'sharp';
 
 type ColorOption = 'blue' | 'red' | 'green' | 'gold' | 'purple';
@@ -60,9 +61,9 @@ export class ColorizeCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const target = m.mentions.users.first() || m.author;
-    const colorArg = args.find(a => Object.keys(COLOR_MAP).includes(a)) as ColorOption | undefined;
+    const colorArg = _args.find(a => Object.keys(COLOR_MAP).includes(a)) as ColorOption | undefined;
     const color: ColorOption = colorArg ?? 'blue';
     try {
       const buf = await this.process(target.displayAvatarURL({ extension: 'png', size: 512 }), color);

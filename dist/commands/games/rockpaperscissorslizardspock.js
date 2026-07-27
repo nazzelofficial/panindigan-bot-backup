@@ -1,0 +1,151 @@
+// @ts-nocheck
+import { BaseCommand } from '../../structures/BaseCommand.js';
+import { EmbedBuilder, ComponentType, ButtonStyle, ActionRowBuilder, ButtonBuilder } from 'discord.js';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+export class RockPaperScissorsLizardSpockCommand extends BaseCommand {
+    constructor() {
+        const options = {
+            name: 'rockpaperscissorslizardspock',
+            description: 'Play Rock-Paper-Scissors-Lizard-Spock',
+            category: 'games',
+            cooldown: 5,
+            userPermissions: [],
+            botPermissions: [],
+            guildOnly: false,
+            slashCommand: true,
+            prefixCommand: true,
+            aliases: ['rpsls', 'rpslp'],
+            examples: ['/rockpaperscissorslizardspock', 'p!rpsls'],
+        };
+        super(options);
+    }
+    choices = ['rock', 'paper', 'scissors', 'lizard', 'spock'];
+    emojis = { rock: '🪨', paper: '📄', scissors: '✂️', lizard: '🦎', spock: '🖖' };
+    determineWinner(player, bot) {
+        const rules = {
+            rock: ['scissors', 'lizard'],
+            paper: ['rock', 'spock'],
+            scissors: ['paper', 'lizard'],
+            lizard: ['paper', 'spock'],
+            spock: ['rock', 'scissors'],
+        };
+        if (player === bot)
+            return 'tie';
+        if (rules[player].includes(bot))
+            return 'player';
+        return 'bot';
+    }
+    async executeSlash(interaction) {
+        const row = new ActionRowBuilder()
+            .addComponents(this.choices.map((choice) => new ButtonBuilder()
+            .setCustomId(`rpsls_${choice}`)
+            .setLabel(choice.charAt(0).toUpperCase() + choice.slice(1))
+            .setStyle(ButtonStyle.Primary)));
+        const embed = new EmbedBuilder()
+            .setTitle(`${EMOJIS.games} Rock-Paper-Scissors-Lizard-Spock`)
+            .setColor(COLORS.info)
+            .setDescription('Choose your move!')
+            .setTimestamp();
+        await interaction.reply({ embeds: [embed], components: [row] });
+        const collector = interaction.channel?.createMessageComponentCollector({
+            componentType: ComponentType.Button,
+            time: 30000,
+        });
+        collector?.on('collect', async (i) => {
+            const playerChoice = i.customId.split('_')[1];
+            const botChoice = this.choices[Math.floor(Math.random() * this.choices.length)];
+            const winner = this.determineWinner(playerChoice, botChoice);
+            let resultEmbed;
+            if (winner === 'tie') {
+                resultEmbed = new EmbedBuilder()
+                    .setTitle(`${EMOJIS.games} It's a Tie!`)
+                    .setColor(COLORS.info)
+                    .setDescription(`${this.emojis[playerChoice]} vs ${this.emojis[botChoice]}`)
+                    .setTimestamp();
+            }
+            else if (winner === 'player') {
+                resultEmbed = new EmbedBuilder()
+                    .setTitle(`${EMOJIS.games} You Win!`)
+                    .setColor(COLORS.success)
+                    .setDescription(`${this.emojis[playerChoice]} beats ${this.emojis[botChoice]}`)
+                    .setTimestamp();
+            }
+            else {
+                resultEmbed = new EmbedBuilder()
+                    .setTitle(`${EMOJIS.error} You Lose!`)
+                    .setColor(COLORS.error)
+                    .setDescription(`${this.emojis[botChoice]} beats ${this.emojis[playerChoice]}`)
+                    .setTimestamp();
+            }
+            await i.update({ embeds: [resultEmbed], components: [] });
+            collector.stop();
+        });
+        collector?.on('end', async (collected) => {
+            if (collected.size === 0) {
+                const timeoutEmbed = new EmbedBuilder()
+                    .setTitle(`${EMOJIS.error} Time's Up!`)
+                    .setColor(COLORS.error)
+                    .setDescription('You didn\'t make a choice in time.')
+                    .setTimestamp();
+                await interaction.editReply({ embeds: [timeoutEmbed], components: [] });
+            }
+        });
+    }
+    async executePrefix(message) {
+        const row = new ActionRowBuilder()
+            .addComponents(this.choices.map((choice) => new ButtonBuilder()
+            .setCustomId(`rpsls_${choice}`)
+            .setLabel(choice.charAt(0).toUpperCase() + choice.slice(1))
+            .setStyle(ButtonStyle.Primary)));
+        const embed = new EmbedBuilder()
+            .setTitle(`${EMOJIS.games} Rock-Paper-Scissors-Lizard-Spock`)
+            .setColor(COLORS.info)
+            .setDescription('Choose your move!')
+            .setTimestamp();
+        await message.reply({ embeds: [embed], components: [row] });
+        const collector = message.channel.createMessageComponentCollector({
+            componentType: ComponentType.Button,
+            time: 30000,
+        });
+        collector.on('collect', async (i) => {
+            const playerChoice = i.customId.split('_')[1];
+            const botChoice = this.choices[Math.floor(Math.random() * this.choices.length)];
+            const winner = this.determineWinner(playerChoice, botChoice);
+            let resultEmbed;
+            if (winner === 'tie') {
+                resultEmbed = new EmbedBuilder()
+                    .setTitle(`${EMOJIS.games} It's a Tie!`)
+                    .setColor(COLORS.info)
+                    .setDescription(`${this.emojis[playerChoice]} vs ${this.emojis[botChoice]}`)
+                    .setTimestamp();
+            }
+            else if (winner === 'player') {
+                resultEmbed = new EmbedBuilder()
+                    .setTitle(`${EMOJIS.games} You Win!`)
+                    .setColor(COLORS.success)
+                    .setDescription(`${this.emojis[playerChoice]} beats ${this.emojis[botChoice]}`)
+                    .setTimestamp();
+            }
+            else {
+                resultEmbed = new EmbedBuilder()
+                    .setTitle(`${EMOJIS.error} You Lose!`)
+                    .setColor(COLORS.error)
+                    .setDescription(`${this.emojis[botChoice]} beats ${this.emojis[playerChoice]}`)
+                    .setTimestamp();
+            }
+            await i.update({ embeds: [resultEmbed], components: [] });
+            collector.stop();
+        });
+        collector.on('end', async (collected) => {
+            if (collected.size === 0) {
+                const timeoutEmbed = new EmbedBuilder()
+                    .setTitle(`${EMOJIS.error} Time's Up!`)
+                    .setColor(COLORS.error)
+                    .setDescription('You didn\'t make a choice in time.')
+                    .setTimestamp();
+                await message.edit({ embeds: [timeoutEmbed], components: [] });
+            }
+        });
+    }
+}
+export default RockPaperScissorsLizardSpockCommand;

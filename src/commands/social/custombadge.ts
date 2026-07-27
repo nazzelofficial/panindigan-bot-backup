@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { COLORS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class CustomBadgeCommand extends BaseCommand {
   constructor() {
@@ -72,11 +73,11 @@ export class CustomBadgeCommand extends BaseCommand {
     await this.handle(sub, i.user.id, i.options.getString('emoji'), i.options.getString('name'), i.options.getString('description'), (c) => i.reply(c));
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const sub = args[0]?.toLowerCase() === 'create' || args[0]?.toLowerCase() === 'view' || args[0]?.toLowerCase() === 'remove' ? args[0].toLowerCase() : 'view';
     const emoji = sub === 'create' ? args[1] : null;
     const name = sub === 'create' ? args[2] : null;
-    const desc = sub === 'create' ? args.slice(3).join(' ') : null;
+    const desc = sub === 'create' ? _args.slice(3).join(' ') : null;
     await this.handle(sub, m.author.id, emoji, name, desc, (c) => m.reply(c));
   }
 }

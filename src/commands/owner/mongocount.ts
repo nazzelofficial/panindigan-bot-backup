@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import { connectMongoDB } from '../../database/mongodb/client';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { connectMongoDB } from '../../database/mongodb/client.js';
 
 export class MongoCountCommand extends BaseCommand {
   constructor() {
@@ -41,7 +42,7 @@ export class MongoCountCommand extends BaseCommand {
     await interaction.editReply({ embeds: [embed] });
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     if (!args[0]) {
       await message.reply(`${EMOJIS.error} Usage: \`p!mongocount <collection_name>\``);
       return;

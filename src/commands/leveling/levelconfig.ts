@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder, PermissionFlagsBits, TextChannel } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { COLORS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class LevelConfigCommand extends BaseCommand {
   constructor() {
@@ -49,6 +50,6 @@ export class LevelConfigCommand extends BaseCommand {
       await i.reply({ embeds: [embed] });
     }
   }
-  public async executePrefix(m: Message, args: string[]): Promise<void> { await m.reply('Please use `/levelconfig` slash commands.'); }
+  public async executePrefix(m: Message, _args: string[]): Promise<void> { await m.reply('Please use `/levelconfig` slash commands.'); }
 }
 export default LevelConfigCommand;

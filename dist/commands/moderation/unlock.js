@@ -1,0 +1,75 @@
+// @ts-nocheck
+import { BaseCommand } from '../../structures/BaseCommand.js';
+import { EmbedBuilder, PermissionFlagsBits } from 'discord.js';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+export class UnlockCommand extends BaseCommand {
+    constructor() {
+        const options = {
+            name: 'unlock',
+            description: 'Unlock a channel to allow members to send messages',
+            category: 'moderation',
+            cooldown: 3,
+            userPermissions: [PermissionFlagsBits.ManageChannels],
+            botPermissions: [PermissionFlagsBits.ManageChannels],
+            guildOnly: true,
+            slashCommand: true,
+            prefixCommand: true,
+            aliases: ['open', 'unlockdown'],
+            examples: ['/unlock', 'p!unlock #general'],
+        };
+        super(options);
+    }
+    async executeSlash(interaction) {
+        const channel = interaction.options.getChannel('channel') || interaction.channel;
+        const reason = interaction.options.getString('reason') || 'No reason provided';
+        if (!channel || !channel.isTextBased()) {
+            await interaction.reply({ content: '❌ Please provide a valid text channel.', ephemeral: true });
+            return;
+        }
+        try {
+            await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, {
+                SendMessages: null,
+            }, reason);
+            const embed = new EmbedBuilder()
+                .setTitle(`${EMOJIS.success} Channel Unlocked`)
+                .setColor(COLORS.success)
+                .addFields([
+                { name: 'Channel', value: channel.toString(), inline: true },
+                { name: 'Moderator', value: interaction.user.tag, inline: true },
+                { name: 'Reason', value: reason, inline: false },
+            ])
+                .setTimestamp();
+            await interaction.reply({ embeds: [embed] });
+        }
+        catch (error) {
+            await interaction.reply({ content: '❌ Failed to unlock channel.', ephemeral: true });
+        }
+    }
+    async executePrefix(message, _args) {
+        const channel = message.mentions.channels.first() || message.channel;
+        const reason = _args.slice(1).join(' ') || 'No reason provided';
+        if (!channel || !channel.isTextBased()) {
+            await message.reply('❌ Please provide a valid text channel.');
+            return;
+        }
+        try {
+            await channel.permissionOverwrites.edit(message.guild.roles.everyone, {
+                SendMessages: null,
+            }, reason);
+            const embed = new EmbedBuilder()
+                .setTitle(`${EMOJIS.success} Channel Unlocked`)
+                .setColor(COLORS.success)
+                .addFields([
+                { name: 'Channel', value: channel.toString(), inline: true },
+                { name: 'Moderator', value: message.author.tag, inline: true },
+                { name: 'Reason', value: reason, inline: false },
+            ])
+                .setTimestamp();
+            await message.reply({ embeds: [embed] });
+        }
+        catch (error) {
+            await message.reply('❌ Failed to unlock channel.');
+        }
+    }
+}
+export default UnlockCommand;

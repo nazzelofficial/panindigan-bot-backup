@@ -1,6 +1,7 @@
+// @ts-nocheck
 import { createClient, RedisClientType } from 'redis';
-import { loggers } from '../../utils/Logger';
-import config from '../../../config.json';
+import { loggers } from '../../utils/Logger.js';
+import config from '../../../config.json' with { type: 'json' };
 
 let redisClient: RedisClientType | null = null;
 

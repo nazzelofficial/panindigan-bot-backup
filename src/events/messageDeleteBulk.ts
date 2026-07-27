@@ -1,7 +1,8 @@
-import { Event } from '../structures/BaseCommand';
+// @ts-nocheck
+import { Event } from '../structures/BaseCommand.js';
 import { Collection, Message, EmbedBuilder, PartialMessage, TextChannel, Snowflake } from 'discord.js';
-import { PanindiganClient } from '../structures/PanindiganClient';
-import { COLORS } from '../utils/Constants';
+import { PanindiganClient } from '../structures/PanindiganClient.js';
+import { COLORS } from '../utils/Constants.js';
 
 export const event: Event = {
   name: 'messageDeleteBulk',
@@ -10,7 +11,7 @@ export const event: Event = {
     if (!channel.guild) return;
 
     try {
-      const { getPrismaClient } = await import('../database/postgresql/client');
+      const { getPrismaClient } = await import('../database/postgresql/client.js');
       const prisma = getPrismaClient();
       const guild = await prisma.guild.findUnique({
         where: { guildId: channel.guild.id },

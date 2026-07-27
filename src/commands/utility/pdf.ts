@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, AttachmentBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 
 export class PdfCommand extends BaseCommand {
   constructor() {
@@ -110,8 +111,8 @@ export class PdfCommand extends BaseCommand {
   }
 
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> { await this.run(i, null); }
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
-    const mode = args.includes('info') ? 'info' : 'text';
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+    const mode = _args.includes('info') ? 'info' : 'text';
     await this.run(null, m, mode);
   }
 }

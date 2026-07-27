@@ -1,10 +1,11 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import {
   ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder,
   PermissionFlagsBits, ButtonBuilder, ButtonStyle, ActionRowBuilder, ComponentType, TextChannel,
 } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { COLORS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class GiveawayCommand extends BaseCommand {
   constructor() {
@@ -150,8 +151,8 @@ export class GiveawayCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
-    const [sub, ...rest] = args;
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+    const [sub, ...rest] = _args;
     if (sub === 'start') {
       const channelMention = m.mentions.channels.first();
       const channelId = channelMention?.id || m.channelId;

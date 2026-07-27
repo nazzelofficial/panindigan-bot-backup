@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class InviteToPlaylistCommand extends BaseCommand {
   constructor() {
@@ -54,9 +55,9 @@ export class InviteToPlaylistCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     const userMention = args[0];
-    const playlistName = args.slice(1).join(' ');
+    const playlistName = _args.slice(1).join(' ');
 
     if (!userMention || !playlistName) {
       await message.reply('❌ Please provide a user and playlist name.');

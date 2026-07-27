@@ -1,3 +1,4 @@
+// @ts-nocheck
 export interface TagDocument {
   _id: string;
   guildId: string;

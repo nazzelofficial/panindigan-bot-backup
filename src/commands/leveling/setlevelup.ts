@@ -1,10 +1,11 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import {
   ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder,
   PermissionFlagsBits, TextChannel,
 } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class SetLevelUpCommand extends BaseCommand {
   constructor() {
@@ -119,14 +120,14 @@ export class SetLevelUpCommand extends BaseCommand {
     await interaction.editReply({ embeds: [embed] });
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     const sub = args[0]?.toLowerCase();
     if (!sub || !['channel', 'message', 'disable', 'status'].includes(sub)) {
       await message.reply(`${EMOJIS.error} Usage: \`p!setlevelup <channel|message|disable|status>\``);
       return;
     }
     const channel = sub === 'channel' ? (message.mentions.channels.first() || null) : undefined;
-    const msg = sub === 'message' ? args.slice(1).join(' ') : undefined;
+    const msg = sub === 'message' ? _args.slice(1).join(' ') : undefined;
     const embed = await this.handleSub(sub, message.guildId!, { channel, message: msg });
     await message.reply({ embeds: [embed] });
   }

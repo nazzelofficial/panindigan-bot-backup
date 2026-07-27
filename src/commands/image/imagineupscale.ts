@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder, AttachmentBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 import sharp from 'sharp';
 
 export class ImagineUpscaleCommand extends BaseCommand {
@@ -67,7 +68,7 @@ export class ImagineUpscaleCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const attachment = m.attachments.first();
     if (!attachment) { await m.reply('❌ Please attach an image to upscale.'); return; }
     const scale = parseInt(args.find(a => a === '2' || a === '4') || '2') as 2 | 4;

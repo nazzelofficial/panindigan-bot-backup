@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { PanindiganClient } from '../../structures/PanindiganClient';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { PanindiganClient } from '../../structures/PanindiganClient.js';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class RiddleCommand extends BaseCommand {
   constructor() {
@@ -56,8 +57,8 @@ export class RiddleCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const topic = args.join(' ') || '';
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const topic = _args.join(' ') || '';
     const thinking = await message.reply(`${EMOJIS.ai} Creating riddle...`);
     try {
       const client = message.client as PanindiganClient;

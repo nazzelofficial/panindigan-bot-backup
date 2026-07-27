@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createCanvas, loadImage, Canvas, CanvasRenderingContext2D } from 'canvas';
 import fetch from 'node-fetch';
 

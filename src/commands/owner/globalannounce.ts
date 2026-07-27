@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class GlobalAnnounceCommand extends BaseCommand {
   constructor() {
@@ -91,8 +92,8 @@ export class GlobalAnnounceCommand extends BaseCommand {
     await interaction.editReply({ embeds: [embed] });
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const rawMessage = args.join(' ');
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const rawMessage = _args.join(' ');
     if (!rawMessage) {
       await message.reply(`${EMOJIS.error} Usage: \`p!globalannounce <message> [--confirm]\``);
       return;

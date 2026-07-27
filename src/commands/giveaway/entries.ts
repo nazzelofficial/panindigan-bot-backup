@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { COLORS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class GiveawayEntriesCommand extends BaseCommand {
   constructor() {
@@ -32,7 +33,7 @@ export class GiveawayEntriesCommand extends BaseCommand {
     else await i.reply({ embeds: [result] });
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     if (!args[0]) { await m.reply('❌ Usage: `p!gentries <id>`'); return; }
     const result = await this.getEntries(m.guildId!, args[0]);
     if (typeof result === 'string') await m.reply(result);

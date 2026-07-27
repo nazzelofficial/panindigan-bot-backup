@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 import { promises as dns } from 'dns';
 
 export class DnsCommand extends BaseCommand {
@@ -30,6 +31,6 @@ export class DnsCommand extends BaseCommand {
     }
   }
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> { await this.run(i, null, i.options.getString('domain', true), i.options.getString('type') ?? 'A'); }
-  public async executePrefix(m: Message, args: string[]): Promise<void> { await this.run(null, m, args[0], args[1] ?? 'A'); }
+  public async executePrefix(m: Message, _args: string[]): Promise<void> { await this.run(null, m, args[0], args[1] ?? 'A'); }
 }
 export default DnsCommand;

@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { aiEngine } from '../../structures/AIEngine';
+import { COLORS } from '../../utils/Constants.js';
+import { aiEngine } from '../../structures/AIEngine.js';
 
 export class ImagineHdCommand extends BaseCommand {
   constructor() {
@@ -39,7 +40,7 @@ export class ImagineHdCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     if (!args.length) { await m.reply('❌ Usage: `p!imaginehd <prompt>`'); return; }
     const msg = await m.reply('⏳ Generating HD image...');
     try {

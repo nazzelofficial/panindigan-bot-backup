@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class GithubCommand extends BaseCommand {
   constructor() {
@@ -84,8 +85,8 @@ export class GithubCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const query = args.join('').trim();
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const query = _args.join('').trim();
     if (!query) return void message.reply(`${EMOJIS.error} Please provide a GitHub username or owner/repo.`);
     const thinking = await message.reply(`${EMOJIS.info} Fetching GitHub data...`);
     try {

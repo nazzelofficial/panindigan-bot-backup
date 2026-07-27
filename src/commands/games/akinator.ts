@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ButtonInteraction, ComponentType } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 const SECRET_ITEMS = [
   'Cat', 'Dog', 'Lion', 'Elephant', 'Shark', 'Eagle', 'Butterfly', 'Dragon', 'Unicorn', 'Wolf',
@@ -203,7 +204,7 @@ export class AkinatorCommand extends BaseCommand {
     collector.on('end', () => { activeGames.delete(interaction.channelId); });
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     if (activeGames.has(message.channelId)) {
       await message.reply(`${EMOJIS.error} A game is already running in this channel!`);
       return;

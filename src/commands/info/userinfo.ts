@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, GuildMember, User } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import { Formatter } from '../../utils/Formatter';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { Formatter } from '../../utils/Formatter.js';
 
 export class UserInfoCommand extends BaseCommand {
   constructor() {

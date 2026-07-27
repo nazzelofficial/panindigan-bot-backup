@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class StarboardIgnoreCommand extends BaseCommand {
   constructor() {
@@ -25,7 +26,7 @@ export class StarboardIgnoreCommand extends BaseCommand {
     await i.reply({ content: `✅ <#${channel.id}> will now be ignored by the starboard.`, ephemeral: true });
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const channel = m.mentions.channels.first() || m.channel;
     const prisma = getPrismaClient();
     const guild = await prisma.guild.findUnique({ where: { guildId: m.guildId! } });

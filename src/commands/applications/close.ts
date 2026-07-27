@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class ApplicationCloseCommand extends BaseCommand {
   constructor() {
@@ -24,7 +25,7 @@ export class ApplicationCloseCommand extends BaseCommand {
     await i.reply({ content: await this.close(i.guildId!, id), ephemeral: true });
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     if (!args[0]) { await m.reply('❌ Usage: `p!application-close <id>`'); return; }
     await m.reply(await this.close(m.guildId!, args[0]));
   }

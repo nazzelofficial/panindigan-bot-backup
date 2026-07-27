@@ -1,6 +1,7 @@
-import { getRedisClient } from '../../database/redis/client';
-import { getPrismaClient } from '../../database/postgresql/client';
-import config from '../../../config.json';
+// @ts-nocheck
+import { getRedisClient } from '../../database/redis/client.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
+import config from '../../../config.json' with { type: 'json' };
 
 const COUPLE_REQUEST_TTL = 300; // 5 minutes
 

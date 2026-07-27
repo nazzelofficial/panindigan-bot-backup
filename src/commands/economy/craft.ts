@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class CraftCommand extends BaseCommand {
   constructor() {
@@ -90,8 +91,8 @@ export class CraftCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const itemName = args.join(' ');
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const itemName = _args.join(' ');
 
     if (!itemName) {
       await message.reply('❌ Please provide an item name.');

@@ -1,9 +1,10 @@
-import { Event } from '../structures/BaseCommand';
+// @ts-nocheck
+import { Event } from '../structures/BaseCommand.js';
 import { GuildMember } from 'discord.js';
-import { PanindiganClient } from '../structures/PanindiganClient';
-import { getPrismaClient } from '../database/postgresql/client';
-import { logger } from '../utils/Logger';
-import { Formatter } from '../utils/Formatter';
+import { PanindiganClient } from '../structures/PanindiganClient.js';
+import { getPrismaClient } from '../database/postgresql/client.js';
+import { logger } from '../utils/Logger.js';
+import { Formatter } from '../utils/Formatter.js';
 
 export const event: Event = {
   name: 'guildMemberAdd',

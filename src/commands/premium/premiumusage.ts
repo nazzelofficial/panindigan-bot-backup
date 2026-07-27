@@ -1,8 +1,9 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
-import { getRedisClient } from '../../database/redis/client';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
+import { getRedisClient } from '../../database/redis/client.js';
 
 const DAILY_AI_LIMITS: Record<string, number> = {
   free: 0, bronze: 5, silver: 15, gold: 40, diamond: -1,

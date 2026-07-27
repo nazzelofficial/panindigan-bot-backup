@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { compatibilityService } from '../../features/couple/CompatibilityService';
+import { COLORS } from '../../utils/Constants.js';
+import { compatibilityService } from '../../features/couple/CompatibilityService.js';
 
 export class CompatibilityCommand extends BaseCommand {
   constructor() {
@@ -26,7 +27,7 @@ export class CompatibilityCommand extends BaseCommand {
     const u2 = i.options.getUser('user2') || i.user;
     await i.reply({ embeds: [this.makeEmbed(u1.username, u1.id, u2.username, u2.id)] });
   }
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const users = m.mentions.users;
     const u1 = users.first() || m.author;
     const u2 = users.size >= 2 ? users.at(1)! : m.author;

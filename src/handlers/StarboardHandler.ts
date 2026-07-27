@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   MessageReaction,
   User,
@@ -6,11 +7,11 @@ import {
   EmbedBuilder,
   AttachmentBuilder,
 } from 'discord.js';
-import { PanindiganClient } from '../structures/PanindiganClient';
-import { getPrismaClient } from '../database/postgresql/client';
-import { getCollection } from '../database/mongodb/client';
-import { logger } from '../utils/Logger';
-import { COLORS } from '../utils/Constants';
+import { PanindiganClient } from '../structures/PanindiganClient.js';
+import { getPrismaClient } from '../database/postgresql/client.js';
+import { getCollection } from '../database/mongodb/client.js';
+import { logger } from '../utils/Logger.js';
+import { COLORS } from '../utils/Constants.js';
 
 export class StarboardHandler {
   private static instance: StarboardHandler;

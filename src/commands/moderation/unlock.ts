@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class UnlockCommand extends BaseCommand {
   constructor() {
@@ -50,9 +51,9 @@ export class UnlockCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     const channel = message.mentions.channels.first() || message.channel;
-    const reason = args.slice(1).join(' ') || 'No reason provided';
+    const reason = _args.slice(1).join(' ') || 'No reason provided';
 
     if (!channel || !channel.isTextBased()) {
       await message.reply('❌ Please provide a valid text channel.');

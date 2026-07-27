@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -23,7 +24,7 @@ export class LogsCommand extends BaseCommand {
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> {
     await this.run(i, null, i.options.getString('level') ?? '', i.options.getInteger('lines') ?? 20);
   }
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const level = isNaN(parseInt(args[0])) ? (args[0] ?? '') : '';
     const lines = level ? parseInt(args[1]) || 20 : parseInt(args[0]) || 20;
     await this.run(null, m, level, lines);

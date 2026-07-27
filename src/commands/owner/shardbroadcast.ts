@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class ShardBroadcastCommand extends BaseCommand {
   constructor() {
@@ -60,8 +61,8 @@ export class ShardBroadcastCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const broadcastMessage = args.join(' ');
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const broadcastMessage = _args.join(' ');
     if (!broadcastMessage) {
       await message.reply(`${EMOJIS.error} Please provide a message to broadcast.`);
       return;

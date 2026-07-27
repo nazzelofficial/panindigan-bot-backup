@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { PanindiganClient } from '../../structures/PanindiganClient';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { PanindiganClient } from '../../structures/PanindiganClient.js';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class ClassifyCommand extends BaseCommand {
   constructor() {
@@ -62,8 +63,8 @@ Text: "${text}"`;
     }
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
-    const text = args.join(' ');
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+    const text = _args.join(' ');
     if (!text) return void m.reply(`${EMOJIS.error} Please provide text to classify.`);
     const thinking = await m.reply(`${EMOJIS.ai} Classifying text...`);
     try {

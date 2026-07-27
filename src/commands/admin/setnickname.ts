@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class SetNicknameCommand extends BaseCommand {
   constructor() {
@@ -56,9 +57,9 @@ export class SetNicknameCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     const user = message.mentions.users.first();
-    const nickname = args.slice(1).join(' ');
+    const nickname = _args.slice(1).join(' ');
 
     if (!user) {
       await message.reply('❌ Please mention a user.');

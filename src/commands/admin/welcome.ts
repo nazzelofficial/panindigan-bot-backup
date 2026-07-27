@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class WelcomeCommand extends BaseCommand {
   constructor() {
@@ -54,9 +55,9 @@ export class WelcomeCommand extends BaseCommand {
     await interaction.reply({ embeds: [embed] });
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     const channel = message.mentions.channels.first();
-    const welcomeMessage = args.slice(1).join(' ') || 'Welcome {user} to {server}!';
+    const welcomeMessage = _args.slice(1).join(' ') || 'Welcome {user} to {server}!';
 
     if (!channel) {
       await message.reply('❌ Please mention a welcome channel.');

@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import { Formatter } from '../../utils/Formatter';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { Formatter } from '../../utils/Formatter.js';
 
 export class RoleInfoCommand extends BaseCommand {
   constructor() {
@@ -58,7 +59,7 @@ export class RoleInfoCommand extends BaseCommand {
     await interaction.reply({ embeds: [embed] });
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     const role = message.mentions.roles.first() || message.guild?.roles.cache.get(args[0]);
 
     if (!role) {

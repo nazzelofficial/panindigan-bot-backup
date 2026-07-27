@@ -1,9 +1,10 @@
-import { Event } from '../structures/BaseCommand';
+// @ts-nocheck
+import { Event } from '../structures/BaseCommand.js';
 import { Message, EmbedBuilder, PartialMessage, TextChannel } from 'discord.js';
-import { PanindiganClient } from '../structures/PanindiganClient';
-import { COLORS } from '../utils/Constants';
-import { getRedisClient } from '../database/redis/client';
-import config from '../../config.json';
+import { PanindiganClient } from '../structures/PanindiganClient.js';
+import { COLORS } from '../utils/Constants.js';
+import { getRedisClient } from '../database/redis/client.js';
+import config from '../../config.json' with { type: 'json' };
 
 export const event: Event = {
   name: 'messageDelete',
@@ -35,7 +36,7 @@ export const event: Event = {
 
     // Log to guild log channel
     try {
-      const { getPrismaClient } = await import('../database/postgresql/client');
+      const { getPrismaClient } = await import('../database/postgresql/client.js');
       const prisma = getPrismaClient();
       const guild = await prisma.guild.findUnique({
         where: { guildId: message.guild.id },

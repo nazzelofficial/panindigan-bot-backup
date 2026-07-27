@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { PanindiganClient } from '../../structures/PanindiganClient';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { PanindiganClient } from '../../structures/PanindiganClient.js';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class CoverLetterCommand extends BaseCommand {
   constructor() {
@@ -52,8 +53,8 @@ export class CoverLetterCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const job = args.join(' ');
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const job = _args.join(' ');
     if (!job) return void message.reply(`${EMOJIS.error} Please provide the job position.`);
     const thinking = await message.reply(`${EMOJIS.ai} Writing cover letter...`);
     try {

@@ -1,13 +1,14 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import {
   ChatInputCommandInteraction,
   Message,
   EmbedBuilder,
   SlashCommandBuilder,
 } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
-import config from '../../../config.json';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
+import config from '../../../config.json' with { type: 'json' };
 
 export class BalanceCommand extends BaseCommand {
   constructor() {
@@ -104,7 +105,7 @@ export class BalanceCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     const target = message.mentions.users.first() || message.author;
     const guildId = message.guildId!;
 

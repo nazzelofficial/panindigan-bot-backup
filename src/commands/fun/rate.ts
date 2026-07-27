@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class RateCommand extends BaseCommand {
   constructor() {
@@ -38,8 +39,8 @@ export class RateCommand extends BaseCommand {
   }
 
   public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
-    const target = args.join(' ') || 'you';
+    const _args = message.content.split(' ').slice(1);
+    const target = _args.join(' ') || 'you';
     const rating = Math.floor(Math.random() * 10) + 1;
     const stars = '⭐'.repeat(rating) + '☆'.repeat(10 - rating);
 

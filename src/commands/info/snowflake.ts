@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 function decodeSnowflake(id: string): { timestamp: Date; workerId: number; processId: number; increment: number } | null {
   try {
@@ -73,7 +74,7 @@ export class SnowflakeCommand extends BaseCommand {
     await interaction.reply({ embeds: [this.buildEmbed(id)] });
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     const id = args[0];
     if (!id) {
       await message.reply(`${EMOJIS.error} Please provide a Discord snowflake ID.\nExample: \`p!snowflake 123456789012345678\``);

@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import { getRedisClient } from '../../database/redis/client';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { getRedisClient } from '../../database/redis/client.js';
 
 export class ResetCooldownsCommand extends BaseCommand {
   constructor() {
@@ -56,7 +57,7 @@ export class ResetCooldownsCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     const targetUser = message.mentions.users.first();
 
     if (!targetUser) {

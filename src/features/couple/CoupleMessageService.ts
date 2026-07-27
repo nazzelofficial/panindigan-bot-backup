@@ -1,6 +1,7 @@
+// @ts-nocheck
 import { Client, User } from 'discord.js';
 import { EmbedBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 
 export class CoupleMessageService {
   async sendPrivateMessage(

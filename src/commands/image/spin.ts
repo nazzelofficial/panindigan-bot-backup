@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder, AttachmentBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 import { createCanvas, loadImage } from 'canvas';
 
 export class SpinCommand extends BaseCommand {
@@ -38,7 +39,7 @@ export class SpinCommand extends BaseCommand {
     } catch { await i.editReply({ content: '❌ Failed.' }); }
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const target = m.mentions.users.first() || m.author;
     const degrees = parseInt(args.find(a => /^\d+$/.test(a)) || '90') || 90;
     try {

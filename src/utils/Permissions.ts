@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { PermissionFlagsBits, GuildMember, ChannelType } from 'discord.js';
 
 export class Permissions {

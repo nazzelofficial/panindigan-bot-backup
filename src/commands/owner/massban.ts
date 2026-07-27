@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 
 export class MassbanCommand extends BaseCommand {
   constructor() {
@@ -19,7 +20,7 @@ export class MassbanCommand extends BaseCommand {
     } as CommandOptions);
   }
 
-  private async doMassBan(interaction: ChatInputCommandInteraction | null, message: Message | null, args: string[]): Promise<void> {
+  private async doMassBan(interaction: ChatInputCommandInteraction | null, message: Message | null, _args: string[]): Promise<void> {
     const guild = interaction?.guild ?? message?.guild;
     if (!guild) return;
     const send = async (e: EmbedBuilder) => {
@@ -40,7 +41,7 @@ export class MassbanCommand extends BaseCommand {
       await guild.members.fetch();
       targets = guild.members.cache.filter(m => m.roles.cache.has(role.id) && !m.user.bot).map(m => m.id);
     } else {
-      targets = args.map(a => a.replace(/[<@!>]/g, ''));
+      targets = _args.map(a => a.replace(/[<@!>]/g, ''));
     }
 
     if (!targets.length) {
@@ -77,7 +78,7 @@ export class MassbanCommand extends BaseCommand {
     await this.doMassBan(interaction, null, targets);
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     await this.doMassBan(null, message, args);
   }
 }

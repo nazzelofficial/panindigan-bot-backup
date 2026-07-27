@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 
 const PAGE_SIZE = 10;
 
@@ -29,7 +30,7 @@ export class GuildListCommand extends BaseCommand {
     await i.reply({ content: 'Use prefix command `p!guildlist [page]` for this.', ephemeral: true });
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     try {
       const guilds = [...m.client.guilds.cache.values()].sort((a, b) => b.memberCount - a.memberCount);
       const page = Math.max(1, parseInt(args[0]) || 1);

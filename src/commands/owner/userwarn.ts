@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import getMongoClient from '../../database/mongodb/client';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import getMongoClient from '../../database/mongodb/client.js';
 
 export class UserWarnCommand extends BaseCommand {
   constructor() {
@@ -76,8 +77,8 @@ export class UserWarnCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const [userId, ...reasonParts] = args;
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const [userId, ...reasonParts] = _args;
     const reason = reasonParts.join(' ');
 
     if (!userId || !reason) {

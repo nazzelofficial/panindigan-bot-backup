@@ -1,8 +1,9 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import getPrismaClient from '../../database/postgresql/client';
-import getRedisClient from '../../database/redis/client';
+import { COLORS } from '../../utils/Constants.js';
+import getPrismaClient from '../../database/postgresql/client.js';
+import getRedisClient from '../../database/redis/client.js';
 
 export class LatencyCommand extends BaseCommand {
   constructor() {

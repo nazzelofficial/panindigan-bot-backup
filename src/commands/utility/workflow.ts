@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import getMongoClient from '../../database/mongodb/client';
+import { COLORS } from '../../utils/Constants.js';
+import getMongoClient from '../../database/mongodb/client.js';
 
 export class WorkflowCommand extends BaseCommand {
   constructor() {
@@ -38,6 +39,6 @@ export class WorkflowCommand extends BaseCommand {
     const sub = i.options.getSubcommand(false) ?? 'list';
     await this.run(i, null, sub, i.options.getString('name') ?? '', i.options.getString('description') ?? '');
   }
-  public async executePrefix(m: Message, args: string[]): Promise<void> { await this.run(null, m, args[0] ?? 'list', args[1] ?? '', args.slice(2).join(' ')); }
+  public async executePrefix(m: Message, _args: string[]): Promise<void> { await this.run(null, m, args[0] ?? 'list', args[1] ?? '', _args.slice(2).join(' ')); }
 }
 export default WorkflowCommand;

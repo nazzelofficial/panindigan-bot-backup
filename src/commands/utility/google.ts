@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class GoogleCommand extends BaseCommand {
   constructor() {
@@ -61,8 +62,8 @@ export class GoogleCommand extends BaseCommand {
     await interaction.reply({ embeds: [this.buildEmbed(query)] });
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const query = args.join(' ');
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const query = _args.join(' ');
     if (!query) {
       await message.reply(`${EMOJIS.error} Please provide a search query.\nExample: \`p!google TypeScript tutorial\``);
       return;

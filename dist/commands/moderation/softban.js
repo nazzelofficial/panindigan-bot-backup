@@ -1,0 +1,150 @@
+// @ts-nocheck
+import { BaseCommand } from '../../structures/BaseCommand.js';
+import { EmbedBuilder, PermissionFlagsBits } from 'discord.js';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
+export class SoftBanCommand extends BaseCommand {
+    constructor() {
+        const options = {
+            name: 'softban',
+            description: 'Ban and immediately unban a user to delete their messages',
+            category: 'moderation',
+            cooldown: 3,
+            userPermissions: [PermissionFlagsBits.BanMembers],
+            botPermissions: [PermissionFlagsBits.BanMembers],
+            guildOnly: true,
+            slashCommand: true,
+            prefixCommand: true,
+            aliases: ['sb'],
+            examples: ['/softban @user spamming', 'p!softban @user'],
+        };
+        super(options);
+    }
+    async executeSlash(interaction) {
+        const target = interaction.options.getUser('target');
+        const reason = interaction.options.getString('reason') || 'No reason provided';
+        const days = interaction.options.getInteger('days') || 1;
+        if (!target) {
+            await interaction.reply({ content: '❌ Please provide a user to softban.', ephemeral: true });
+            return;
+        }
+        if (target.id === interaction.user.id) {
+            await interaction.reply({ content: '❌ You cannot softban yourself.', ephemeral: true });
+            return;
+        }
+        if (target.id === interaction.client.user.id) {
+            await interaction.reply({ content: '❌ I cannot softban myself.', ephemeral: true });
+            return;
+        }
+        if (!interaction.guild)
+            return;
+        const member = await interaction.guild.members.fetch(target.id).catch(() => null);
+        if (member && !member.bannable) {
+            await interaction.reply({ content: '❌ I cannot softban this user due to role hierarchy.', ephemeral: true });
+            return;
+        }
+        try {
+            await interaction.guild.bans.create(target.id, { reason, deleteMessageDays: days });
+            await interaction.guild.bans.remove(target.id);
+            const prisma = getPrismaClient();
+            await prisma.moderation.upsert({
+                where: { userId_guildId: { userId: target.id, guildId: interaction.guild.id } },
+                update: {
+                    cases: {
+                        push: {
+                            action: 'softban',
+                            moderatorId: interaction.user.id,
+                            reason,
+                            timestamp: new Date(),
+                        },
+                    },
+                },
+                create: {
+                    userId: target.id,
+                    guildId: interaction.guild.id,
+                    cases: [{
+                            action: 'softban',
+                            moderatorId: interaction.user.id,
+                            reason,
+                            timestamp: new Date(),
+                        }],
+                },
+            });
+            const embed = new EmbedBuilder()
+                .setTitle(`${EMOJIS.moderation} User Softbanned`)
+                .setColor(COLORS.warning)
+                .addFields([
+                { name: 'User', value: `${target.tag} (${target.id})`, inline: true },
+                { name: 'Moderator', value: interaction.user.tag, inline: true },
+                { name: 'Reason', value: reason, inline: false },
+                { name: 'Messages Deleted', value: `${days} day(s)`, inline: true },
+            ])
+                .setTimestamp();
+            await interaction.reply({ embeds: [embed] });
+        }
+        catch (error) {
+            await interaction.reply({ content: '❌ Failed to softban user.', ephemeral: true });
+        }
+    }
+    async executePrefix(message, _args) {
+        const target = message.mentions.users.first();
+        const reason = _args.slice(1).join(' ') || 'No reason provided';
+        if (!target) {
+            await message.reply('❌ Please mention a user to softban.');
+            return;
+        }
+        if (target.id === message.author.id) {
+            await message.reply('❌ You cannot softban yourself.');
+            return;
+        }
+        if (!message.guild)
+            return;
+        const member = await message.guild.members.fetch(target.id).catch(() => null);
+        if (member && !member.bannable) {
+            await message.reply('❌ I cannot softban this user due to role hierarchy.');
+            return;
+        }
+        try {
+            await message.guild.bans.create(target.id, { reason, deleteMessageSeconds: 86400 });
+            await message.guild.bans.remove(target.id);
+            const prisma = getPrismaClient();
+            await prisma.moderation.upsert({
+                where: { userId_guildId: { userId: target.id, guildId: message.guild.id } },
+                update: {
+                    cases: {
+                        push: {
+                            action: 'softban',
+                            moderatorId: message.author.id,
+                            reason,
+                            timestamp: new Date(),
+                        },
+                    },
+                },
+                create: {
+                    userId: target.id,
+                    guildId: message.guild.id,
+                    cases: [{
+                            action: 'softban',
+                            moderatorId: message.author.id,
+                            reason,
+                            timestamp: new Date(),
+                        }],
+                },
+            });
+            const embed = new EmbedBuilder()
+                .setTitle(`${EMOJIS.moderation} User Softbanned`)
+                .setColor(COLORS.warning)
+                .addFields([
+                { name: 'User', value: `${target.tag} (${target.id})`, inline: true },
+                { name: 'Moderator', value: message.author.tag, inline: true },
+                { name: 'Reason', value: reason, inline: false },
+            ])
+                .setTimestamp();
+            await message.reply({ embeds: [embed] });
+        }
+        catch (error) {
+            await message.reply('❌ Failed to softban user.');
+        }
+    }
+}
+export default SoftBanCommand;

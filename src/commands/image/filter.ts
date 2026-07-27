@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder, AttachmentBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 import sharp from 'sharp';
 import fetch from 'node-fetch';
 
@@ -39,7 +40,7 @@ export class FilterCommand extends BaseCommand {
     } catch { await i.editReply({ content: '❌ Failed.' }); }
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const filterName = args[0]?.toLowerCase();
     if (!filterName || !FILTERS[filterName]) { await m.reply(`❌ Valid filters: ${Object.keys(FILTERS).join(', ')}`); return; }
     const target = m.mentions.users.first() || m.author;

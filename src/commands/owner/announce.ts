@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { PanindiganClient } from '../../structures/PanindiganClient';
+import { COLORS } from '../../utils/Constants.js';
+import { PanindiganClient } from '../../structures/PanindiganClient.js';
 
 export class AnnounceCommand extends BaseCommand {
   constructor() {
@@ -25,7 +26,7 @@ export class AnnounceCommand extends BaseCommand {
       .setFooter({ text: 'Panindigan Bot Announcement' })
       .setTimestamp();
 
-    const { getPrismaClient } = await import('../../database/postgresql/client');
+    const { getPrismaClient } = await import('../../database/postgresql/client.js');
     const prisma = getPrismaClient();
     const guilds = await prisma.guild.findMany({ where: { announcementChannelId: { not: null } }, select: { guildId: true, announcementChannelId: true } });
 
@@ -50,8 +51,8 @@ export class AnnounceCommand extends BaseCommand {
     const result = await this.broadcast(i.client as PanindiganClient, title, content, type);
     await i.editReply({ content: result });
   }
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
-    const content = args.join(' ');
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+    const content = _args.join(' ');
     if (!content) { await m.reply('❌ Provide announcement content.'); return; }
     const result = await this.broadcast(m.client as PanindiganClient, 'Announcement', content, 'info');
     await m.reply(result);

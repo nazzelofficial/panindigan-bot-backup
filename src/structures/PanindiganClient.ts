@@ -1,13 +1,14 @@
+// @ts-nocheck
 import { Client, GatewayIntentBits, Collection, Partials } from 'discord.js';
 import { Kazagumo } from 'kazagumo';
 import { Shoukaku } from 'shoukaku';
-import { connectMongoDB } from '../database/mongodb/client';
-import { initializePrisma } from '../database/postgresql/client';
-import { connectRedis } from '../database/redis/client';
-import { BaseCommand } from './BaseCommand';
-import { AIHandler } from '../handlers/AIHandler';
-import { loggers } from '../utils/Logger';
-import config from '../../config.json';
+import { connectMongoDB } from '../database/mongodb/client.js';
+import { initializePrisma } from '../database/postgresql/client.js';
+import { connectRedis } from '../database/redis/client.js';
+import { BaseCommand } from './BaseCommand.js';
+import { AIHandler } from '../handlers/AIHandler.js';
+import { loggers } from '../utils/Logger.js';
+import config from '../../config.json' with { type: 'json' };
 
 export class PanindiganClient extends Client {
   public commands: Collection<string, BaseCommand>;

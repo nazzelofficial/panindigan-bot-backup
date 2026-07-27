@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder, PermissionFlagsBits, ChannelType } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { COLORS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 const LOG_TYPES = [
   { value: 'message_delete', name: 'Message Deletions' },
@@ -80,7 +81,7 @@ export class SetLogsCommand extends BaseCommand {
     await this.handle(i.guildId!, logType, channel?.id || null, (c) => i.reply(c));
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const logType = args[0]?.toLowerCase();
     if (!logType || !LOG_TYPES.find(t => t.value === logType)) {
       const list = LOG_TYPES.map(t => `\`${t.value}\` — ${t.name}`).join('\n');

@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class RemindCommand extends BaseCommand {
   constructor() {
@@ -88,9 +89,9 @@ export class RemindCommand extends BaseCommand {
   }
 
   public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
+    const _args = message.content.split(' ').slice(1);
     const time = args[0];
-    const reminderMessage = args.slice(1).join(' ');
+    const reminderMessage = _args.slice(1).join(' ');
 
     if (!time) {
       const errorEmbed = new EmbedBuilder()

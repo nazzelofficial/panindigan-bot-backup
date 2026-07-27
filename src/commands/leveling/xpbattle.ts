@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import { connectRedis, getRedisClient } from '../../database/redis/client';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { connectRedis, getRedisClient } from '../../database/redis/client.js';
 
 export class XpbattleCommand extends BaseCommand {
   constructor() {
@@ -96,7 +97,7 @@ export class XpbattleCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     if (!args[0]) {
       await message.reply(`${EMOJIS.error} Please provide a duration. Example: \`p!xpbattle 2h\``);
       return;

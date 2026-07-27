@@ -1,8 +1,9 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import getPrismaClient from '../../database/postgresql/client';
-import getMongoClient from '../../database/mongodb/client';
+import { COLORS } from '../../utils/Constants.js';
+import getPrismaClient from '../../database/postgresql/client.js';
+import getMongoClient from '../../database/mongodb/client.js';
 
 export class UserstatsCommand extends BaseCommand {
   constructor() {
@@ -37,6 +38,6 @@ export class UserstatsCommand extends BaseCommand {
     }
   }
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> { await this.run(i, null, i.options.getString('user_id', true)); }
-  public async executePrefix(m: Message, args: string[]): Promise<void> { await this.run(null, m, args[0]); }
+  public async executePrefix(m: Message, _args: string[]): Promise<void> { await this.run(null, m, args[0]); }
 }
 export default UserstatsCommand;

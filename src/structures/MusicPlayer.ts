@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   EmbedBuilder,
   ActionRowBuilder,
@@ -6,7 +7,7 @@ import {
   AttachmentBuilder,
 } from 'discord.js';
 import { KazagumoPlayer, KazagumoTrack } from 'kazagumo';
-import { COLORS } from '../utils/Constants';
+import { COLORS } from '../utils/Constants.js';
 
 export class MusicPlayer {
   public static formatDuration(ms: number): string {

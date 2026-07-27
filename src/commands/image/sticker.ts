@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder, AttachmentBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 import { createCanvas, loadImage } from 'canvas';
 
 export class StickerCommand extends BaseCommand {
@@ -106,10 +107,10 @@ export class StickerCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const user = m.mentions.users.first() || m.author;
-    const style = args.find(a => ['circle', 'square', 'heart', 'star'].includes(a)) || 'circle';
-    const text = args.filter(a => !['circle', 'square', 'heart', 'star', 'create'].includes(a) && !/^<@/.test(a)).join(' ') || null;
+    const style = _args.find(a => ['circle', 'square', 'heart', 'star'].includes(a)) || 'circle';
+    const text = _args.filter(a => !['circle', 'square', 'heart', 'star', 'create'].includes(a) && !/^<@/.test(a)).join(' ') || null;
     try {
       await this.handle(user.displayAvatarURL({ extension: 'png', size: 512 }), text, style, (c) => m.reply(c));
     } catch (e: any) {

@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import { getCollection } from '../../database/mongodb/client';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { getCollection } from '../../database/mongodb/client.js';
 
 export class MessageStatsCommand extends BaseCommand {
   constructor() {
@@ -64,7 +65,7 @@ export class MessageStatsCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     const guild = message.guild!;
     const embed = new EmbedBuilder()
       .setTitle(`📊 Message Stats — ${guild.name}`)

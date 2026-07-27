@@ -1,4 +1,5 @@
-import { getCollection } from '../../database/mongodb/client';
+// @ts-nocheck
+import { getCollection } from '../../database/mongodb/client.js';
 
 export interface CoupleHistoryEntry {
   userId1: string;

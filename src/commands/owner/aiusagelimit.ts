@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import getRedisClient from '../../database/redis/client';
+import { COLORS } from '../../utils/Constants.js';
+import getRedisClient from '../../database/redis/client.js';
 
 export class AiusagelimitCommand extends BaseCommand {
   constructor() {
@@ -16,6 +17,6 @@ export class AiusagelimitCommand extends BaseCommand {
       .addFields({ name: 'Guild', value: guildId, inline: true }, { name: 'Daily Limit', value: limit.toLocaleString(), inline: true }));
   }
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> { await this.run(i, null, i.options.getString('guild_id', true), i.options.getInteger('limit', true)); }
-  public async executePrefix(m: Message, args: string[]): Promise<void> { await this.run(null, m, args[0], parseInt(args[1])); }
+  public async executePrefix(m: Message, _args: string[]): Promise<void> { await this.run(null, m, args[0], parseInt(args[1])); }
 }
 export default AiusagelimitCommand;

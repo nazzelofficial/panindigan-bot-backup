@@ -1,7 +1,8 @@
-import { getPrismaClient } from '../database/postgresql/client';
-import { PremiumTier } from '../structures/BaseCommand';
-import { loggers } from '../utils/Logger';
-import config from '../../config.json';
+// @ts-nocheck
+import { getPrismaClient } from '../database/postgresql/client.js';
+import { PremiumTier } from '../structures/BaseCommand.js';
+import { loggers } from '../utils/Logger.js';
+import config from '../../config.json' with { type: 'json' };
 
 export async function getUserPremiumTier(userId: string, guildId: string): Promise<PremiumTier> {
   const prisma = getPrismaClient();

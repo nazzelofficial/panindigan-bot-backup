@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 
 const GIFS = [
   'https://media.giphy.com/media/d2lcHJTG5Tscg/giphy.gif',
@@ -42,7 +43,7 @@ export class NomCommand extends BaseCommand {
     await i.reply({ embeds: [new EmbedBuilder().setDescription(this.msg(i.user.username, t.username)).setImage(this.gif()).setColor(COLORS.default).setFooter({ text: 'Panindigan Social' })] });
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const t = m.mentions.users.first();
     if (!t) { await m.reply('❌ Mention someone to nom!'); return; }
     await m.reply({ embeds: [new EmbedBuilder().setDescription(this.msg(m.author.username, t.username)).setImage(this.gif()).setColor(COLORS.default).setFooter({ text: 'Panindigan Social' })] });

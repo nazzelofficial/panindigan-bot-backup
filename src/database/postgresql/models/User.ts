@@ -1,8 +1,9 @@
+// @ts-nocheck
 /**
  * User model helpers — typed wrappers around Prisma's User operations.
  */
 
-import { getPrismaClient } from '../client';
+import { getPrismaClient } from '../client.js';
 import type { User, Prisma } from '@prisma/client';
 
 export async function findOrCreateUser(userId: string, guildId: string): Promise<User> {

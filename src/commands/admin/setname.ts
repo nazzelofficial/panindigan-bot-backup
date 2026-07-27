@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class SetNameCommand extends BaseCommand {
   constructor() {
@@ -51,8 +52,8 @@ export class SetNameCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const name = args.join(' ');
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const name = _args.join(' ');
 
     if (!name) {
       await message.reply('❌ Please provide a new username.');

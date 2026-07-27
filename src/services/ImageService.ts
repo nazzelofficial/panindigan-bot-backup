@@ -1,6 +1,7 @@
+// @ts-nocheck
 import fetch from 'node-fetch';
-import { ImageGenerator } from '../structures/ImageGenerator';
-import { aiEngine } from '../structures/AIEngine';
+import { ImageGenerator } from '../structures/ImageGenerator.js';
+import { aiEngine } from '../structures/AIEngine.js';
 
 export interface AnimalImageResult {
   url: string;

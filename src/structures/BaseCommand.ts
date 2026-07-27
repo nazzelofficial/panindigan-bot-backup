@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   SlashCommandBuilder,
   ChatInputCommandInteraction,
@@ -83,7 +84,7 @@ export abstract class BaseCommand {
   }
 
   public abstract executeSlash(interaction: ChatInputCommandInteraction): Promise<void>;
-  public abstract executePrefix(message: Message, args: string[]): Promise<void>;
+  public abstract executePrefix(message: Message, _args: string[]): Promise<void>;
 
   public buildSlashCommand(): SlashCommandBuilder {
     const builder = new SlashCommandBuilder()

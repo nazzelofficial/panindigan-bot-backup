@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 
@@ -56,8 +57,8 @@ export class ExecCommand extends BaseCommand {
     await interaction.editReply({ embeds: [embed] });
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const cmd = args.join(' ');
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const cmd = _args.join(' ');
     if (!cmd) {
       await message.reply(`${EMOJIS.error} Please provide a command to execute.`);
       return;

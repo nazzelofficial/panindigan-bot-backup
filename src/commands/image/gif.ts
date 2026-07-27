@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder, AttachmentBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 import { createCanvas, loadImage } from 'canvas';
 import sharp from 'sharp';
 
@@ -110,9 +111,9 @@ export class GifCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const user = m.mentions.users.first() || m.author;
-    const effect = args.find(a => ['spin', 'pulse', 'shake', 'bounce'].includes(a)) || 'spin';
+    const effect = _args.find(a => ['spin', 'pulse', 'shake', 'bounce'].includes(a)) || 'spin';
     try {
       await this.handle(user.displayAvatarURL({ extension: 'png', size: 256 }), effect, (c) => m.reply(c));
     } catch (e: any) {

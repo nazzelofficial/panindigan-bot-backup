@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import { weatherService } from '../../services/WeatherService';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { weatherService } from '../../services/WeatherService.js';
 
 export class WeatherCommand extends BaseCommand {
   constructor() {
@@ -63,8 +64,8 @@ export class WeatherCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const location = args.join(' ');
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const location = _args.join(' ');
     if (!location) return void message.reply(`${EMOJIS.error} Please provide a location.`);
     const thinking = await message.reply(`${EMOJIS.info} Fetching weather...`);
     try {

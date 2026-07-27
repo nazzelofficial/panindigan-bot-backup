@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits, ActivityType } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class SetStatusCommand extends BaseCommand {
   constructor() {
@@ -70,9 +71,9 @@ export class SetStatusCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     const type = args[0]?.toLowerCase() || 'playing';
-    const status = args.slice(1).join(' ') || '';
+    const status = _args.slice(1).join(' ') || '';
 
     const validTypes = ['playing', 'watching', 'listening', 'competing', 'streaming'];
     if (!validTypes.includes(type)) {

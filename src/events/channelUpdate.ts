@@ -1,7 +1,8 @@
-import { Event } from '../structures/BaseCommand';
+// @ts-nocheck
+import { Event } from '../structures/BaseCommand.js';
 import { GuildChannel, EmbedBuilder, TextChannel } from 'discord.js';
-import { PanindiganClient } from '../structures/PanindiganClient';
-import { COLORS } from '../utils/Constants';
+import { PanindiganClient } from '../structures/PanindiganClient.js';
+import { COLORS } from '../utils/Constants.js';
 
 export const event: Event = {
   name: 'channelUpdate',
@@ -10,7 +11,7 @@ export const event: Event = {
     if (!newChannel.guild) return;
     if (oldChannel.name === newChannel.name) return;
     try {
-      const { getPrismaClient } = await import('../database/postgresql/client');
+      const { getPrismaClient } = await import('../database/postgresql/client.js');
       const prisma = getPrismaClient();
       const guildData = await prisma.guild.findUnique({
         where: { guildId: newChannel.guild.id },

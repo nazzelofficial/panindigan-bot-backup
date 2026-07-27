@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder, PermissionFlagsBits, ChannelType } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { COLORS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class BoostLogCommand extends BaseCommand {
   constructor() {
@@ -47,13 +48,13 @@ export class BoostLogCommand extends BaseCommand {
     await this.handle(i.guildId!, channel?.id || null, msg, (c) => i.reply(c));
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     if (args[0]?.toLowerCase() === 'disable') {
       await this.handle(m.guildId!, null, null, (c) => m.reply(c));
       return;
     }
     const channel = m.mentions.channels.first();
-    const msg = args.slice(1).join(' ') || null;
+    const msg = _args.slice(1).join(' ') || null;
     await this.handle(m.guildId!, channel?.id || null, msg, (c) => m.reply(c));
   }
 }

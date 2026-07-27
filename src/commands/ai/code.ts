@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { PanindiganClient } from '../../structures/PanindiganClient';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { PanindiganClient } from '../../structures/PanindiganClient.js';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class CodeCommand extends BaseCommand {
   constructor() {
@@ -57,8 +58,8 @@ export class CodeCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const input = args.join(' ');
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const input = _args.join(' ');
     const parts = input.split('|');
     const task = parts[0]?.trim();
     const language = parts[1]?.trim() || 'JavaScript';

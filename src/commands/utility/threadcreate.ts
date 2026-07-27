@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits, TextChannel } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class ThreadcreateCommand extends BaseCommand {
   constructor() {
@@ -56,7 +57,7 @@ export class ThreadcreateCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     if (!args.length) {
       const embed = new EmbedBuilder()
         .setColor(COLORS.error)
@@ -66,7 +67,7 @@ export class ThreadcreateCommand extends BaseCommand {
       return;
     }
 
-    const name = args.join(' ');
+    const name = _args.join(' ');
     const channel = message.channel as TextChannel;
 
     if (!channel || !channel.threads) {

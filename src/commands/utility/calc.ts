@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class CalcCommand extends BaseCommand {
   constructor() {
@@ -59,8 +60,8 @@ export class CalcCommand extends BaseCommand {
   }
 
   public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
-    const expression = args.join(' ').replace(/ /g, '');
+    const _args = message.content.split(' ').slice(1);
+    const expression = _args.join(' ').replace(/ /g, '');
 
     if (!expression) {
       const errorEmbed = new EmbedBuilder()

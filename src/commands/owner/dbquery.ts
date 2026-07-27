@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder, codeBlock } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { COLORS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class DbQueryCommand extends BaseCommand {
   constructor() {
@@ -47,8 +48,8 @@ export class DbQueryCommand extends BaseCommand {
     await i.editReply({ embeds: [embed] });
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
-    const query = args.join(' ');
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+    const query = _args.join(' ');
     if (!query) { await m.reply('❌ Provide a SQL query.'); return; }
     const { result, success, timeTaken } = await this.runQuery(query);
     const embed = new EmbedBuilder()

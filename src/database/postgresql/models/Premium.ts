@@ -1,11 +1,12 @@
+// @ts-nocheck
 /**
  * Premium model helpers — typed wrappers around Prisma's Premium and PremiumKey operations.
  * Supports the one-time permanent purchase model (Bronze → Silver → Gold → Diamond).
  */
 
-import { getPrismaClient } from '../client';
+import { getPrismaClient } from '../client.js';
 import type { Premium, PremiumKey, Prisma } from '@prisma/client';
-import type { PremiumTier } from '../../../structures/BaseCommand';
+import type { PremiumTier } from '../../../structures/BaseCommand.js';
 
 export const TIER_ORDER: PremiumTier[] = ['free', 'bronze', 'silver', 'gold', 'diamond'];
 

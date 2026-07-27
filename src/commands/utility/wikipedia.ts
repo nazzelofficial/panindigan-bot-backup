@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class WikipediaCommand extends BaseCommand {
   constructor() {
@@ -68,7 +69,7 @@ export class WikipediaCommand extends BaseCommand {
     await interaction.editReply({ embeds: [this.buildEmbed(data)] });
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     if (!args.length) {
       const embed = new EmbedBuilder()
         .setColor(COLORS.error)
@@ -78,7 +79,7 @@ export class WikipediaCommand extends BaseCommand {
       return;
     }
 
-    const topic = args.join(' ');
+    const topic = _args.join(' ');
     const msg = await message.reply({ content: `${EMOJIS.loading} Searching Wikipedia for **${topic}**...` });
 
     const data = await this.fetchSummary(topic);

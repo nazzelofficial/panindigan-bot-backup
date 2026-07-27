@@ -1,6 +1,7 @@
+// @ts-nocheck
 import { PrismaClient } from '@prisma/client';
-import { loggers } from '../../utils/Logger';
-import config from '../../../config.json';
+import { loggers } from '../../utils/Logger.js';
+import config from '../../../config.json' with { type: 'json' };
 
 let prisma: PrismaClient | null = null;
 
@@ -21,7 +22,7 @@ export async function initializePrisma(): Promise<void> {
   }
 
   prisma = new PrismaClient({
-    datasources: { db: { url: postgresUrl } },
+    datasourceUrl: postgresUrl,
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
   });
 

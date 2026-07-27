@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { PanindiganClient } from '../../structures/PanindiganClient';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { PanindiganClient } from '../../structures/PanindiganClient.js';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class TranslateUtilityCommand extends BaseCommand {
   constructor() {
@@ -29,8 +30,8 @@ export class TranslateUtilityCommand extends BaseCommand {
     await interaction.reply({ content: 'Use `/translate` from the info category.', ephemeral: true });
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const input = args.join(' ');
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const input = _args.join(' ');
     const parts = input.split('|');
     const text = parts[0]?.trim();
     const lang = parts[1]?.trim() || 'English';

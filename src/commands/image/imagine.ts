@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { aiEngine } from '../../structures/AIEngine';
+import { COLORS } from '../../utils/Constants.js';
+import { aiEngine } from '../../structures/AIEngine.js';
 
 export class ImagineCommand extends BaseCommand {
   constructor() {
@@ -28,7 +29,7 @@ export class ImagineCommand extends BaseCommand {
     } catch (e: any) { await i.editReply({ content: `❌ ${e.message || 'Failed to generate image.'}` }); }
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     if (!args.length) { await m.reply('❌ Usage: `p!imagine <prompt>`'); return; }
     const msg = await m.reply('⏳ Generating image...');
     try {

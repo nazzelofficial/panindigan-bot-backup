@@ -1,6 +1,7 @@
-import { getCooldown, setCooldown } from '../database/redis/client';
-import { PanindiganClient } from '../structures/PanindiganClient';
-import config from '../../config.json';
+// @ts-nocheck
+import { getCooldown, setCooldown } from '../database/redis/client.js';
+import { PanindiganClient } from '../structures/PanindiganClient.js';
+import config from '../../config.json' with { type: 'json' };
 
 export async function checkCooldown(
   client: PanindiganClient,

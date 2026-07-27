@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 
 const GIFS = [
   'https://media.giphy.com/media/5tmRHwTlHAA9WkX6Sg/giphy.gif',
@@ -21,7 +22,7 @@ export class PatCommand extends BaseCommand {
     const embed = new EmbedBuilder().setDescription(`✋ **${i.user.username}** pats **${t.username}** on the head!`).setImage(this.gif()).setColor(COLORS.default);
     await i.reply({ embeds: [embed] });
   }
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const t = m.mentions.users.first(); if (!t) { await m.reply('❌ Mention someone to pat!'); return; }
     const embed = new EmbedBuilder().setDescription(`✋ **${m.author.username}** pats **${t.username}** on the head!`).setImage(this.gif()).setColor(COLORS.default);
     await m.reply({ embeds: [embed] });

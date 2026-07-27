@@ -1,3 +1,4 @@
+// @ts-nocheck
 export interface EventLogDocument {
   _id: string;
   timestamp: Date;

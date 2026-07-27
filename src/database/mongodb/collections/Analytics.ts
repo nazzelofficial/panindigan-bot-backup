@@ -1,3 +1,4 @@
+// @ts-nocheck
 export interface AnalyticsDocument {
   _id: string;
   guildId: string;

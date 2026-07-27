@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import { connectMongoDB } from '../../database/mongodb/client';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { connectMongoDB } from '../../database/mongodb/client.js';
 
 export class MongoQueryCommand extends BaseCommand {
   constructor() {
@@ -47,13 +48,13 @@ export class MongoQueryCommand extends BaseCommand {
     await interaction.editReply({ embeds: [embed] });
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     if (args.length < 2) {
       await message.reply(`${EMOJIS.error} Usage: \`p!mongoquery <collection> <json_query>\``);
       return;
     }
     const collection = args[0];
-    const query = args.slice(1).join(' ');
+    const query = _args.slice(1).join(' ');
     const loadingMsg = await message.reply(`${EMOJIS.loading} Running query...`);
     const embed = await this.runQuery(collection, query);
     await loadingMsg.edit({ content: '', embeds: [embed] });

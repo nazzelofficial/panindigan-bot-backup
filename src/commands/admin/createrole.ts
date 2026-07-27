@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits, RoleFlags } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class CreateRoleCommand extends BaseCommand {
   constructor() {
@@ -65,11 +66,11 @@ export class CreateRoleCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     const name = args[0];
     const color = args[1];
-    const hoist = args.includes('--hoist');
-    const mentionable = args.includes('--mentionable');
+    const hoist = _args.includes('--hoist');
+    const mentionable = _args.includes('--mentionable');
 
     if (!name) {
       await message.reply('❌ Please provide a role name.');

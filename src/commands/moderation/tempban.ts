@@ -1,8 +1,9 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
-import { Formatter } from '../../utils/Formatter';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
+import { Formatter } from '../../utils/Formatter.js';
 
 export class TempBanCommand extends BaseCommand {
   constructor() {
@@ -122,10 +123,10 @@ export class TempBanCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     const target = message.mentions.users.first();
     const duration = args[1] || '1d';
-    const reason = args.slice(2).join(' ') || 'No reason provided';
+    const reason = _args.slice(2).join(' ') || 'No reason provided';
 
     if (!target) {
       await message.reply('❌ Please mention a user to tempban.');

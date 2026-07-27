@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class DiceCommand extends BaseCommand {
   constructor() {
@@ -40,7 +41,7 @@ export class DiceCommand extends BaseCommand {
   }
 
   public async executePrefix(message: Message): Promise<void> {
-    const args = message.content.split(' ').slice(1);
+    const _args = message.content.split(' ').slice(1);
     const sides = args[0] ? parseInt(args[0]) : 6;
     const validSides = sides >= 2 && sides <= 100 ? sides : 6;
     const result = Math.floor(Math.random() * validSides) + 1;

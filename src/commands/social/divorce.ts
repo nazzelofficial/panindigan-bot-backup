@@ -1,8 +1,9 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { coupleConsentService } from '../../features/couple/CoupleConsentService';
-import { coupleHistoryService } from '../../features/couple/CoupleHistoryService';
+import { COLORS } from '../../utils/Constants.js';
+import { coupleConsentService } from '../../features/couple/CoupleConsentService.js';
+import { coupleHistoryService } from '../../features/couple/CoupleHistoryService.js';
 
 export class DivorceCommand extends BaseCommand {
   constructor() {
@@ -15,7 +16,7 @@ export class DivorceCommand extends BaseCommand {
     const embed = new EmbedBuilder().setDescription(`💔 **${i.user.username}** and <@${result.spouseId}> have separated.\n\n*Stay strong. Things will get better.* 💙`).setColor(COLORS.error).setTimestamp();
     await i.reply({ embeds: [embed] });
   }
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
     const result = await coupleConsentService.divorce(m.author.id, m.guildId!);
     if (!result.success) { await m.reply(`❌ ${result.error}`); return; }
     await coupleHistoryService.recordDivorce(m.author.id, result.spouseId!, m.guildId!);

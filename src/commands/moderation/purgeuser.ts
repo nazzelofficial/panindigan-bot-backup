@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits, Collection } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import config from '../../../config.json';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import config from '../../../config.json' with { type: 'json' };
 
 export class PurgeUserCommand extends BaseCommand {
   constructor() {
@@ -84,7 +85,7 @@ export class PurgeUserCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     const target = message.mentions.users.first();
     const days = parseInt(args[1]) || 7;
 

@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class SetupCommand extends BaseCommand {
   constructor() {
@@ -264,7 +265,7 @@ export class SetupCommand extends BaseCommand {
               .filter(r => r.name !== '@everyone')
               .map(r => ({ label: r.name, value: r.id, description: `Role: ${r.name}` }))
               .slice(0, 24)
-          ),
+          ]),
       );
 
     const message = await (interaction instanceof ChatInputCommandInteraction

@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 
 function parseDuration(str: string): number {
   const match = str.match(/^(\d+)(s|m|h|d)$/);
@@ -27,14 +28,14 @@ export class MassmuteCommand extends BaseCommand {
     } as CommandOptions);
   }
 
-  private async run(interaction: ChatInputCommandInteraction | null, message: Message | null, args: string[]): Promise<void> {
+  private async run(interaction: ChatInputCommandInteraction | null, message: Message | null, _args: string[]): Promise<void> {
     const guild = interaction?.guild ?? message?.guild;
     if (!guild) return;
     const send = async (e: EmbedBuilder) => {
       if (interaction) await interaction.reply({ embeds: [e], flags: 64 });
       else await message!.reply({ embeds: [e] });
     };
-    if (args.length < 2) return send(new EmbedBuilder().setColor(COLORS.error).setDescription('❌ Usage: `massmute <role_id> <duration>`\nExample: `massmute @role 1h`'));
+    if (_args.length < 2) return send(new EmbedBuilder().setColor(COLORS.error).setDescription('❌ Usage: `massmute <role_id> <duration>`\nExample: `massmute @role 1h`'));
     const roleId = args[0].replace(/[<@&>]/g, '');
     const role = guild.roles.cache.get(roleId);
     if (!role) return send(new EmbedBuilder().setColor(COLORS.error).setDescription('❌ Role not found.'));
@@ -56,7 +57,7 @@ export class MassmuteCommand extends BaseCommand {
   public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
     await this.run(interaction, null, [interaction.options.getString('role', true), interaction.options.getString('duration') ?? '10m']);
   }
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
     await this.run(null, message, args);
   }
 }

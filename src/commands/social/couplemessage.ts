@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { coupleProfileService } from '../../features/couple/CoupleProfileService';
+import { COLORS } from '../../utils/Constants.js';
+import { coupleProfileService } from '../../features/couple/CoupleProfileService.js';
 
 export class CoupleMessageCommand extends BaseCommand {
   constructor() {
@@ -54,8 +55,8 @@ export class CoupleMessageCommand extends BaseCommand {
     await this.handle(i.user.id, i.guildId!, i.options.getString('message', true), (c) => i.reply(c), i.client);
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
-    const text = args.join(' ');
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+    const text = _args.join(' ');
     await this.handle(m.author.id, m.guildId!, text, (c) => m.reply(c), m.client);
   }
 }

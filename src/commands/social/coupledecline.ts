@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { coupleConsentService } from '../../features/couple/CoupleConsentService';
+import { COLORS } from '../../utils/Constants.js';
+import { coupleConsentService } from '../../features/couple/CoupleConsentService.js';
 
 export class CoupleDeclineCommand extends BaseCommand {
   constructor() {

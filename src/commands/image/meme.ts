@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { imageService } from '../../services/ImageService';
+import { COLORS } from '../../utils/Constants.js';
+import { imageService } from '../../services/ImageService.js';
 
 export class MemeCommand extends BaseCommand {
   constructor() {

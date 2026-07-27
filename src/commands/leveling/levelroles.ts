@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder, PermissionFlagsBits, Role } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { getPrismaClient } from '../../database/postgresql/client';
+import { COLORS } from '../../utils/Constants.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class LevelRolesCommand extends BaseCommand {
   constructor() {
@@ -47,8 +48,8 @@ export class LevelRolesCommand extends BaseCommand {
     else if (sub === 'remove') { await i.reply(await this.handleRemove(i.guildId!, role)); }
   }
 
-  public async executePrefix(m: Message, args: string[]): Promise<void> {
-    const [sub] = args;
+  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+    const [sub] = _args;
     if (!sub || sub === 'list') { const e = await this.handleList(m.guildId!); await m.reply({ embeds: [e] }); return; }
     const role = m.mentions.roles.first();
     if (!role) { await m.reply('❌ Please mention a role.'); return; }

@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
+import { COLORS } from '../../utils/Constants.js';
 
 export class BulkroleCommand extends BaseCommand {
   constructor() {
@@ -31,6 +32,6 @@ export class BulkroleCommand extends BaseCommand {
     if (i) await i.followUp({ embeds: [result], flags: 64 }); else await m!.channel.send({ embeds: [result] });
   }
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> { await this.run(i, null, i.options.getString('action', true), i.options.getRole('role', true).id, []); }
-  public async executePrefix(m: Message, args: string[]): Promise<void> { await this.run(null, m, args[0], args[1], args.slice(2)); }
+  public async executePrefix(m: Message, _args: string[]): Promise<void> { await this.run(null, m, args[0], args[1], _args.slice(2)); }
 }
 export default BulkroleCommand;

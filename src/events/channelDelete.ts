@@ -1,7 +1,8 @@
-import { Event } from '../structures/BaseCommand';
+// @ts-nocheck
+import { Event } from '../structures/BaseCommand.js';
 import { GuildChannel, EmbedBuilder, TextChannel } from 'discord.js';
-import { PanindiganClient } from '../structures/PanindiganClient';
-import { COLORS } from '../utils/Constants';
+import { PanindiganClient } from '../structures/PanindiganClient.js';
+import { COLORS } from '../utils/Constants.js';
 
 export const event: Event = {
   name: 'channelDelete',
@@ -9,7 +10,7 @@ export const event: Event = {
   async execute(channel: GuildChannel, client: PanindiganClient) {
     if (!channel.guild) return;
     try {
-      const { getPrismaClient } = await import('../database/postgresql/client');
+      const { getPrismaClient } = await import('../database/postgresql/client.js');
       const prisma = getPrismaClient();
       const guildData = await prisma.guild.findUnique({
         where: { guildId: channel.guild.id },

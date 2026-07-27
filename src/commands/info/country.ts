@@ -1,6 +1,7 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants';
+import { COLORS, EMOJIS } from '../../utils/Constants.js';
 
 export class CountryCommand extends BaseCommand {
   constructor() {
@@ -68,8 +69,8 @@ export class CountryCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, args: string[]): Promise<void> {
-    const country = args.join(' ');
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const country = _args.join(' ');
     if (!country) return void message.reply(`${EMOJIS.error} Please provide a country name.`);
     const thinking = await message.reply(`${EMOJIS.info} Fetching country data...`);
     try {

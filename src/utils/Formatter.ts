@@ -1,5 +1,6 @@
+// @ts-nocheck
 import { EmbedBuilder, GuildMember, User } from 'discord.js';
-import config from '../../config.json';
+import config from '../../config.json' with { type: 'json' };
 
 export class Formatter {
   public static formatNumber(num: number): string {

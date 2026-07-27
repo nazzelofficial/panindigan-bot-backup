@@ -1,14 +1,15 @@
-import { Event } from '../structures/BaseCommand';
+// @ts-nocheck
+import { Event } from '../structures/BaseCommand.js';
 import { GuildBan, EmbedBuilder, TextChannel } from 'discord.js';
-import { PanindiganClient } from '../structures/PanindiganClient';
-import { COLORS } from '../utils/Constants';
+import { PanindiganClient } from '../structures/PanindiganClient.js';
+import { COLORS } from '../utils/Constants.js';
 
 export const event: Event = {
   name: 'guildBanAdd',
   once: false,
   async execute(ban: GuildBan, client: PanindiganClient) {
     try {
-      const { getPrismaClient } = await import('../database/postgresql/client');
+      const { getPrismaClient } = await import('../database/postgresql/client.js');
       const prisma = getPrismaClient();
       const guildData = await prisma.guild.findUnique({
         where: { guildId: ban.guild.id },

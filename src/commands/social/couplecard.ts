@@ -1,7 +1,8 @@
-import { BaseCommand, CommandOptions } from '../../structures/BaseCommand';
+// @ts-nocheck
+import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, AttachmentBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants';
-import { coupleProfileService } from '../../features/couple/CoupleProfileService';
+import { COLORS } from '../../utils/Constants.js';
+import { coupleProfileService } from '../../features/couple/CoupleProfileService.js';
 import { createCanvas, loadImage } from 'canvas';
 
 export class CouplecardCommand extends BaseCommand {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 export interface StarboardDocument {
   _id: string;
   guildId: string;
