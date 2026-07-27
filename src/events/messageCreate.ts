@@ -4,6 +4,7 @@ import { Message } from 'discord.js';
 import { PanindiganClient } from '../structures/PanindiganClient.js';
 import { checkCooldown } from '../handlers/CooldownHandler.js';
 import { getUserPremiumTier } from '../handlers/PremiumHandler.js';
+import { getGuildPrefix } from '../database/postgresql/models/Guild.js';
 import { Permissions } from '../utils/Permissions.js';
 import { loggers, logCommandExecution } from '../utils/Logger.js';
 import config from '../../config.json' with { type: 'json' };
@@ -14,9 +15,14 @@ export const event: Event = {
   async execute(message: Message, client: PanindiganClient) {
     if (!config.loader.enablePrefixCommands) return;
     if (message.author.bot) return;
-    if (!message.content.startsWith(config.bot.prefix)) return;
 
-    const _args = message.content.slice(config.bot.prefix.length).trim().split(/ +/);
+    const prefix = message.guild
+      ? await getGuildPrefix(message.guild.id)
+      : (process.env.BOT_PREFIX ?? config.bot.prefix);
+
+    if (!message.content.startsWith(prefix)) return;
+
+    const _args = message.content.slice(prefix.length).trim().split(/ +/);
     const commandName = _args.shift()?.toLowerCase();
 
     if (!commandName) return;

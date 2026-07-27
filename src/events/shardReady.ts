@@ -1,7 +1,16 @@
 // @ts-nocheck
+import { ActivityType } from 'discord.js';
 import { Event } from '../structures/BaseCommand.js';
 import { PanindiganClient } from '../structures/PanindiganClient.js';
 import { logger } from '../utils/Logger.js';
+
+const ACTIVITY_TYPE_MAP: Record<string, ActivityType> = {
+  playing: ActivityType.Playing,
+  streaming: ActivityType.Streaming,
+  listening: ActivityType.Listening,
+  watching: ActivityType.Watching,
+  competing: ActivityType.Competing,
+};
 
 export const event: Event = {
   name: 'shardReady',
@@ -26,7 +35,8 @@ export const event: Event = {
           .replace('{guildCount}', client.guilds.cache.size.toString())
           .replace('{memberCount}', client.guilds.cache.reduce((acc, g) => acc + g.memberCount, 0).toString());
 
-        client.user?.setActivity(text, { type: activity.type as any });
+        const activityType = ACTIVITY_TYPE_MAP[activity.type.toLowerCase()] ?? ActivityType.Playing;
+        client.user?.setActivity(text, { type: activityType });
       };
 
       rotatePresence();

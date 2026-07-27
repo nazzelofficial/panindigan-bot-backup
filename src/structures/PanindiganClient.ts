@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { Client, GatewayIntentBits, Collection, Partials } from 'discord.js';
+import { Client, GatewayIntentBits, Collection, Partials, ActivityType } from 'discord.js';
 import { Kazagumo } from 'kazagumo';
 import { Connectors } from 'shoukaku';
 import { connectMongoDB } from '../database/mongodb/client.js';
@@ -165,6 +165,14 @@ export class PanindiganClient extends Client {
   public async updatePresence(): Promise<void> {
     if (!this.config.presence.enabled) return;
 
+    const ACTIVITY_TYPE_MAP: Record<string, ActivityType> = {
+      playing: ActivityType.Playing,
+      streaming: ActivityType.Streaming,
+      listening: ActivityType.Listening,
+      watching: ActivityType.Watching,
+      competing: ActivityType.Competing,
+    };
+
     const activities = this.config.presence.activities;
     const activity = activities[this.shardId % activities.length];
 
@@ -176,6 +184,7 @@ export class PanindiganClient extends Client {
         this.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0).toString(),
       );
 
-    this.user?.setActivity(text, { type: activity.type as any });
+    const activityType = ACTIVITY_TYPE_MAP[activity.type.toLowerCase()] ?? ActivityType.Playing;
+    this.user?.setActivity(text, { type: activityType });
   }
 }
