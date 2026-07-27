@@ -3,6 +3,7 @@ import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
+import chalk from 'chalk';
 import config from '../../config.json' with { type: 'json' };
 
 // ─── Directories ─────────────────────────────────────────────────────────────
@@ -51,13 +52,33 @@ function sanitize(value: unknown): unknown {
   return value;
 }
 
+// ─── Level styling ────────────────────────────────────────────────────────────
+
+const LEVEL_STYLES: Record<string, (s: string) => string> = {
+  error: (s) => chalk.bgRed.white.bold(` ${s.toUpperCase().padEnd(5)} `),
+  warn:  (s) => chalk.bgYellow.black.bold(` ${s.toUpperCase().padEnd(5)} `),
+  info:  (s) => chalk.bgBlue.white.bold(` ${s.toUpperCase().padEnd(5)} `),
+  debug: (s) => chalk.bgGray.white.bold(` ${s.toUpperCase().padEnd(5)} `),
+  verbose:(s) => chalk.bgMagenta.white.bold(` ${s.toUpperCase().padEnd(5)} `),
+};
+
+function styleLevel(level: string): string {
+  const raw = level.replace(/\x1B\[[0-9;]*m/g, ''); // strip any existing ansi
+  const fn = LEVEL_STYLES[raw] ?? ((s) => ` ${s.toUpperCase().padEnd(5)} `);
+  return fn(raw);
+}
+
+function styleModule(mod?: string): string {
+  if (!mod) return chalk.gray('─'.padEnd(14));
+  return chalk.cyan(mod.padEnd(14));
+}
+
 // ─── Formats ─────────────────────────────────────────────────────────────────
 
 const jsonFormat = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DDTHH:mm:ss.SSSZ' }),
   winston.format.errors({ stack: true }),
   winston.format((info) => {
-    // Redact + sanitize all metadata fields (everything except level/message/timestamp)
     const { level, message, timestamp, ...meta } = info;
     const cleaned = redact(sanitize(meta)) as Record<string, unknown>;
     return { level, message: sanitize(message) as string, timestamp, ...cleaned };
@@ -66,17 +87,23 @@ const jsonFormat = winston.format.combine(
 );
 
 const consoleFormat = winston.format.combine(
-  winston.format.colorize(),
-  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+  winston.format.timestamp({ format: 'HH:mm:ss' }),
   winston.format.printf(({ timestamp, level, message, module: mod, shardId, ...meta }) => {
-    const parts: string[] = [`${timestamp} ${level}`];
-    if (mod) parts.push(`[${mod}]`);
-    if (shardId !== undefined) parts.push(`[Shard ${shardId}]`);
-    parts.push(`: ${message}`);
-    const remaining = Object.keys(meta).length
-      ? ' ' + JSON.stringify(redact(sanitize(meta)))
+    const sep    = chalk.gray('│');
+    const lvl    = styleLevel(level);
+    const modStr = styleModule(mod as string | undefined);
+    const ts     = chalk.dim(timestamp as string);
+    const shardStr = shardId !== undefined ? chalk.magenta(` [shard:${shardId}]`) : '';
+
+    // Stringify remaining metadata (skip noise)
+    const remaining = Object.keys(meta).filter(k => k !== 'splat' && meta[k] !== undefined);
+    const metaStr = remaining.length
+      ? chalk.gray('  ' + JSON.stringify(redact(sanitize(
+          Object.fromEntries(remaining.map(k => [k, meta[k]]))
+        ))))
       : '';
-    return parts.join('') + remaining;
+
+    return `${ts} ${sep} ${lvl} ${sep} ${modStr} ${sep} ${chalk.white(String(message))}${shardStr}${metaStr}`;
   }),
 );
 
@@ -107,8 +134,6 @@ if (rotationOpts?.enabled) {
 }
 
 // ─── Discord Webhook Transport ────────────────────────────────────────────────
-// Forwards error / fatal messages to a staff Discord channel in real time.
-// Rate-limited: at most one webhook call per WEBHOOK_BATCH_MS ms.
 
 const WEBHOOK_URL = process.env.LOG_WEBHOOK_URL;
 const WEBHOOK_BATCH_MS = 5000;
@@ -118,7 +143,7 @@ let webhookTimer: NodeJS.Timeout | null = null;
 async function flushWebhookQueue(): Promise<void> {
   if (!WEBHOOK_URL || webhookQueue.length === 0) return;
   const batch = webhookQueue.splice(0, webhookQueue.length);
-  const content = batch.join('\n').slice(0, 2000); // Discord 2000-char limit
+  const content = batch.join('\n').slice(0, 2000);
   try {
     await fetch(WEBHOOK_URL, {
       method: 'POST',
@@ -126,7 +151,7 @@ async function flushWebhookQueue(): Promise<void> {
       body: JSON.stringify({ content, username: 'Panindigan Logs' }),
     });
   } catch {
-    // Silently swallow — don't crash the bot if webhook is down
+    // Don't crash the bot if the webhook is down
   }
 }
 
@@ -266,7 +291,7 @@ export function logError(
 // ─── Global process error handlers ───────────────────────────────────────────
 
 export function registerGlobalErrorHandlers(): void {
-  process.on('unhandledRejection', (reason, promise) => {
+  process.on('unhandledRejection', (reason) => {
     loggers.bot.error('Unhandled promise rejection', {
       reason: reason instanceof Error ? reason.message : String(reason),
       stack: reason instanceof Error ? reason.stack : undefined,
@@ -278,7 +303,6 @@ export function registerGlobalErrorHandlers(): void {
       errorMessage: error.message,
       stack: error.stack,
     });
-    // Give the logger time to flush before exiting
     setTimeout(() => process.exit(1), 1000);
   });
 
@@ -293,10 +317,6 @@ export function registerGlobalErrorHandlers(): void {
 
 // ─── Periodic health-check log ───────────────────────────────────────────────
 
-/**
- * Start emitting a periodic health-check log entry.
- * @param intervalMs How often to log (default 5 minutes)
- */
 export function startHealthCheckLogger(
   getStats: () => Record<string, unknown>,
   intervalMs = 300_000,

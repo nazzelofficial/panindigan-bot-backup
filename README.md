@@ -1,346 +1,221 @@
-# 🤖 Panindigan — All-in-One Discord Bot
+# Panindigan
+
+An all-in-one Discord bot built for Filipino communities. Written in TypeScript with Discord.js v14, Prisma (PostgreSQL), MongoDB, Redis, and Lavalink for audio.
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-24.x-green)](https://nodejs.org/)
 [![Discord.js](https://img.shields.io/badge/Discord.js-14.x-5865F2)](https://discord.js.org/)
-[![Lavalink](https://img.shields.io/badge/Lavalink-4.x-red)](https://github.com/lavalink-devs/Lavalink)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 [![Version](https://img.shields.io/badge/Version-0.1.1-orange)](CHANGELOG.md)
 
-## ✨ Features
+---
 
-### 🎯 Command Categories
-- **Help**: 15 commands for bot help and docs
-- **Moderation**: 50 tools for managing and moderating servers
-- **Admin/Setup**: 45 commands for server config
-- **Music**: 60 commands using Lavalink for quality playback
-- **Economy**: 80 commands for currency, shops, trading
-- **Games**: 65 fun activities
-- **Fun**: 68 meme/entertainment commands
-- **AI**: 65 commands—multi-provider (OpenAI, Anthropic, Gemini, Groq)
-- **Info**: 48 server and user info commands
-- **Utility**: 65 handy tools
-- **Social**: 80 commands for social features
-- **Leveling**: 25 commands for XP and leveling
-- **Giveaway**: 22 management commands
-- **Image**: 30 image generation/manipulation commands
-- **Starboard**: 12 commands for starboards
-- **Applications**: 18 application management commands
-- **Premium**: 30 commands for premium features
-- **Owner**: 122 bot owner commands
+## Features
 
-### 🌍 Multi-Language Support
-- English (en)
-- Filipino (fil)
+| Category | Commands | Notes |
+|---|---|---|
+| Help | ~15 | Command lookup, docs |
+| Moderation | ~50 | Warnings, bans, mutes, automod |
+| Admin / Setup | ~45 | Server configuration |
+| Music | ~60 | Lavalink-backed; supports YouTube, Spotify, SoundCloud, Apple Music, Deezer, Tidal |
+| Economy | ~80 | Currency (₱ Piso), shops, trading, bank |
+| Games | ~65 | Server activities and minigames |
+| Fun | ~68 | Memes, entertainment |
+| AI | ~65 | Multi-provider: OpenAI, Anthropic, Gemini, Groq |
+| Info | ~48 | Server and user info |
+| Utility | ~65 | General tools |
+| Social | ~80 | Social interaction commands |
+| Leveling | ~25 | XP, roles, voice XP |
+| Giveaway | ~22 | Giveaway management |
+| Image | ~30 | Image generation and manipulation |
+| Starboard | ~12 | Starboard tracking |
+| Applications | ~18 | Application management |
+| Premium | ~30 | Tier-gated commands |
+| Owner | ~122 | Bot owner utilities |
 
-### 💾 Database Support
-- **PostgreSQL** – Structured storage, Prisma ORM
-- **MongoDB** – Document storage for flexible data
-- **Redis** – Caching and rate limiting
+**Languages supported:** English (`en`), Filipino (`fil`)
 
-### 🎵 Music Features
-- Lavalink-powered, high quality audio
-- Supports YouTube, SoundCloud, Twitch, more
-- Queue, playlists, audio effects, filters, volume
+**Premium tiers (lifetime, one-time):** Free → Bronze (₱49) → Silver (₱99) → Gold (₱199) → Diamond (₱399)
 
-### 🤖 AI Integration
-- OpenAI GPT
-- Anthropic Claude
-- Google Gemini
-- Groq AI
-- Custom AI architecture
+---
 
-### 💰 Premium System
-- Permanent, one-time tiers: Free, Bronze, Silver, Gold, Diamond
-- Unlock exclusive features for a fair price
+## Requirements
 
-## 🚀 Getting Started
-
-### Prerequisites
 - Node.js v24.x+
 - pnpm v11.15.1+
 - PostgreSQL v16.x+
 - MongoDB v7.x+
 - Redis v7.x+
-- Lavalink v4.x (for music)
-- Discord bot token
-
-### Installation
-
-1. **Clone this repo**
-   ```
-   git clone https://github.com/nazzelofficial/panindigan-bot.git
-   cd panindigan-bot
-   ```
-
-2. **Install dependencies**
-   ```
-   pnpm install
-   ```
-
-3. **Set up your `.env` file**
-   ```
-   cp .env.example .env
-   ```
-   Then edit `.env` with your own config and keys. Main entries:
-
-   ```
-   DISCORD_TOKEN=your_bot_token_here
-   DISCORD_CLIENT_ID=your_client_id
-   POSTGRES_URL=postgresql://user:pass@host:5432/panindigan
-   MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/panindigan
-   REDIS_URL=redis://user:pass@host:6379
-   # Optional AI/Music/Lavalink/Premium configs...
-   ```
-
-4. **Run database migrations**
-   ```
-   npx prisma migrate dev
-   ```
-
-5. **Build the bot**
-   ```
-   npm run build
-   ```
-
-6. **Start up**
-   ```
-   npm start
-   ```
-
-### Docker Deployment
-
-With Docker Compose (recommended):
-
-```
-docker-compose up -d
-```
-
-Just using Docker:
-
-```
-docker build -t panindigan-bot .
-docker run -d --env-file .env panindigan-bot
-```
-
-## 📖 Usage
-
-### Prefix Commands
-
-Start with `p!`  
-`p!help`  
-`p!ping`  
-`p!play song_name`  
-`p!ban @user`
-
-### Slash Commands
-
-Start with `/`  
-`/help`  
-`/ping`  
-`/play query: song_name`  
-`/ban user: @user`
-
-### Examples
-
-**Moderation:**  
-`p!ban @user Breaking rules`  
-`p!mute @user 1h`  
-`p!clear 50`
-
-**Music:**  
-`p!play Despacito`  
-`p!queue`  
-`p!skip`  
-`p!volume 75`
-
-**Economy:**  
-`p!balance`  
-`p!daily`  
-`p!shop`  
-`p!buy item_id`
-
-**AI:**  
-`p!ask What is the meaning of life?`  
-`p!image A beautiful sunset`  
-`p!chat Hello, how are you?`
-
-## 🔷 Sharding System
-
-Panindigan is fully sharded and ready for thousands of servers.
-
-- Discord requires sharding once your bot hits 2,500+ servers
-- Each shard is a separate process, handling a chunk of servers
-- `ShardingManager` keeps shards in sync
-- Logs and presences are separate per-shard (rotating every 30 seconds)
-- Shards restart automatically if they die
-
-**Example Presence (auto-rotates per shard):**
-```
-🎵 Playing  /help | Shard 0 | 1,234 servers
-🛡️ Watching over 45,231 members | Shard 1
-🇵🇭 Para sa mga Pilipino | Shard 2
-```
-
-## 🛠️ Development
-
-### Project Structure
-```
-panindigan-bot/
-├── src/
-│   ├── bot/
-│   │   ├── index.ts        # Dev (single shard)
-│   │   └── shard.ts        # Prod (sharding)
-│   ├── commands/           # 900+ commands, 18 categories
-│   ├── database/           # Database clients/models
-│   ├── events/             # Discord event handlers
-│   ├── features/           # Shared modules (like couples)
-│   ├── handlers/           # Command, Event, AI, Cooldown handlers
-│   ├── locales/            # en.json, fil.json for translations
-│   ├── services/           # AI, Image, Weather, News, Spotify, etc.
-│   ├── structures/         # BaseCommand, Client, AIEngine, Music, etc.
-│   └── utils/              # Logger, Formatter, Permissions, etc.
-├── prisma/
-│   └── schema.prisma
-├── lavalink/
-│   └── application.yml
-├── config.json
-├── ecosystem.config.js
-├── docker-compose.yml
-├── Dockerfile
-├── package.json
-└── tsconfig.json
-```
-
-### Available Scripts
-
-```
-# Development
-npm run dev      # Hot reload
-npm run build    # Compile TypeScript
-npm start        # Run prod build
-
-# Database
-npx prisma migrate dev
-npx prisma generate
-npx prisma studio
-
-# Lint & Format
-npm run lint
-npm run format
-```
-
-### Adding a New Command
-
-1. Put your command file in the right category, eg: `src/commands/utility/mycommand.ts`
-2. Extend `BaseCommand`:
-
-```typescript
-import { BaseCommand } from '../../structures/BaseCommand';
-import { SlashCommandBuilder } from 'discord.js';
-
-export default class MyCommand extends BaseCommand {
-  constructor() {
-    super({
-      name: 'mycommand',
-      description: 'Does something cool',
-      category: 'utility',
-      aliases: ['mc'],
-      premiumTier: 'free',
-      slashCommand: true,
-      prefixCommand: true,
-    });
-  }
-
-  buildSlashCommand() {
-    return new SlashCommandBuilder()
-      .setName(this.name)
-      .setDescription(this.description);
-  }
-
-  async executeSlash(interaction) {
-    await interaction.reply('Hello!');
-  }
-
-  async executePrefix(message, args) {
-    await message.reply('Hello!');
-  }
-}
-```
-Next time you start the bot, `CommandHandler` loads it automatically.
-
-## 📊 Professional Logging System
-
-Logs are structured (Winston-powered), shard-aware, and rotate daily.  
-You get per-shard logs, remote webhook alerts, and all the granularity you want.
-
-### Log Levels (`LOG_LEVEL` in `.env`)
-| Level  | Symbol | When                             |
-|--------|--------|----------------------------------|
-| ERROR  | 🔴     | Crashes, fatal/unhandled errors  |
-| WARN   | 🟠     | Warnings, high latency, deprecations |
-| INFO   | 🟡     | Commands, joins, basic events    |
-| DEBUG  | 🟢     | Detailed trace, dev stuff        |
-
-### Log Files (14-day retention, 20MB per file)
-```
-logs/
-├── combined-YYYY-MM-DD.log    # All logs (JSON)
-├── error-YYYY-MM-DD.log       # Errors only
-├── info-YYYY-MM-DD.log        # Info+
-└── shards/
-    ├── shard-0-YYYY-MM-DD.log
-    └── shard-N-YYYY-MM-DD.log
-```
-
-### Child Loggers (by module)
-Have a flood? Filter by `commands`, `music`, `ai`, etc.
-
-### Discord Webhook Alerts
-Set `LOG_WEBHOOK_URL` to instantly forward errors to your staff Discord channel (batched to avoid spam).
-
-## 🤝 Contributing
-
-Want to help out? Here’s how:
-
-1. Fork this repo
-2. Make a feature branch (`git checkout -b feature/amazing-feature`)
-3. Write code, commit (`git commit -m 'Add amazing feature'`)
-4. Push (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-**Coding style:**  
-- TypeScript only for new stuff  
-- Match the existing patterns  
-- Comment complex code  
-- Update the docs if needed
-
-## 📄 License
-
-MIT License (see [LICENSE](LICENSE)).
-
-## 🙏 Acknowledgments
-
-- [Discord.js](https://discord.js.org/) — Great Discord API lib
-- [Lavalink](https://github.com/lavalink-devs/Lavalink) — Streaming
-- [Prisma](https://www.prisma.io/) — The ORM
-- [Kazagumo](https://github.com/kazugumo/Kazagumo) — Lavalink queueing
-- [Winston](https://github.com/winstonjs/winston) — Logging
-- Everyone who’s contributed, tested, or cheered for us
-
-## 📞 Support
-
-- **Discord Server:** [Support Server](https://discord.gg/panindigan)
-- **Report Issues:** [GitHub Issues](https://github.com/nazzelofficial/panindigan-bot/issues)
-- **Docs:** [Wiki](https://github.com/nazzelofficial/panindigan-bot/wiki)
-
-## 🔗 Links
-
-- [Invite Bot](https://discord.com/oauth2/authorize)
-- [Vote for Bot](https://top.gg)
-- [Donate](https://patreon.com)
-- [GitHub](https://github.com/nazzelofficial/panindigan-bot)
+- Lavalink v4.x (required for music)
+- A Discord application with a bot token
 
 ---
 
-Made with ❤️ by [Nazzel](https://github.com/nazzelofficial)
+## Setup
+
+### 1. Clone and install
+
+```sh
+git clone https://github.com/nazzelofficial/panindigan-bot.git
+cd panindigan-bot
+pnpm install
+```
+
+### 2. Configure environment
+
+```sh
+cp .env.example .env
+```
+
+Edit `.env`. The required variables are:
+
+```env
+DISCORD_TOKEN=
+DISCORD_CLIENT_ID=
+POSTGRES_URL=postgresql://user:pass@host:5432/panindigan
+MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/panindigan
+REDIS_URL=redis://user:pass@host:6379
+```
+
+Optional (but needed for specific features):
+
+```env
+# AI commands
+OPENAI_API_KEY=
+ANTHROPIC_API_KEY=
+GEMINI_API_KEY=
+GROQ_API_KEY=
+
+# Music
+LAVALINK_HOST=localhost
+LAVALINK_PORT=2333
+LAVALINK_PASSWORD=youshallnotpass
+
+# Error forwarding to a Discord channel
+LOG_WEBHOOK_URL=
+
+# Bot listing
+TOPGG_TOKEN=
+```
+
+### 3. Set up the database
+
+```sh
+pnpm prisma:generate
+pnpm prisma:migrate
+```
+
+### 4. Configure Lavalink
+
+Edit `lavalink/application.yml` with your Lavalink server settings, then start Lavalink separately before the bot.
+
+### 5. Run
+
+**Development (tsx, no build step):**
+
+```sh
+pnpm dev
+```
+
+**Production (compile first):**
+
+```sh
+pnpm build
+pnpm start          # single instance
+# or
+pnpm shard          # with Discord sharding (recommended for large bots)
+```
+
+**With PM2:**
+
+```sh
+pnpm pm2:start
+pnpm pm2:logs
+```
+
+---
+
+## Configuration
+
+Most bot behavior is controlled through `config.json` at the root. The main sections:
+
+- **`features`** — toggle music, AI, economy, leveling, moderation on/off
+- **`sharding`** — set shard count (`"auto"` lets Discord decide)
+- **`presence`** — customize bot status and activity rotation
+- **`economy`** — currency name, rewards, cooldowns, tax/interest rates
+- **`leveling`** — XP per message, cooldown, voice XP
+- **`music`** — default volume, queue limits per tier, source toggles
+- **`ai`** — primary provider, fallback chain, model, token limits per tier
+- **`moderation`** — automod sensitivity, anti-nuke thresholds, max purge amount
+- **`premium`** — tier definitions, trial settings
+- **`logging`** — log level, rotation settings
+
+---
+
+## Logging
+
+The bot uses Winston with daily log rotation. Logs are written to `./logs/`:
+
+- `combined-YYYY-MM-DD.log` — all levels
+- `error-YYYY-MM-DD.log` — errors only
+- `info-YYYY-MM-DD.log` — info and above
+- `shards/shard-N-YYYY-MM-DD.log` — per-shard logs
+
+Set `LOG_WEBHOOK_URL` in `.env` to forward error/warn logs to a Discord webhook (batched every 5 seconds to avoid rate limits).
+
+Set `LOG_LEVEL=debug` to enable verbose output.
+
+---
+
+## Health Check
+
+When running, the bot exposes a small HTTP server (default port `3000`, configurable via `PORT`):
+
+- `GET /health` — returns `200` when ready, `503` during startup
+- `GET /startup` — returns full startup state including completed steps and any errors
+
+---
+
+## Project Structure
+
+```
+src/
+├── bot/           # Entry points (index.ts = single, shard.ts = sharded)
+├── commands/      # All slash and prefix commands, organized by category
+├── database/      # PostgreSQL (Prisma), MongoDB, and Redis client setup
+├── events/        # Discord.js event handlers
+├── features/      # Feature-specific modules (economy, leveling, etc.)
+├── handlers/      # Command and event loaders
+├── locales/       # i18n strings (en, fil)
+├── services/      # Shared services (AI, music, etc.)
+├── structures/    # Base classes (PanindiganClient, BaseCommand, etc.)
+└── utils/         # Logger, Banner, helpers
+```
+
+---
+
+## Contributing
+
+1. Fork the repo
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Write code in TypeScript, match existing patterns
+4. Run the linter before committing: `pnpm lint`
+5. Open a pull request
+
+If you find a bug, open an issue with reproduction steps and the relevant log output.
+
+---
+
+## Links
+
+- **Discord:** [Support Server](https://discord.gg/panindigan)
+- **Issues:** [GitHub Issues](https://github.com/nazzelofficial/panindigan-bot/issues)
+- **Changelog:** [CHANGELOG.md](CHANGELOG.md)
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE).
+
+Made by [Nazzel](https://github.com/nazzelofficial).
