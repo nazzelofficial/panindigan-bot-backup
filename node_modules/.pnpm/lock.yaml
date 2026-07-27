@@ -80,6 +80,9 @@ importers:
       pm2:
         specifier: ^7.0.3
         version: 7.0.3
+      pure-rand:
+        specifier: ^6.1.0
+        version: 6.1.0
       redis:
         specifier: ^6.1.0
         version: 6.1.0
