@@ -2,7 +2,7 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import { COLORS, EMOJIS } from '../../utils/Constants.js';
-import getRedisClient from '../../database/redis/client.js';
+import { getRedisClient } from '../../database/redis/client.js';
 
 export class MaintenanceCommand extends BaseCommand {
   constructor() {

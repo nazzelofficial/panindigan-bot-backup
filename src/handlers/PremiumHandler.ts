@@ -212,3 +212,30 @@ export function getTierLabel(tier: PremiumTier): string {
   };
   return labels[tier] || '🆓 Free';
 }
+
+// ─── PremiumHandler class (wraps module functions for command use) ─────────────
+
+export class PremiumHandler {
+  async setUserPremium(userId: string, tier: string, durationDays?: number): Promise<void> {
+    const prisma = getPrismaClient();
+    const now = new Date();
+    const isPermanent = !durationDays || durationDays === 0;
+    const expiresAt = isPermanent ? null : new Date(now.getTime() + durationDays * 86400000);
+    await prisma.premium.upsert({
+      where: { userId_guildId: { userId, guildId: 'global' } },
+      create: { userId, guildId: 'global', tier: tier as any, activatedAt: now, expiresAt, isPermanent },
+      update: { tier: tier as any, activatedAt: now, expiresAt, isPermanent },
+    });
+    await prisma.user.updateMany({ where: { discordId: userId }, data: { premiumTier: tier as any } }).catch(() => {});
+  }
+
+  async revokePremium(userId: string): Promise<void> {
+    const prisma = getPrismaClient();
+    await prisma.premium.deleteMany({ where: { userId } }).catch(() => {});
+    await prisma.user.updateMany({ where: { discordId: userId }, data: { premiumTier: 'free' as any } }).catch(() => {});
+  }
+
+  async getUserPremium(userId: string, guildId: string) {
+    return getUserPremiumTier(userId, guildId);
+  }
+}

@@ -3,7 +3,6 @@ import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder, AttachmentBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
 import sharp from 'sharp';
-import fetch from 'node-fetch';
 
 export class InvertCommand extends BaseCommand {
   constructor() {

@@ -39,16 +39,20 @@
     "status": "online",
     "activities": [
       {
-        "type": "playing",
-        "text": "/help | Shard {shardId} | {guildCount} servers"
+        "type": "listening",
+        "text": "/help | {guildCount} servers"
       },
       {
         "type": "watching",
-        "text": "over {memberCount} members | Shard {shardId}"
+        "text": "over {memberCount} members"
       },
       {
         "type": "playing",
-        "text": "Para sa mga Pilipino | Shard {shardId}"
+        "text": "Para sa mga Pilipino 🇵🇭"
+      },
+      {
+        "type": "listening",
+        "text": "p!help | {guildCount} guilds"
       }
     ]
   },

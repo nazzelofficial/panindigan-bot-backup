@@ -3,7 +3,6 @@ import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder, AttachmentBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
 import sharp from 'sharp';
-import fetch from 'node-fetch';
 
 const FILTERS: Record<string, (s: sharp.Sharp) => sharp.Sharp> = {
   sepia: (s) => s.modulate({ saturation: 0.5, brightness: 1.0 }).tint({ r: 112, g: 66, b: 20 }),

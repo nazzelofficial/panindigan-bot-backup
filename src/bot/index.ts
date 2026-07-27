@@ -203,7 +203,7 @@ async function main(): Promise<void> {
           reject(new Error('Ready event not received within 60s'));
         }, 60_000);
 
-        client.once('ready', () => {
+        client.once('clientReady', () => {
           clearTimeout(timeout);
           loggers.bot.info('Bot is ready', {
             tag: client.user?.tag,

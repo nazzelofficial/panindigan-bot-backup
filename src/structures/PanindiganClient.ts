@@ -18,6 +18,7 @@ export class PanindiganClient extends Client {
   public config = config;
   public shardId: number;
   public totalShards: number;
+  private _presenceIndex: number = 0;
 
   constructor(shardId: number = 0, totalShards: number = 1) {
     super({
@@ -174,7 +175,8 @@ export class PanindiganClient extends Client {
     };
 
     const activities = this.config.presence.activities;
-    const activity = activities[this.shardId % activities.length];
+    const activity = activities[this._presenceIndex % activities.length];
+    this._presenceIndex++;
 
     const text = activity.text
       .replace('{shardId}', this.shardId.toString())

@@ -24,10 +24,17 @@ printBanner({
   shardCount,
 });
 
-const manager = new ShardingManager(join(__dirname, 'index.js'), {
+// In development (tsx), spawn shards as TypeScript source files using the
+// tsx ESM loader. In production (compiled), spawn the built index.js directly.
+const isDev = process.env.NODE_ENV !== 'production' && __filename.endsWith('.ts');
+const botFile = isDev ? join(__dirname, 'index.ts') : join(__dirname, 'index.js');
+const extraExecArgv = isDev ? ['--import', 'tsx/esm'] : [];
+
+const manager = new ShardingManager(botFile, {
   token: process.env.DISCORD_TOKEN,
   totalShards: shardCount,
   respawn: config.sharding.respawn,
+  execArgv: [...(process.execArgv || []), ...extraExecArgv],
   shardArgs: process.argv.slice(2),
 });
 

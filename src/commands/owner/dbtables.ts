@@ -2,7 +2,7 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
 import { COLORS, EMOJIS } from '../../utils/Constants.js';
-import getPrismaClient from '../../database/postgresql/client.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 
 interface TableRow {
   tablename: string;

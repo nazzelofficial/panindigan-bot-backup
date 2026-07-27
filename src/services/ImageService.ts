@@ -1,5 +1,4 @@
 // @ts-nocheck
-import fetch from 'node-fetch';
 import { ImageGenerator } from '../structures/ImageGenerator.js';
 import { aiEngine } from '../structures/AIEngine.js';
 

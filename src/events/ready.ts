@@ -4,7 +4,7 @@ import { PanindiganClient } from '../structures/PanindiganClient.js';
 import { logger } from '../utils/Logger.js';
 
 export const event: Event = {
-  name: 'ready',
+  name: 'clientReady',
   once: true,
   async execute(client: PanindiganClient) {
     logger.info(`🚀 Logged in as ${client.user?.tag}`);

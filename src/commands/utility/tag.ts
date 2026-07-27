@@ -2,7 +2,7 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
-import getMongoClient from '../../database/mongodb/client.js';
+import { getMongoDb as getMongoClient } from '../../database/mongodb/client.js';
 
 export class TagCommand extends BaseCommand {
   constructor() {

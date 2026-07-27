@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
-import { ChatInputCommandInteraction, Message, EmbedBuilder, PresenceStatus } from 'discord.js';
+import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
 import { COLORS, EMOJIS } from '../../utils/Constants.js';
 import { Formatter } from '../../utils/Formatter.js';
 

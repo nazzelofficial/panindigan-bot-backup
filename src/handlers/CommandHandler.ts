@@ -87,14 +87,24 @@ export async function loadCommands(client: PanindiganClient): Promise<void> {
   }
 }
 
+const DISCORD_GLOBAL_COMMAND_LIMIT = 100;
+
 async function registerSlashCommands(client: PanindiganClient): Promise<void> {
   const commands = [];
+  let skippedOwner = 0;
+  let skippedLimit = 0;
 
   for (const [name, command] of client.commands) {
-    if (command.slashCommand && name === command.name) {
-      commands.push(command.buildSlashCommand().toJSON());
-    }
+    if (!command.slashCommand || name !== command.name) continue;
+    // Skip owner-only commands — they don't need global slash commands
+    if (command.ownerOnly) { skippedOwner++; continue; }
+    // Respect Discord's 100 global command limit
+    if (commands.length >= DISCORD_GLOBAL_COMMAND_LIMIT) { skippedLimit++; continue; }
+    commands.push(command.buildSlashCommand().toJSON());
   }
+
+  if (skippedOwner > 0) loggers.commands.debug('Owner-only commands excluded from slash registration', { skippedOwner });
+  if (skippedLimit > 0) loggers.commands.warn('Some commands not registered (Discord 100-command limit reached)', { skippedLimit });
 
   const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN!);
 

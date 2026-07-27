@@ -2,9 +2,9 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
-import getPrismaClient from '../../database/postgresql/client.js';
-import getMongoClient from '../../database/mongodb/client.js';
-import getRedisClient from '../../database/redis/client.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
+import { getMongoDb as getMongoClient } from '../../database/mongodb/client.js';
+import { getRedisClient } from '../../database/redis/client.js';
 
 export class HealthcheckCommand extends BaseCommand {
   constructor() {

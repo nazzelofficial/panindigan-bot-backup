@@ -2,7 +2,7 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import { COLORS, EMOJIS } from '../../utils/Constants.js';
-import getMongoClient from '../../database/mongodb/client.js';
+import { getMongoDb as getMongoClient } from '../../database/mongodb/client.js';
 
 export class UserAliasCommand extends BaseCommand {
   constructor() {

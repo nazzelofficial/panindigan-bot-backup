@@ -79,9 +79,14 @@ const jsonFormat = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DDTHH:mm:ss.SSSZ' }),
   winston.format.errors({ stack: true }),
   winston.format((info) => {
-    const { level, message, timestamp, ...meta } = info;
+    // Mutate info in-place to preserve Winston's internal Symbol properties
+    // (e.g. Symbol.for('level')) — returning a new plain object loses them
+    // and causes Winston to silently drop every log entry.
+    const { message, ...meta } = info;
     const cleaned = redact(sanitize(meta)) as Record<string, unknown>;
-    return { level, message: sanitize(message) as string, timestamp, ...cleaned };
+    info.message = sanitize(message) as string;
+    Object.assign(info, cleaned);
+    return info;
   })(),
   winston.format.json(),
 );
