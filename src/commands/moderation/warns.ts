@@ -59,9 +59,9 @@ export class WarnsCommand extends BaseCommand {
         recentWarns.forEach((c: any, index: number) => {
           warnList += `**#${warnCases.length - index}** - ${c.reason}\n`;
         });
-        embed.addField('Recent Warnings', warnList.substring(0, 1024));
+        embed.addFields({ name: 'Recent Warnings', value: warnList.substring(0, 1024) });
       } else {
-        embed.addField('Recent Warnings', 'No warnings');
+        embed.addFields({ name: 'Recent Warnings', value: 'No warnings' });
       }
 
       await interaction.reply({ embeds: [embed] });
@@ -107,9 +107,9 @@ export class WarnsCommand extends BaseCommand {
         recentWarns.forEach((c: any, index: number) => {
           warnList += `**#${warnCases.length - index}** - ${c.reason}\n`;
         });
-        embed.addField('Recent Warnings', warnList.substring(0, 1024));
+        embed.addFields({ name: 'Recent Warnings', value: warnList.substring(0, 1024) });
       } else {
-        embed.addField('Recent Warnings', 'No warnings');
+        embed.addFields({ name: 'Recent Warnings', value: 'No warnings' });
       }
 
       await message.reply({ embeds: [embed] });

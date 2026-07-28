@@ -66,7 +66,7 @@ export class BanListCommand extends BaseCommand {
       for (let i = 1; i < chunks.length; i++) {
         const followUpEmbed = new EmbedBuilder()
           .setColor(COLORS.info)
-          .addField('Bans (continued)', chunks[i]);
+          .addFields({ name: 'Bans (continued)', value: chunks[i] });
         
         if (interaction instanceof ChatInputCommandInteraction) {
           await interaction.followUp({ embeds: [followUpEmbed] });

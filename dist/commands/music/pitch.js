@@ -44,7 +44,7 @@ export class PitchCommand extends BaseCommand {
                 await interaction.reply({ content: '❌ Nothing is currently playing.', ephemeral: true });
                 return;
             }
-            if (player.voiceChannel !== voiceChannel.id) {
+            if (player.voiceId !== voiceChannel.id) {
                 await interaction.reply({ content: '❌ You need to be in the same voice channel as the bot.', ephemeral: true });
                 return;
             }
@@ -88,7 +88,7 @@ export class PitchCommand extends BaseCommand {
                 await message.reply('❌ Nothing is currently playing.');
                 return;
             }
-            if (player.voiceChannel !== voiceChannel.id) {
+            if (player.voiceId !== voiceChannel.id) {
                 await message.reply('❌ You need to be in the same voice channel as the bot.');
                 return;
             }

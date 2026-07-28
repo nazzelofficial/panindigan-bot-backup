@@ -35,12 +35,12 @@ export class LyricsCommand extends BaseCommand {
 
       const player = client.kazagumo!.players.get(interaction.guild.id);
 
-      if (!player || !player.currentTrack) {
+      if (!player || !player.queue.current) {
         await interaction.reply({ content: '❌ Nothing is currently playing.', ephemeral: true });
         return;
       }
 
-      const track = player.currentTrack;
+      const track = player.queue.current;
       const lyrics = null // lyrics not available via player;
 
       if (!lyrics) {
@@ -80,11 +80,11 @@ export class LyricsCommand extends BaseCommand {
         track = { title: query, artist: '' };
       } else {
         const player = client.kazagumo!.players.get(message.guild.id);
-        if (!player || !player.currentTrack) {
+        if (!player || !player.queue.current) {
           await message.reply('❌ Nothing is currently playing.');
           return;
         }
-        track = player.currentTrack;
+        track = player.queue.current;
       }
 
       const lyrics = null // lyrics not available via player;

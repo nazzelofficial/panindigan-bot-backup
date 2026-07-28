@@ -46,7 +46,7 @@ export class PauseCommand extends BaseCommand {
         return;
       }
 
-      if (player.voiceChannel !== voiceChannel.id) {
+      if (player.voiceId !== voiceChannel.id) {
         await interaction.reply({ content: '❌ You need to be in the same voice channel as the bot.', ephemeral: true });
         return;
       }
@@ -62,7 +62,7 @@ export class PauseCommand extends BaseCommand {
         .setTitle(`${EMOJIS.music} Paused`)
         .setColor(COLORS.warning)
         .addFields([
-          { name: 'Track', value: player.currentTrack?.title || 'Unknown', inline: true },
+          { name: 'Track', value: player.queue.current?.title || 'Unknown', inline: true },
           { name: 'Paused by', value: interaction.user.tag, inline: true },
         ])
         .setTimestamp();
@@ -98,7 +98,7 @@ export class PauseCommand extends BaseCommand {
         return;
       }
 
-      if (player.voiceChannel !== voiceChannel.id) {
+      if (player.voiceId !== voiceChannel.id) {
         await message.reply('❌ You need to be in the same voice channel as the bot.');
         return;
       }
@@ -114,7 +114,7 @@ export class PauseCommand extends BaseCommand {
         .setTitle(`${EMOJIS.music} Paused`)
         .setColor(COLORS.warning)
         .addFields([
-          { name: 'Track', value: player.currentTrack?.title || 'Unknown', inline: true },
+          { name: 'Track', value: player.queue.current?.title || 'Unknown', inline: true },
           { name: 'Paused by', value: message.author.tag, inline: true },
         ])
         .setTimestamp();

@@ -18,7 +18,27 @@ export async function initializePrisma() {
     if (!postgresUrl) {
         throw new Error(`PostgreSQL URL not found in environment variable: ${config.databases.postgresql.urlEnv}`);
     }
-    const pool = new pg.Pool({ connectionString: postgresUrl, ssl: { rejectUnauthorized: false } });
+    // Strip any sslmode params from the URL that might conflict with our ssl config,
+    // then create the pool with explicit SSL settings that bypass cert verification.
+    let cleanUrl = postgresUrl;
+    try {
+        const u = new URL(postgresUrl);
+        u.searchParams.delete('sslmode');
+        u.searchParams.delete('ssl');
+        u.searchParams.delete('sslcert');
+        u.searchParams.delete('sslkey');
+        u.searchParams.delete('sslrootcert');
+        cleanUrl = u.toString();
+    }
+    catch { /* URL parse failed — use original */ }
+    const pool = new pg.Pool({
+        connectionString: cleanUrl,
+        ssl: {
+            rejectUnauthorized: false,
+            // Bypass hostname/cert chain verification for self-signed certs
+            checkServerIdentity: () => undefined,
+        },
+    });
     const adapter = new PrismaPg(pool);
     prisma = new PrismaClient({
         adapter,

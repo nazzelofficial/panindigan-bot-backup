@@ -53,7 +53,7 @@ export class RoleListCommand extends BaseCommand {
         for (let i = 1; i < chunks.length; i++) {
             const followUpEmbed = new EmbedBuilder()
                 .setColor(COLORS.info)
-                .addField('Roles (continued)', chunks[i]);
+                .addFields({ name: 'Roles (continued)', value: chunks[i] });
             if (interaction instanceof ChatInputCommandInteraction) {
                 await interaction.followUp({ embeds: [followUpEmbed] });
             }

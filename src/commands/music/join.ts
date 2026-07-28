@@ -41,12 +41,12 @@ export class JoinCommand extends BaseCommand {
 
       const player = client.kazagumo!.players.get(interaction.guild.id);
 
-      if (player && player.voiceChannel === voiceChannel.id) {
+      if (player && player.voiceId === voiceChannel.id) {
         await interaction.reply({ content: '❌ I\'m already in your voice channel.', ephemeral: true });
         return;
       }
 
-      if (player && player.voiceChannel !== voiceChannel.id) {
+      if (player && player.voiceId !== voiceChannel.id) {
         await interaction.reply({ content: '❌ I\'m already in another voice channel.', ephemeral: true });
         return;
       }
@@ -88,12 +88,12 @@ export class JoinCommand extends BaseCommand {
 
       const player = client.kazagumo!.players.get(message.guild.id);
 
-      if (player && player.voiceChannel === voiceChannel.id) {
+      if (player && player.voiceId === voiceChannel.id) {
         await message.reply('❌ I\'m already in your voice channel.');
         return;
       }
 
-      if (player && player.voiceChannel !== voiceChannel.id) {
+      if (player && player.voiceId !== voiceChannel.id) {
         await message.reply('❌ I\'m already in another voice channel.');
         return;
       }

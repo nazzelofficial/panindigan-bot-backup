@@ -37,7 +37,7 @@ export class RadioCommand extends BaseCommand {
                 return;
             }
             const player = client.kazagumo.players.get(interaction.guild.id);
-            if (player && player.voiceChannel !== voiceChannel.id) {
+            if (player && player.voiceId !== voiceChannel.id) {
                 await interaction.editReply({ content: '❌ I\'m already in another voice channel.' });
                 return;
             }
@@ -90,7 +90,7 @@ export class RadioCommand extends BaseCommand {
                 return;
             }
             const player = client.kazagumo.players.get(message.guild.id);
-            if (player && player.voiceChannel !== voiceChannel.id) {
+            if (player && player.voiceId !== voiceChannel.id) {
                 await message.edit('❌ I\'m already in another voice channel.');
                 return;
             }

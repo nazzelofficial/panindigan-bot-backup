@@ -44,12 +44,12 @@ export class AddToPlaylistCommand extends BaseCommand {
                 return;
             }
             const player = client.kazagumo.players.get(interaction.guildId);
-            if (!player || !player.currentTrack) {
+            if (!player || !player.queue.current) {
                 await interaction.reply({ content: '❌ Nothing is currently playing.', ephemeral: true });
                 return;
             }
             const currentSongs = JSON.parse(playlist.songs);
-            currentSongs.push(player.currentTrack);
+            currentSongs.push(player.queue.current);
             await prisma.playlist.update({
                 where: { id: playlist.id },
                 data: { songs: JSON.stringify(currentSongs) },
@@ -59,7 +59,7 @@ export class AddToPlaylistCommand extends BaseCommand {
                 .setColor(COLORS.success)
                 .addFields([
                 { name: 'Playlist', value: playlistName, inline: true },
-                { name: 'Song', value: player.currentTrack.title, inline: true },
+                { name: 'Song', value: player.queue.current.title, inline: true },
                 { name: 'Added by', value: interaction.user.tag, inline: false },
             ])
                 .setTimestamp();
@@ -93,12 +93,12 @@ export class AddToPlaylistCommand extends BaseCommand {
                 return;
             }
             const player = client.kazagumo.players.get(message.guildId);
-            if (!player || !player.currentTrack) {
+            if (!player || !player.queue.current) {
                 await message.reply('❌ Nothing is currently playing.');
                 return;
             }
             const currentSongs = JSON.parse(playlist.songs);
-            currentSongs.push(player.currentTrack);
+            currentSongs.push(player.queue.current);
             await prisma.playlist.update({
                 where: { id: playlist.id },
                 data: { songs: JSON.stringify(currentSongs) },
@@ -108,7 +108,7 @@ export class AddToPlaylistCommand extends BaseCommand {
                 .setColor(COLORS.success)
                 .addFields([
                 { name: 'Playlist', value: playlistName, inline: true },
-                { name: 'Song', value: player.currentTrack.title, inline: true },
+                { name: 'Song', value: player.queue.current.title, inline: true },
                 { name: 'Added by', value: message.author.tag, inline: false },
             ])
                 .setTimestamp();

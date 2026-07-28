@@ -39,11 +39,11 @@ export class ShuffleAllCommand extends BaseCommand {
                 await interaction.reply({ content: '❌ Nothing is currently playing.', ephemeral: true });
                 return;
             }
-            if (player.voiceChannel !== voiceChannel.id) {
+            if (player.voiceId !== voiceChannel.id) {
                 await interaction.reply({ content: '❌ You need to be in the same voice channel as the bot.', ephemeral: true });
                 return;
             }
-            if (player.queue.length < 2) {
+            if (player.queue.size < 2) {
                 await interaction.reply({ content: '❌ Need at least 2 songs in the queue to shuffle.', ephemeral: true });
                 return;
             }
@@ -81,11 +81,11 @@ export class ShuffleAllCommand extends BaseCommand {
                 await message.reply('❌ Nothing is currently playing.');
                 return;
             }
-            if (player.voiceChannel !== voiceChannel.id) {
+            if (player.voiceId !== voiceChannel.id) {
                 await message.reply('❌ You need to be in the same voice channel as the bot.');
                 return;
             }
-            if (player.queue.length < 2) {
+            if (player.queue.size < 2) {
                 await message.reply('❌ Need at least 2 songs in the queue to shuffle.');
                 return;
             }

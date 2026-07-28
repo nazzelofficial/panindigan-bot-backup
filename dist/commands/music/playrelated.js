@@ -36,15 +36,15 @@ export class PlayRelatedCommand extends BaseCommand {
                 return;
             }
             const player = client.kazagumo.players.get(interaction.guild.id);
-            if (!player || !player.currentTrack) {
+            if (!player || !player.queue.current) {
                 await interaction.editReply({ content: '❌ Nothing is currently playing.' });
                 return;
             }
-            if (player.voiceChannel !== voiceChannel.id) {
+            if (player.voiceId !== voiceChannel.id) {
                 await interaction.editReply({ content: '❌ You need to be in the same voice channel as the bot.' });
                 return;
             }
-            const relatedTracks = await musicManager.getRelated(player.currentTrack);
+            const relatedTracks = await musicManager.getRelated(player.queue.current);
             if (!relatedTracks || relatedTracks.length === 0) {
                 await interaction.editReply({ content: '❌ No related songs found.' });
                 return;
@@ -54,7 +54,7 @@ export class PlayRelatedCommand extends BaseCommand {
                 .setTitle(`${EMOJIS.music} Playing Related Songs`)
                 .setColor(COLORS.success)
                 .addFields([
-                { name: 'Based on', value: player.currentTrack.title, inline: true },
+                { name: 'Based on', value: player.queue.current.title, inline: true },
                 { name: 'Songs added', value: relatedTracks.length.toString(), inline: true },
                 { name: 'Requested by', value: interaction.user.tag, inline: false },
             ])
@@ -82,15 +82,15 @@ export class PlayRelatedCommand extends BaseCommand {
                 return;
             }
             const player = client.kazagumo.players.get(message.guild.id);
-            if (!player || !player.currentTrack) {
+            if (!player || !player.queue.current) {
                 await message.edit('❌ Nothing is currently playing.');
                 return;
             }
-            if (player.voiceChannel !== voiceChannel.id) {
+            if (player.voiceId !== voiceChannel.id) {
                 await message.edit('❌ You need to be in the same voice channel as the bot.');
                 return;
             }
-            const relatedTracks = await musicManager.getRelated(player.currentTrack);
+            const relatedTracks = await musicManager.getRelated(player.queue.current);
             if (!relatedTracks || relatedTracks.length === 0) {
                 await message.edit('❌ No related songs found.');
                 return;
@@ -100,7 +100,7 @@ export class PlayRelatedCommand extends BaseCommand {
                 .setTitle(`${EMOJIS.music} Playing Related Songs`)
                 .setColor(COLORS.success)
                 .addFields([
-                { name: 'Based on', value: player.currentTrack.title, inline: true },
+                { name: 'Based on', value: player.queue.current.title, inline: true },
                 { name: 'Songs added', value: relatedTracks.length.toString(), inline: true },
                 { name: 'Requested by', value: message.author.tag, inline: false },
             ])

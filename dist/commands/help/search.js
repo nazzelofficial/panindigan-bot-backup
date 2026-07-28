@@ -56,7 +56,7 @@ export class SearchCommand extends BaseCommand {
             .slice(0, 25)
             .map((cmd) => `\`${cmd.name}\` - ${cmd.description}`)
             .join('\n');
-        embed.addField('Commands', commandList);
+        embed.addFields({ name: 'Commands', value: commandList });
         if (matchingCommands.size > 25) {
             embed.setFooter({ text: `Showing 25 of ${matchingCommands.size} results` });
         }

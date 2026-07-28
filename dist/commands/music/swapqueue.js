@@ -45,12 +45,12 @@ export class SwapQueueCommand extends BaseCommand {
                 await interaction.reply({ content: '❌ Nothing is currently playing.', ephemeral: true });
                 return;
             }
-            if (player.voiceChannel !== voiceChannel.id) {
+            if (player.voiceId !== voiceChannel.id) {
                 await interaction.reply({ content: '❌ You need to be in the same voice channel as the bot.', ephemeral: true });
                 return;
             }
-            if (index1 > player.queue.length || index2 > player.queue.length) {
-                await interaction.reply({ content: '❌ Invalid indices. Queue only has ' + player.queue.length + ' songs.', ephemeral: true });
+            if (index1 > player.queue.size || index2 > player.queue.size) {
+                await interaction.reply({ content: '❌ Invalid indices. Queue only has ' + player.queue.size + ' songs.', ephemeral: true });
                 return;
             }
             await musicManager.swap(interaction.guild.id, index1 - 1, index2 - 1);
@@ -95,12 +95,12 @@ export class SwapQueueCommand extends BaseCommand {
                 await message.reply('❌ Nothing is currently playing.');
                 return;
             }
-            if (player.voiceChannel !== voiceChannel.id) {
+            if (player.voiceId !== voiceChannel.id) {
                 await message.reply('❌ You need to be in the same voice channel as the bot.');
                 return;
             }
-            if (index1 > player.queue.length || index2 > player.queue.length) {
-                await message.reply('❌ Invalid indices. Queue only has ' + player.queue.length + ' songs.');
+            if (index1 > player.queue.size || index2 > player.queue.size) {
+                await message.reply('❌ Invalid indices. Queue only has ' + player.queue.size + ' songs.');
                 return;
             }
             await musicManager.swap(message.guild.id, index1 - 1, index2 - 1);

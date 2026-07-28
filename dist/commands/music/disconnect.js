@@ -39,7 +39,7 @@ export class DisconnectCommand extends BaseCommand {
                 await interaction.reply({ content: '❌ I\'m not connected to a voice channel.', ephemeral: true });
                 return;
             }
-            if (player.voiceChannel !== voiceChannel.id) {
+            if (player.voiceId !== voiceChannel.id) {
                 await interaction.reply({ content: '❌ You need to be in the same voice channel as the bot.', ephemeral: true });
                 return;
             }
@@ -77,7 +77,7 @@ export class DisconnectCommand extends BaseCommand {
                 await message.reply('❌ I\'m not connected to a voice channel.');
                 return;
             }
-            if (player.voiceChannel !== voiceChannel.id) {
+            if (player.voiceId !== voiceChannel.id) {
                 await message.reply('❌ You need to be in the same voice channel as the bot.');
                 return;
             }

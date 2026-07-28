@@ -50,10 +50,10 @@ export class HistoryCommand extends BaseCommand {
                     const actionEmoji = this.getActionEmoji(c.action);
                     caseList += `${actionEmoji} **${c.action.toUpperCase()}** - ${c.reason}\n`;
                 });
-                embed.addField('Recent Cases', caseList.substring(0, 1024));
+                embed.addFields({ name: 'Recent Cases', value: caseList.substring(0, 1024) });
             }
             else {
-                embed.addField('Recent Cases', 'No moderation history');
+                embed.addFields({ name: 'Recent Cases', value: 'No moderation history' });
             }
             await interaction.reply({ embeds: [embed] });
         }
@@ -91,10 +91,10 @@ export class HistoryCommand extends BaseCommand {
                     const actionEmoji = this.getActionEmoji(c.action);
                     caseList += `${actionEmoji} **${c.action.toUpperCase()}** - ${c.reason}\n`;
                 });
-                embed.addField('Recent Cases', caseList.substring(0, 1024));
+                embed.addFields({ name: 'Recent Cases', value: caseList.substring(0, 1024) });
             }
             else {
-                embed.addField('Recent Cases', 'No moderation history');
+                embed.addFields({ name: 'Recent Cases', value: 'No moderation history' });
             }
             await message.reply({ embeds: [embed] });
         }

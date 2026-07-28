@@ -52,9 +52,7 @@ export class ServerInfoCommand extends BaseCommand {
         ])
             .setTimestamp();
         if (guildData) {
-            embed.addField('Prefix', guildData.prefix, true);
-            embed.addField('Language', guildData.language, true);
-            embed.addField('Raid Mode', guildData.raidMode ? '🔒 Enabled' : '🔓 Disabled', true);
+            embed.addFields({ name: 'Prefix', value: guildData.prefix, inline: true }, { name: 'Language', value: guildData.language, inline: true }, { name: 'Raid Mode', value: guildData.raidMode ? '🔒 Enabled' : '🔓 Disabled', inline: true });
         }
         if (interaction instanceof ChatInputCommandInteraction) {
             await interaction.reply({ embeds: [embed] });

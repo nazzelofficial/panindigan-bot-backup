@@ -40,13 +40,13 @@ export class ChannelInfoCommand extends BaseCommand {
 
     if (channel.isTextBased()) {
       const topic = (channel as any).topic || 'No topic';
-      embed.addField('Topic', topic.substring(0, 1024), false);
-      embed.addField('NSFW', (channel as any).nsfw ? 'Yes' : 'No', true);
+      embed.addFields({ name: 'Topic', value: topic.substring(0, 1024), inline: false });
+      embed.addFields({ name: 'NSFW', value: (channel as any).nsfw ? 'Yes' : 'No', inline: true });
     }
 
     if (channel.isVoiceBased()) {
-      embed.addField('Bitrate', `${(channel as any).bitrate}bps`, true);
-      embed.addField('User Limit', (channel as any).userLimit ? (channel as any).userLimit.toString() : 'Unlimited', true);
+      embed.addFields({ name: 'Bitrate', value: `${(channel as any).bitrate}bps`, inline: true });
+      embed.addFields({ name: 'User Limit', value: (channel as any).userLimit ? (channel as any).userLimit.toString() : 'Unlimited', inline: true });
     }
 
     await interaction.reply({ embeds: [embed] });
@@ -70,13 +70,13 @@ export class ChannelInfoCommand extends BaseCommand {
 
     if (channel.isTextBased()) {
       const topic = (channel as any).topic || 'No topic';
-      embed.addField('Topic', topic.substring(0, 1024), false);
-      embed.addField('NSFW', (channel as any).nsfw ? 'Yes' : 'No', true);
+      embed.addFields({ name: 'Topic', value: topic.substring(0, 1024), inline: false });
+      embed.addFields({ name: 'NSFW', value: (channel as any).nsfw ? 'Yes' : 'No', inline: true });
     }
 
     if (channel.isVoiceBased()) {
-      embed.addField('Bitrate', `${(channel as any).bitrate}bps`, true);
-      embed.addField('User Limit', (channel as any).userLimit ? (channel as any).userLimit.toString() : 'Unlimited', true);
+      embed.addFields({ name: 'Bitrate', value: `${(channel as any).bitrate}bps`, inline: true });
+      embed.addFields({ name: 'User Limit', value: (channel as any).userLimit ? (channel as any).userLimit.toString() : 'Unlimited', inline: true });
     }
 
     await message.reply({ embeds: [embed] });

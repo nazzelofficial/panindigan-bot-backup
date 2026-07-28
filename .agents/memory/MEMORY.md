@@ -2,3 +2,7 @@
 - [Canvas libuuid fix](canvas-libuuid-fix.md) — canvas needs system libs + npm rebuild; not automatic on pnpm install.
 - [Command dedup strategy](command-dedup.md) — rejectDuplicateNames:false + manual renames fixed 87 dropped commands; 899/0 loaded now.
 - [Slash command registration blocking](slash-reg-nonblocking.md) — registration must be fire-and-forget (setImmediate) or startup times out.
+- [Permissions bitfield bug](permissions-fix.md) — Permissions.ts must use member.permissions.has() not member.permissions.bitfield.has(); bitfield is a raw bigint with no .has() method.
+- [Lavalink env-only config](lavalink-config.md) — music only initializes when LAVALINK_HOST is set; no hardcoded defaults; supports LAVALINK_NODES JSON array.
+- [Prisma v7 + pg SSL](prisma-pg-ssl.md) — pg.Pool needs checkServerIdentity:()=>undefined plus stripping sslmode from URL to avoid TLS cert chain errors.
+- [Prisma generate required](prisma-generate.md) — must run pnpm prisma generate after install or pnpm install --force; PrismaClient export missing otherwise.

@@ -46,7 +46,7 @@ export class PreviousCommand extends BaseCommand {
         return;
       }
 
-      if (player.voiceChannel !== voiceChannel.id) {
+      if (player.voiceId !== voiceChannel.id) {
         await interaction.reply({ content: '❌ You need to be in the same voice channel as the bot.', ephemeral: true });
         return;
       }
@@ -99,7 +99,7 @@ export class PreviousCommand extends BaseCommand {
         return;
       }
 
-      if (player.voiceChannel !== voiceChannel.id) {
+      if (player.voiceId !== voiceChannel.id) {
         await message.reply('❌ You need to be in the same voice channel as the bot.');
         return;
       }

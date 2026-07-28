@@ -42,7 +42,7 @@ export class AuditLogCommand extends BaseCommand {
                 const action = entry.action.toString();
                 return `**${action}** by ${executor} on ${target}`;
             }).join('\n');
-            embed.addField('Recent Actions', logList.substring(0, 1024));
+            embed.addFields({ name: 'Recent Actions', value: logList.substring(0, 1024) });
             await interaction.reply({ embeds: [embed] });
         }
         catch (error) {
@@ -72,7 +72,7 @@ export class AuditLogCommand extends BaseCommand {
                 const action = entry.action.toString();
                 return `**${action}** by ${executor} on ${target}`;
             }).join('\n');
-            embed.addField('Recent Actions', logList.substring(0, 1024));
+            embed.addFields({ name: 'Recent Actions', value: logList.substring(0, 1024) });
             await message.reply({ embeds: [embed] });
         }
         catch (error) {

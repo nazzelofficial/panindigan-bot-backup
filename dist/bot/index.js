@@ -114,8 +114,12 @@ async function main() {
             loggers.bot.info('Features loaded', { enabled });
         }, 5_000);
         const client = await runStep('client', async () => {
-            const c = new PanindiganClient(0, 1);
-            loggers.bot.info('Discord client initialized');
+            // When launched by ShardingManager, SHARDS and TOTAL_SHARDS env vars are set
+            const shards = process.env.SHARDS ? JSON.parse(process.env.SHARDS) : [0];
+            const shardId = shards[0] ?? 0;
+            const totalShards = parseInt(process.env.TOTAL_SHARDS ?? '1', 10);
+            const c = new PanindiganClient(shardId, totalShards);
+            loggers.bot.info('Discord client initialized', { shardId, totalShards });
             return c;
         }, 10_000);
         await runStep('shutdown-handlers', () => {

@@ -54,13 +54,13 @@ export class MoveCommand extends BaseCommand {
         return;
       }
 
-      if (player.voiceChannel !== voiceChannel.id) {
+      if (player.voiceId !== voiceChannel.id) {
         await interaction.reply({ content: '❌ You need to be in the same voice channel as the bot.', ephemeral: true });
         return;
       }
 
-      if (fromIndex > player.queue.length || toIndex > player.queue.length) {
-        await interaction.reply({ content: '❌ Invalid indices. Queue only has ' + player.queue.length + ' songs.', ephemeral: true });
+      if (fromIndex > player.queue.size || toIndex > player.queue.size) {
+        await interaction.reply({ content: '❌ Invalid indices. Queue only has ' + player.queue.size + ' songs.', ephemeral: true });
         return;
       }
 
@@ -115,13 +115,13 @@ export class MoveCommand extends BaseCommand {
         return;
       }
 
-      if (player.voiceChannel !== voiceChannel.id) {
+      if (player.voiceId !== voiceChannel.id) {
         await message.reply('❌ You need to be in the same voice channel as the bot.');
         return;
       }
 
-      if (fromIndex > player.queue.length || toIndex > player.queue.length) {
-        await message.reply('❌ Invalid indices. Queue only has ' + player.queue.length + ' songs.');
+      if (fromIndex > player.queue.size || toIndex > player.queue.size) {
+        await message.reply('❌ Invalid indices. Queue only has ' + player.queue.size + ' songs.');
         return;
       }
 

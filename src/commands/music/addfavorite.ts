@@ -35,7 +35,7 @@ export class AddFavoriteCommand extends BaseCommand {
       }
 
       const player = client.kazagumo!.players.get(interaction.guildId);
-      if (!player || !player.currentTrack) {
+      if (!player || !player.queue.current) {
         await interaction.reply({ content: '❌ Nothing is currently playing.', ephemeral: true });
         return;
       }
@@ -49,12 +49,12 @@ export class AddFavoriteCommand extends BaseCommand {
 
       const favoriteSongs = user.favoriteSongs ? JSON.parse(user.favoriteSongs) : [];
 
-      if (favoriteSongs.some((song: any) => song.title === player.currentTrack.title)) {
+      if (favoriteSongs.some((song: any) => song.title === player.queue.current.title)) {
         await interaction.reply({ content: '❌ This song is already in your favorites.', ephemeral: true });
         return;
       }
 
-      favoriteSongs.push(player.currentTrack);
+      favoriteSongs.push(player.queue.current);
 
       await prisma.user.update({
         where: { userId: interaction.user.id },
@@ -65,7 +65,7 @@ export class AddFavoriteCommand extends BaseCommand {
         .setTitle(`${EMOJIS.success} Added to Favorites`)
         .setColor(COLORS.success)
         .addFields([
-          { name: 'Song', value: player.currentTrack.title, inline: true },
+          { name: 'Song', value: player.queue.current.title, inline: true },
           { name: 'Added by', value: interaction.user.tag, inline: true },
         ])
         .setTimestamp();
@@ -89,7 +89,7 @@ export class AddFavoriteCommand extends BaseCommand {
       }
 
       const player = client.kazagumo!.players.get(message.guildId);
-      if (!player || !player.currentTrack) {
+      if (!player || !player.queue.current) {
         await message.reply('❌ Nothing is currently playing.');
         return;
       }
@@ -103,12 +103,12 @@ export class AddFavoriteCommand extends BaseCommand {
 
       const favoriteSongs = user.favoriteSongs ? JSON.parse(user.favoriteSongs) : [];
 
-      if (favoriteSongs.some((song: any) => song.title === player.currentTrack.title)) {
+      if (favoriteSongs.some((song: any) => song.title === player.queue.current.title)) {
         await message.reply('❌ This song is already in your favorites.');
         return;
       }
 
-      favoriteSongs.push(player.currentTrack);
+      favoriteSongs.push(player.queue.current);
 
       await prisma.user.update({
         where: { userId: message.author.id },
@@ -119,7 +119,7 @@ export class AddFavoriteCommand extends BaseCommand {
         .setTitle(`${EMOJIS.success} Added to Favorites`)
         .setColor(COLORS.success)
         .addFields([
-          { name: 'Song', value: player.currentTrack.title, inline: true },
+          { name: 'Song', value: player.queue.current.title, inline: true },
           { name: 'Added by', value: message.author.tag, inline: true },
         ])
         .setTimestamp();

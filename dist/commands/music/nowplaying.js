@@ -30,11 +30,11 @@ export class NowPlayingCommand extends BaseCommand {
                 return;
             }
             const player = client.kazagumo.players.get(interaction.guild.id);
-            if (!player || !player.currentTrack) {
+            if (!player || !player.queue.current) {
                 await interaction.reply({ content: '❌ Nothing is currently playing.', ephemeral: true });
                 return;
             }
-            const track = player.currentTrack;
+            const track = player.queue.current;
             const progressBar = this.createProgressBar(player.position, track.duration);
             const embed = new EmbedBuilder()
                 .setTitle(`${EMOJIS.music} Now Playing`)
@@ -65,11 +65,11 @@ export class NowPlayingCommand extends BaseCommand {
                 return;
             }
             const player = client.kazagumo.players.get(message.guild.id);
-            if (!player || !player.currentTrack) {
+            if (!player || !player.queue.current) {
                 await message.reply('❌ Nothing is currently playing.');
                 return;
             }
-            const track = player.currentTrack;
+            const track = player.queue.current;
             const progressBar = this.createProgressBar(player.position, track.duration);
             const embed = new EmbedBuilder()
                 .setTitle(`${EMOJIS.music} Now Playing`)

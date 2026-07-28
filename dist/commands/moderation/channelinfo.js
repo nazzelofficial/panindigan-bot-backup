@@ -36,12 +36,12 @@ export class ChannelInfoCommand extends BaseCommand {
             .setTimestamp();
         if (channel.isTextBased()) {
             const topic = channel.topic || 'No topic';
-            embed.addField('Topic', topic.substring(0, 1024), false);
-            embed.addField('NSFW', channel.nsfw ? 'Yes' : 'No', true);
+            embed.addFields({ name: 'Topic', value: topic.substring(0, 1024), inline: false });
+            embed.addFields({ name: 'NSFW', value: channel.nsfw ? 'Yes' : 'No', inline: true });
         }
         if (channel.isVoiceBased()) {
-            embed.addField('Bitrate', `${channel.bitrate}bps`, true);
-            embed.addField('User Limit', channel.userLimit ? channel.userLimit.toString() : 'Unlimited', true);
+            embed.addFields({ name: 'Bitrate', value: `${channel.bitrate}bps`, inline: true });
+            embed.addFields({ name: 'User Limit', value: channel.userLimit ? channel.userLimit.toString() : 'Unlimited', inline: true });
         }
         await interaction.reply({ embeds: [embed] });
     }
@@ -61,12 +61,12 @@ export class ChannelInfoCommand extends BaseCommand {
             .setTimestamp();
         if (channel.isTextBased()) {
             const topic = channel.topic || 'No topic';
-            embed.addField('Topic', topic.substring(0, 1024), false);
-            embed.addField('NSFW', channel.nsfw ? 'Yes' : 'No', true);
+            embed.addFields({ name: 'Topic', value: topic.substring(0, 1024), inline: false });
+            embed.addFields({ name: 'NSFW', value: channel.nsfw ? 'Yes' : 'No', inline: true });
         }
         if (channel.isVoiceBased()) {
-            embed.addField('Bitrate', `${channel.bitrate}bps`, true);
-            embed.addField('User Limit', channel.userLimit ? channel.userLimit.toString() : 'Unlimited', true);
+            embed.addFields({ name: 'Bitrate', value: `${channel.bitrate}bps`, inline: true });
+            embed.addFields({ name: 'User Limit', value: channel.userLimit ? channel.userLimit.toString() : 'Unlimited', inline: true });
         }
         await message.reply({ embeds: [embed] });
     }

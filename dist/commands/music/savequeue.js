@@ -44,7 +44,7 @@ export class SaveQueueCommand extends BaseCommand {
                 return;
             }
             const player = client.kazagumo.players.get(interaction.guildId);
-            if (!player || player.queue.length === 0) {
+            if (!player || player.queue.size === 0) {
                 await interaction.reply({ content: '❌ No songs in the current queue to save.', ephemeral: true });
                 return;
             }
@@ -61,7 +61,7 @@ export class SaveQueueCommand extends BaseCommand {
                 .setColor(COLORS.success)
                 .addFields([
                 { name: 'Playlist', value: name, inline: true },
-                { name: 'Songs', value: player.queue.length.toString(), inline: true },
+                { name: 'Songs', value: player.queue.size.toString(), inline: true },
                 { name: 'Saved by', value: interaction.user.tag, inline: false },
             ])
                 .setTimestamp();
@@ -95,7 +95,7 @@ export class SaveQueueCommand extends BaseCommand {
                 return;
             }
             const player = client.kazagumo.players.get(message.guildId);
-            if (!player || player.queue.length === 0) {
+            if (!player || player.queue.size === 0) {
                 await message.reply('❌ No songs in the current queue to save.');
                 return;
             }
@@ -112,7 +112,7 @@ export class SaveQueueCommand extends BaseCommand {
                 .setColor(COLORS.success)
                 .addFields([
                 { name: 'Playlist', value: name, inline: true },
-                { name: 'Songs', value: player.queue.length.toString(), inline: true },
+                { name: 'Songs', value: player.queue.size.toString(), inline: true },
                 { name: 'Saved by', value: message.author.tag, inline: false },
             ])
                 .setTimestamp();

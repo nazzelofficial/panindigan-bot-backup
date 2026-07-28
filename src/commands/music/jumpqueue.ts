@@ -53,13 +53,13 @@ export class JumpQueueCommand extends BaseCommand {
         return;
       }
 
-      if (player.voiceChannel !== voiceChannel.id) {
+      if (player.voiceId !== voiceChannel.id) {
         await interaction.reply({ content: '❌ You need to be in the same voice channel as the bot.', ephemeral: true });
         return;
       }
 
-      if (index > player.queue.length) {
-        await interaction.reply({ content: '❌ Invalid index. Queue only has ' + player.queue.length + ' songs.', ephemeral: true });
+      if (index > player.queue.size) {
+        await interaction.reply({ content: '❌ Invalid index. Queue only has ' + player.queue.size + ' songs.', ephemeral: true });
         return;
       }
 
@@ -112,13 +112,13 @@ export class JumpQueueCommand extends BaseCommand {
         return;
       }
 
-      if (player.voiceChannel !== voiceChannel.id) {
+      if (player.voiceId !== voiceChannel.id) {
         await message.reply('❌ You need to be in the same voice channel as the bot.');
         return;
       }
 
-      if (index > player.queue.length) {
-        await message.reply('❌ Invalid index. Queue only has ' + player.queue.length + ' songs.');
+      if (index > player.queue.size) {
+        await message.reply('❌ Invalid index. Queue only has ' + player.queue.size + ' songs.');
         return;
       }
 

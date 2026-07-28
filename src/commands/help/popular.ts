@@ -48,7 +48,7 @@ export class PopularCommand extends BaseCommand {
       .setColor(COLORS.success);
 
     popularCommands.forEach((cmd, index) => {
-      embed.addField(`${index + 1}. \`${cmd.name}\``, `${EMOJIS[cmd.category as keyof typeof EMOJIS] || '📌'} ${cmd.category} • ${cmd.uses} usage`, true);
+      embed.addFields({ name: `${index + 1}. \`${cmd.name}\``, value: `${EMOJIS[cmd.category as keyof typeof EMOJIS] || '📌'} ${cmd.category} • ${cmd.uses} usage`, inline: true });
     });
 
     embed.setFooter({ text: 'Based on global command usage statistics' })

@@ -10,6 +10,59 @@ import { AIHandler } from '../handlers/AIHandler.js';
 import { loggers } from '../utils/Logger.js';
 import config from '../../config.json' with { type: 'json' };
 
+// ─── Lavalink node builder ─────────────────────────────────────────────────────
+// Reads node config entirely from environment variables — no hardcoded defaults.
+// Supports a single primary node via LAVALINK_HOST/PORT/PASSWORD/SECURE, and
+// optionally multiple nodes via LAVALINK_NODES (JSON array).
+//
+// LAVALINK_NODES format (overrides single-node vars when set):
+//   [{"name":"Node1","host":"host1","port":2333,"auth":"pass","secure":false}, ...]
+//
+// Returns null when no Lavalink is configured so music can be skipped gracefully.
+
+interface LavalinkNodeOption {
+  name: string;
+  url: string;   // Shoukaku v4: "host:port" (no protocol prefix)
+  auth: string;
+  secure: boolean;
+}
+
+function buildLavalinkNodes(): LavalinkNodeOption[] | null {
+  // Try multi-node JSON array first
+  if (process.env.LAVALINK_NODES) {
+    try {
+      const parsed = JSON.parse(process.env.LAVALINK_NODES);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.map((n: any, i: number) => ({
+          name: n.name || `Node${i + 1}`,
+          url: `${n.host}:${n.port ?? 2333}`,
+          auth: n.auth ?? n.password ?? '',
+          secure: Boolean(n.secure),
+        }));
+      }
+    } catch (err) {
+      loggers.music.warn('LAVALINK_NODES is not valid JSON — falling back to single-node vars', {
+        error: String(err),
+      });
+    }
+  }
+
+  // Single-node env vars — only if LAVALINK_HOST is explicitly set
+  const host = process.env.LAVALINK_HOST;
+  if (!host) return null;
+
+  return [
+    {
+      name: 'default',
+      url: `${host}:${process.env.LAVALINK_PORT ?? 2333}`,
+      auth: process.env.LAVALINK_PASSWORD ?? '',
+      secure: process.env.LAVALINK_SECURE === 'true',
+    },
+  ];
+}
+
+// ─── Client ───────────────────────────────────────────────────────────────────
+
 export class PanindiganClient extends Client {
   public commands: Collection<string, BaseCommand>;
   public cooldowns: Collection<string, Collection<string, number>>;
@@ -87,14 +140,20 @@ export class PanindiganClient extends Client {
       return;
     }
 
-    const nodes = [
-      {
-        name: 'default',
-        url: `http://${process.env.LAVALINK_HOST || 'localhost'}:${process.env.LAVALINK_PORT || 2333}`,
-        auth: process.env.LAVALINK_PASSWORD || 'youshallnotpass',
-        secure: process.env.LAVALINK_SECURE === 'true',
-      },
-    ];
+    const nodes = buildLavalinkNodes();
+
+    if (!nodes) {
+      loggers.music.warn(
+        'No Lavalink nodes configured — music commands will be unavailable. ' +
+        'Set LAVALINK_HOST (and optionally LAVALINK_PORT, LAVALINK_PASSWORD, LAVALINK_SECURE) ' +
+        'or LAVALINK_NODES to enable music.',
+      );
+      return;
+    }
+
+    loggers.music.info('Initializing Kazagumo / Shoukaku', {
+      nodes: nodes.map(n => n.name),
+    });
 
     this.kazagumo = new Kazagumo(
       {
@@ -106,52 +165,80 @@ export class PanindiganClient extends Client {
       },
       new Connectors.DiscordJS(this),
       nodes,
-      {},
+      {
+        // Shoukaku options — reconnect automatically on disconnect
+        reconnectTries: 5,
+        reconnectInterval: 5000,
+        restTimeout: 60000,
+        moveOnDisconnect: false,
+      },
     );
 
+    // ── Player event hooks ──────────────────────────────────────────────────
+
     this.kazagumo.on('playerStart', (player, track) => {
-      loggers.music.info('Track started', { guildId: player.guildId, track: track.title });
+      loggers.music.info('Track started', {
+        guildId: player.guildId,
+        track: track.title,
+        author: track.author,
+      });
       const channel = this.channels.cache.get(player.textId);
-      if (channel && channel.isTextBased()) {
-        channel.send(`🎵 Now playing: **${track.title}**`);
+      if (channel?.isTextBased()) {
+        channel.send(`🎵 Now playing: **${track.title}** — *${track.author ?? 'Unknown'}*`);
       }
     });
 
     this.kazagumo.on('playerEnd', (player) => {
       if (!player.queue.current && player.queue.size === 0) {
+        const timeout = this.config.music.inactivityTimeoutMs ?? 300_000;
         setTimeout(() => {
           if (!player.queue.current && player.queue.size === 0) {
             player.destroy();
           }
-        }, this.config.music.inactivityTimeoutMs);
+        }, timeout);
       }
     });
 
     this.kazagumo.on('playerDestroy', (player) => {
       loggers.music.info('Music player destroyed', { guildId: player.guildId });
       const channel = this.channels.cache.get(player.textId);
-      if (channel && channel.isTextBased()) {
-        channel.send('🔊 Music queue ended and player destroyed.');
+      if (channel?.isTextBased()) {
+        channel.send('🔊 Music queue ended. Goodbye!');
       }
     });
+
+    this.kazagumo.on('playerEmpty', (player) => {
+      loggers.music.debug('Queue empty', { guildId: player.guildId });
+    });
+
+    // ── Shoukaku / node event hooks ─────────────────────────────────────────
 
     this.kazagumo.shoukaku.on('error', (name, error) => {
       loggers.music.error('Lavalink node error', {
         node: name,
         errorMessage: error.message,
-        stack: error.stack,
       });
     });
 
     this.kazagumo.shoukaku.on('disconnect', (name, players, moved) => {
-      loggers.music.warn('Lavalink node disconnected', { node: name, players, moved });
+      loggers.music.warn('Lavalink node disconnected', {
+        node: name,
+        activePlayers: typeof players === 'number' ? players : players?.length ?? 0,
+        moved,
+      });
+    });
+
+    this.kazagumo.shoukaku.on('reconnecting', (name) => {
+      loggers.music.info('Lavalink node reconnecting…', { node: name });
     });
 
     this.kazagumo.shoukaku.on('ready', (name) => {
-      loggers.music.info('Lavalink node ready', { node: name });
+      loggers.music.info('Lavalink node ready ✅', { node: name });
     });
 
-    loggers.music.info('Music system initialized', { nodes: nodes.map((n) => n.name) });
+    loggers.music.info('Music system initialized', {
+      nodes: nodes.map(n => `${n.name} (${n.url})`),
+    });
   }
 
   public getOwnerIds(): string[] {
@@ -178,8 +265,11 @@ export class PanindiganClient extends Client {
     const activity = activities[this._presenceIndex % activities.length];
     this._presenceIndex++;
 
+    // Use client.shard for accurate shard ID when running under ShardingManager
+    const currentShardId = this.shard?.ids[0] ?? this.shardId;
+
     const text = activity.text
-      .replace('{shardId}', this.shardId.toString())
+      .replace('{shardId}', currentShardId.toString())
       .replace('{guildCount}', this.guilds.cache.size.toString())
       .replace(
         '{memberCount}',
@@ -187,6 +277,9 @@ export class PanindiganClient extends Client {
       );
 
     const activityType = ACTIVITY_TYPE_MAP[activity.type.toLowerCase()] ?? ActivityType.Playing;
-    this.user?.setActivity(text, { type: activityType });
+    this.user?.setPresence({
+      activities: [{ name: text, type: activityType }],
+      status: this.config.presence.status as any,
+    });
   }
 }

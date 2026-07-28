@@ -45,13 +45,13 @@ export class UserInfoCommand extends BaseCommand {
                 include: { moderation: true },
             });
             if (user) {
-                embed.addField('Balance', Formatter.formatCurrency(user.walletBalance + user.bankBalance), true);
-                embed.addField('Level', user.level.toString(), true);
-                embed.addField('XP', `${user.xp} XP`, true);
+                embed.addFields({ name: 'Balance', value: Formatter.formatCurrency(user.walletBalance + user.bankBalance), inline: true });
+                embed.addFields({ name: 'Level', value: user.level.toString(), inline: true });
+                embed.addFields({ name: 'XP', value: `${user.xp} XP`, inline: true });
                 if (user.moderation) {
-                    embed.addField('Warnings', user.moderation.warnings.toString(), true);
-                    embed.addField('Muted', user.moderation.isMuted ? 'Yes' : 'No', true);
-                    embed.addField('Cases', user.moderation.cases.length.toString(), true);
+                    embed.addFields({ name: 'Warnings', value: user.moderation.warnings.toString(), inline: true });
+                    embed.addFields({ name: 'Muted', value: user.moderation.isMuted ? 'Yes' : 'No', inline: true });
+                    embed.addFields({ name: 'Cases', value: user.moderation.cases.length.toString(), inline: true });
                 }
             }
         }
@@ -81,13 +81,13 @@ export class UserInfoCommand extends BaseCommand {
                 include: { moderation: true },
             });
             if (user) {
-                embed.addField('Balance', Formatter.formatCurrency(user.walletBalance + user.bankBalance), true);
-                embed.addField('Level', user.level.toString(), true);
-                embed.addField('XP', `${user.xp} XP`, true);
+                embed.addFields({ name: 'Balance', value: Formatter.formatCurrency(user.walletBalance + user.bankBalance), inline: true });
+                embed.addFields({ name: 'Level', value: user.level.toString(), inline: true });
+                embed.addFields({ name: 'XP', value: `${user.xp} XP`, inline: true });
                 if (user.moderation) {
-                    embed.addField('Warnings', user.moderation.warnings.toString(), true);
-                    embed.addField('Muted', user.moderation.isMuted ? 'Yes' : 'No', true);
-                    embed.addField('Cases', user.moderation.cases.length.toString(), true);
+                    embed.addFields({ name: 'Warnings', value: user.moderation.warnings.toString(), inline: true });
+                    embed.addFields({ name: 'Muted', value: user.moderation.isMuted ? 'Yes' : 'No', inline: true });
+                    embed.addFields({ name: 'Cases', value: user.moderation.cases.length.toString(), inline: true });
                 }
             }
         }

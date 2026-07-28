@@ -1,42 +1,35 @@
 // @ts-nocheck
-import { PermissionFlagsBits, GuildMember, ChannelType } from 'discord.js';
+import { PermissionFlagsBits, GuildMember, ChannelType, PermissionResolvable } from 'discord.js';
 
 export class Permissions {
   public static hasPermission(
     member: GuildMember,
-    requiredPermissions: bigint[]
+    requiredPermissions: PermissionResolvable[]
   ): boolean {
-    if (requiredPermissions.length === 0) return true;
-    
-    const memberPermissions = member.permissions.bitfield;
-    
-    for (const permission of requiredPermissions) {
-      if (!memberPermissions.has(permission)) {
-        return false;
-      }
-    }
-    
-    return true;
+    if (!requiredPermissions || requiredPermissions.length === 0) return true;
+    // Use PermissionsBitField.has() directly — NOT .bitfield (which is a raw bigint)
+    return requiredPermissions.every(p => member.permissions.has(p));
   }
 
   public static hasBotPermission(
     member: GuildMember,
-    requiredPermissions: bigint[]
-  ): { hasPermission: boolean; missing: bigint[] } {
-    if (requiredPermissions.length === 0) return { hasPermission: true, missing: [] };
-    
+    requiredPermissions: PermissionResolvable[]
+  ): { hasPermission: boolean; missing: PermissionResolvable[] } {
+    if (!requiredPermissions || requiredPermissions.length === 0) {
+      return { hasPermission: true, missing: [] };
+    }
+
     const me = member.guild.members.me;
     if (!me) return { hasPermission: false, missing: requiredPermissions };
-    
-    const botPermissions = me.permissions.bitfield;
-    const missing: bigint[] = [];
-    
+
+    const missing: PermissionResolvable[] = [];
+
     for (const permission of requiredPermissions) {
-      if (!botPermissions.has(permission)) {
+      if (!me.permissions.has(permission)) {
         missing.push(permission);
       }
     }
-    
+
     return {
       hasPermission: missing.length === 0,
       missing,
@@ -48,12 +41,12 @@ export class Permissions {
       return member.permissions.has(PermissionFlagsBits.Connect) &&
              member.permissions.has(PermissionFlagsBits.Speak);
     }
-    
+
     if (channelType === ChannelType.GuildText || channelType === ChannelType.GuildAnnouncement) {
       return member.permissions.has(PermissionFlagsBits.SendMessages) &&
              member.permissions.has(PermissionFlagsBits.ViewChannel);
     }
-    
+
     return member.permissions.has(PermissionFlagsBits.ViewChannel);
   }
 
@@ -72,56 +65,54 @@ export class Permissions {
     return ownerIds.includes(member.id);
   }
 
-  public static getMissingPermissionNames(permissions: bigint[]): string[] {
-    const permissionNames: Record<bigint, string> = {
-      [PermissionFlagsBits.CreateInstantInvite]: 'Create Instant Invite',
-      [PermissionFlagsBits.KickMembers]: 'Kick Members',
-      [PermissionFlagsBits.BanMembers]: 'Ban Members',
-      [PermissionFlagsBits.Administrator]: 'Administrator',
-      [PermissionFlagsBits.ManageChannels]: 'Manage Channels',
-      [PermissionFlagsBits.ManageGuild]: 'Manage Server',
-      [PermissionFlagsBits.AddReactions]: 'Add Reactions',
-      [PermissionFlagsBits.ViewAuditLog]: 'View Audit Log',
-      [PermissionFlagsBits.PrioritySpeaker]: 'Priority Speaker',
-      [PermissionFlagsBits.Stream]: 'Stream',
-      [PermissionFlagsBits.ReadMessageHistory]: 'Read Message History',
-      [PermissionFlagsBits.SendTTSMessages]: 'Send TTS Messages',
-      [PermissionFlagsBits.ManageMessages]: 'Manage Messages',
-      [PermissionFlagsBits.EmbedLinks]: 'Embed Links',
-      [PermissionFlagsBits.AttachFiles]: 'Attach Files',
-      [PermissionFlagsBits.ReadMessageHistory]: 'Read Message History',
-      [PermissionFlagsBits.MentionEveryone]: 'Mention Everyone',
-      [PermissionFlagsBits.ExternalEmojis]: 'Use External Emojis',
-      [PermissionFlagsBits.ViewGuildInsights]: 'View Server Insights',
-      [PermissionFlagsBits.Connect]: 'Connect',
-      [PermissionFlagsBits.Speak]: 'Speak',
-      [PermissionFlagsBits.MuteMembers]: 'Mute Members',
-      [PermissionFlagsBits.DeafenMembers]: 'Deafen Members',
-      [PermissionFlagsBits.MoveMembers]: 'Move Members',
-      [PermissionFlagsBits.UseVAD]: 'Use Voice Activity Detection',
-      [PermissionFlagsBits.ChangeNickname]: 'Change Nickname',
-      [PermissionFlagsBits.ManageNicknames]: 'Manage Nicknames',
-      [PermissionFlagsBits.ManageRoles]: 'Manage Roles',
-      [PermissionFlagsBits.ManageWebhooks]: 'Manage Webhooks',
-      [PermissionFlagsBits.ManageGuildExpressions]: 'Manage Expressions',
-      [PermissionFlagsBits.UseApplicationCommands]: 'Use Application Commands',
-      [PermissionFlagsBits.RequestToSpeak]: 'Request to Speak',
-      [PermissionFlagsBits.ManageEvents]: 'Manage Events',
-      [PermissionFlagsBits.ManageThreads]: 'Manage Threads',
-      [PermissionFlagsBits.CreatePublicThreads]: 'Create Public Threads',
-      [PermissionFlagsBits.CreatePrivateThreads]: 'Create Private Threads',
-      [PermissionFlagsBits.UseExternalStickers]: 'Use External Stickers',
-      [PermissionFlagsBits.SendMessagesInThreads]: 'Send Messages in Threads',
-      [PermissionFlagsBits.UseEmbeddedActivities]: 'Use Embedded Activities',
-      [PermissionFlagsBits.ModerateMembers]: 'Moderate Members',
-      [PermissionFlagsBits.ViewCreatorMonetizationAnalytics]: 'View Creator Monetization Analytics',
-      [PermissionFlagsBits.UseSoundboard]: 'Use Soundboard',
-      [PermissionFlagsBits.CreateGuildExpressions]: 'Create Expressions',
-      [PermissionFlagsBits.CreateEvents]: 'Create Events',
-      [PermissionFlagsBits.UseExternalSounds]: 'Use External Sounds',
-      [PermissionFlagsBits.SendVoiceMessages]: 'Send Voice Messages',
+  public static getMissingPermissionNames(permissions: PermissionResolvable[]): string[] {
+    const permissionNames: Record<string, string> = {
+      [String(PermissionFlagsBits.CreateInstantInvite)]: 'Create Instant Invite',
+      [String(PermissionFlagsBits.KickMembers)]: 'Kick Members',
+      [String(PermissionFlagsBits.BanMembers)]: 'Ban Members',
+      [String(PermissionFlagsBits.Administrator)]: 'Administrator',
+      [String(PermissionFlagsBits.ManageChannels)]: 'Manage Channels',
+      [String(PermissionFlagsBits.ManageGuild)]: 'Manage Server',
+      [String(PermissionFlagsBits.AddReactions)]: 'Add Reactions',
+      [String(PermissionFlagsBits.ViewAuditLog)]: 'View Audit Log',
+      [String(PermissionFlagsBits.PrioritySpeaker)]: 'Priority Speaker',
+      [String(PermissionFlagsBits.Stream)]: 'Stream',
+      [String(PermissionFlagsBits.ReadMessageHistory)]: 'Read Message History',
+      [String(PermissionFlagsBits.SendTTSMessages)]: 'Send TTS Messages',
+      [String(PermissionFlagsBits.ManageMessages)]: 'Manage Messages',
+      [String(PermissionFlagsBits.EmbedLinks)]: 'Embed Links',
+      [String(PermissionFlagsBits.AttachFiles)]: 'Attach Files',
+      [String(PermissionFlagsBits.MentionEveryone)]: 'Mention Everyone',
+      [String(PermissionFlagsBits.ExternalEmojis)]: 'Use External Emojis',
+      [String(PermissionFlagsBits.ViewGuildInsights)]: 'View Server Insights',
+      [String(PermissionFlagsBits.Connect)]: 'Connect',
+      [String(PermissionFlagsBits.Speak)]: 'Speak',
+      [String(PermissionFlagsBits.MuteMembers)]: 'Mute Members',
+      [String(PermissionFlagsBits.DeafenMembers)]: 'Deafen Members',
+      [String(PermissionFlagsBits.MoveMembers)]: 'Move Members',
+      [String(PermissionFlagsBits.UseVAD)]: 'Use Voice Activity Detection',
+      [String(PermissionFlagsBits.ChangeNickname)]: 'Change Nickname',
+      [String(PermissionFlagsBits.ManageNicknames)]: 'Manage Nicknames',
+      [String(PermissionFlagsBits.ManageRoles)]: 'Manage Roles',
+      [String(PermissionFlagsBits.ManageWebhooks)]: 'Manage Webhooks',
+      [String(PermissionFlagsBits.ManageGuildExpressions)]: 'Manage Expressions',
+      [String(PermissionFlagsBits.UseApplicationCommands)]: 'Use Application Commands',
+      [String(PermissionFlagsBits.RequestToSpeak)]: 'Request to Speak',
+      [String(PermissionFlagsBits.ManageEvents)]: 'Manage Events',
+      [String(PermissionFlagsBits.ManageThreads)]: 'Manage Threads',
+      [String(PermissionFlagsBits.CreatePublicThreads)]: 'Create Public Threads',
+      [String(PermissionFlagsBits.CreatePrivateThreads)]: 'Create Private Threads',
+      [String(PermissionFlagsBits.UseExternalStickers)]: 'Use External Stickers',
+      [String(PermissionFlagsBits.SendMessagesInThreads)]: 'Send Messages in Threads',
+      [String(PermissionFlagsBits.UseEmbeddedActivities)]: 'Use Embedded Activities',
+      [String(PermissionFlagsBits.ModerateMembers)]: 'Moderate Members',
+      [String(PermissionFlagsBits.UseSoundboard)]: 'Use Soundboard',
+      [String(PermissionFlagsBits.CreateGuildExpressions)]: 'Create Expressions',
+      [String(PermissionFlagsBits.CreateEvents)]: 'Create Events',
+      [String(PermissionFlagsBits.UseExternalSounds)]: 'Use External Sounds',
+      [String(PermissionFlagsBits.SendVoiceMessages)]: 'Send Voice Messages',
     };
 
-    return permissions.map(p => permissionNames[p] || 'Unknown Permission');
+    return permissions.map(p => permissionNames[String(p)] || 'Unknown Permission');
   }
 }

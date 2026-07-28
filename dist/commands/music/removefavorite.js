@@ -31,7 +31,7 @@ export class RemoveFavoriteCommand extends BaseCommand {
                 return;
             }
             const player = client.kazagumo.players.get(interaction.guildId);
-            if (!player || !player.currentTrack) {
+            if (!player || !player.queue.current) {
                 await interaction.reply({ content: '❌ Nothing is currently playing.', ephemeral: true });
                 return;
             }
@@ -44,7 +44,7 @@ export class RemoveFavoriteCommand extends BaseCommand {
                 return;
             }
             const favoriteSongs = JSON.parse(user.favoriteSongs);
-            const songIndex = favoriteSongs.findIndex((song) => song.title === player.currentTrack.title);
+            const songIndex = favoriteSongs.findIndex((song) => song.title === player.queue.current.title);
             if (songIndex === -1) {
                 await interaction.reply({ content: '❌ This song is not in your favorites.', ephemeral: true });
                 return;
@@ -58,7 +58,7 @@ export class RemoveFavoriteCommand extends BaseCommand {
                 .setTitle(`${EMOJIS.success} Removed from Favorites`)
                 .setColor(COLORS.success)
                 .addFields([
-                { name: 'Song', value: player.currentTrack.title, inline: true },
+                { name: 'Song', value: player.queue.current.title, inline: true },
                 { name: 'Removed by', value: interaction.user.tag, inline: true },
             ])
                 .setTimestamp();
@@ -79,7 +79,7 @@ export class RemoveFavoriteCommand extends BaseCommand {
                 return;
             }
             const player = client.kazagumo.players.get(message.guildId);
-            if (!player || !player.currentTrack) {
+            if (!player || !player.queue.current) {
                 await message.reply('❌ Nothing is currently playing.');
                 return;
             }
@@ -92,7 +92,7 @@ export class RemoveFavoriteCommand extends BaseCommand {
                 return;
             }
             const favoriteSongs = JSON.parse(user.favoriteSongs);
-            const songIndex = favoriteSongs.findIndex((song) => song.title === player.currentTrack.title);
+            const songIndex = favoriteSongs.findIndex((song) => song.title === player.queue.current.title);
             if (songIndex === -1) {
                 await message.reply('❌ This song is not in your favorites.');
                 return;
@@ -106,7 +106,7 @@ export class RemoveFavoriteCommand extends BaseCommand {
                 .setTitle(`${EMOJIS.success} Removed from Favorites`)
                 .setColor(COLORS.success)
                 .addFields([
-                { name: 'Song', value: player.currentTrack.title, inline: true },
+                { name: 'Song', value: player.queue.current.title, inline: true },
                 { name: 'Removed by', value: message.author.tag, inline: true },
             ])
                 .setTimestamp();
