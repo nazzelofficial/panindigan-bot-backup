@@ -2,7 +2,7 @@
 import { BaseCommand } from '../../structures/BaseCommand.js';
 import { EmbedBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
-import getMongoClient from '../../database/mongodb/client.js';
+import { getMongoDb as getMongoClient } from '../../database/mongodb/client.js';
 export class TopcommandsCommand extends BaseCommand {
     constructor() {
         super({ name: 'topcommands', description: 'Show top 10 most used commands globally', category: 'owner', premiumTier: 'free', cooldown: 0, guildOnly: false, ownerOnly: true, slashCommand: true, prefixCommand: true, aliases: ['topcmds'], examples: ['p!topcommands'] });

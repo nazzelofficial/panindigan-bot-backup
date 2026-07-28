@@ -3,7 +3,6 @@ import { BaseCommand } from '../../structures/BaseCommand.js';
 import { EmbedBuilder, SlashCommandBuilder, AttachmentBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
 import sharp from 'sharp';
-import fetch from 'node-fetch';
 export class BlurCommand extends BaseCommand {
     constructor() {
         super({ name: 'blur', description: 'Blur a user\'s avatar', category: 'image', premiumTier: 'free', cooldown: 5, guildOnly: false, slashCommand: true, prefixCommand: true, aliases: ['blurred'], examples: ['/blur @user 5', 'p!blur @user 10'] });

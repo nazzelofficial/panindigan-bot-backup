@@ -2,7 +2,7 @@
 import { BaseCommand } from '../../structures/BaseCommand.js';
 import { EmbedBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
-import getMongoClient from '../../database/mongodb/client.js';
+import { getMongoDb as getMongoClient } from '../../database/mongodb/client.js';
 export class NotesCommand extends BaseCommand {
     constructor() {
         super({ name: 'notes', description: 'Personal notes system — create, list, delete', category: 'utility', premiumTier: 'silver', cooldown: 3, guildOnly: false, ownerOnly: false, slashCommand: true, prefixCommand: true, aliases: ['note', 'memo'], examples: ['/notes create Buy milk', 'p!notes list', 'p!notes delete 1'] });

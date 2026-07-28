@@ -2,7 +2,7 @@
 import { BaseCommand } from '../../structures/BaseCommand.js';
 import { EmbedBuilder } from 'discord.js';
 import { COLORS, EMOJIS } from '../../utils/Constants.js';
-import getPrismaClient from '../../database/postgresql/client.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 export class DbtablesCommand extends BaseCommand {
     constructor() {
         const options = {

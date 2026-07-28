@@ -5,7 +5,7 @@ import { COLORS, EMOJIS } from '../../utils/Constants.js';
 export class StatsCommand extends BaseCommand {
     constructor() {
         const options = {
-            name: 'stats',
+            name: 'musicstats',
             description: 'View music statistics for the server',
             category: 'music',
             cooldown: 5,

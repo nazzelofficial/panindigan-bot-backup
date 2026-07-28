@@ -6,7 +6,7 @@ import { Formatter } from '../../utils/Formatter.js';
 export class ShardCommand extends BaseCommand {
     constructor() {
         const options = {
-            name: 'shard',
+            name: 'shardstatus',
             description: 'Display shard information',
             category: 'info',
             cooldown: 5,

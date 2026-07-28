@@ -6,7 +6,7 @@ import { getPrismaClient } from '../../database/postgresql/client.js';
 export class HistoryCommand extends BaseCommand {
     constructor() {
         const options = {
-            name: 'history',
+            name: 'modhistory',
             description: 'View moderation history for a user',
             category: 'moderation',
             cooldown: 5,

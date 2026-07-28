@@ -2,7 +2,7 @@
 import { BaseCommand } from '../../structures/BaseCommand.js';
 import { EmbedBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
-import getPrismaClient from '../../database/postgresql/client.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 export class Premiumrevoke2Command extends BaseCommand {
     constructor() {
         super({ name: 'premiumrevoke2', description: 'Revoke premium from a user by ID', category: 'owner', premiumTier: 'free', cooldown: 0, guildOnly: false, ownerOnly: true, slashCommand: true, prefixCommand: true, aliases: ['prevoke'], examples: ['p!premiumrevoke2 123456789'] });

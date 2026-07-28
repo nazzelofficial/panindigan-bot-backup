@@ -2,8 +2,8 @@
 import { BaseCommand } from '../../structures/BaseCommand.js';
 import { EmbedBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
-import getPrismaClient from '../../database/postgresql/client.js';
-import getMongoClient from '../../database/mongodb/client.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
+import { getMongoDb as getMongoClient } from '../../database/mongodb/client.js';
 export class UserstatsCommand extends BaseCommand {
     constructor() {
         super({ name: 'userstats', description: 'Show all stats for any user by ID', category: 'owner', premiumTier: 'free', cooldown: 0, guildOnly: false, ownerOnly: true, slashCommand: true, prefixCommand: true, aliases: ['ustat'], examples: ['p!userstats 123456789'] });

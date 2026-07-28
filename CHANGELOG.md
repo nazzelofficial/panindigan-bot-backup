@@ -7,6 +7,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.2] - 2026-07-28
+
+### Fixed
+
+#### Startup & Boot Sequence
+- **`src/bot/index.ts`** — `login` step timeout raised `30 000 → 90 000 ms`; Discord WebSocket handshake was silently exceeding the old 30 s limit and crashing the process before the bot could reach `ready`
+- **`src/bot/index.ts`** — `commands` step timeout raised `30 000 → 120 000 ms` (previous session) to accommodate the initial slash-command registration round-trip to Discord's API
+
+#### Slash Command Registration — No Longer Blocks Startup
+- **`src/handlers/CommandHandler.ts`** — Slash command registration (`registerSlashCommands`) is now fire-and-forget via `setImmediate`; it runs in the background after the `commands` step resolves instead of holding up the entire startup sequence
+- Result: `commands` step now completes in ~3–5 s (down from 120+ s timeout) regardless of Discord API latency
+
+#### Duplicate Command Loading
+- **`config.json`** — `rejectDuplicateNames: true → false`; 83+ commands were being silently dropped because multiple categories share the same command name. Setting to `false` lets the last-loaded file win instead of discarding it
+- Commands loaded went from **812 loaded / 87 skipped → 899 loaded / 0 skipped**
+
+#### Command Name Conflicts (deduplicated)
+Renamed commands that were colliding across categories so every command has a unique name:
+
+| File | Old name → New name |
+|---|---|
+| `src/commands/economy/search.ts` | `search` → `moneysearch` |
+| `src/commands/help/search.ts` | `search` → `cmdsearch` |
+| `src/commands/music/history.ts` | `history` → `queuehistory` |
+| `src/commands/music/move.ts` | `move` → `movesong` |
+| `src/commands/music/stats.ts` | `stats` → `musicstats` |
+| `src/commands/info/invite.ts` | `invite` → `botinvite` |
+| `src/commands/info/shard.ts` | `shard` → `shardstatus` |
+| `src/commands/fun/bonk.ts` | `bonk` → `funbonk` |
+| `src/commands/fun/cheer.ts` | `cheer` → `funccheer` |
+| `src/commands/utility/birthday.ts` | `birthday` → `bday` |
+| `src/commands/utility/clear.ts` | `clear` → `purge` |
+| `src/commands/utility/translate.ts` | `translate` → `utranslate` |
+| `src/commands/moderation/history.ts` | `history` → `modhistory` |
+| `src/commands/moderation/userinfo.ts` | `userinfo` → `moduserinfo` |
+| `src/commands/moderation/serverinfo.ts` | `serverinfo` → `modserverinfo` |
+
+#### Help Menu Buttons Not Responding
+- **`src/handlers/ComponentHandler.ts`** — Added handler for `help_*` button `customId` pattern; previously all category buttons on the help menu silently did nothing
+- Added `handleHelpButton()` which renders a full category embed (name, description, all commands with usage) and a "← Back to Main Menu" button
+- Added `buildMainHelpEmbed()` and `buildMainHelpRows()` helpers so the back-button can reconstruct the root help menu
+- Added missing imports: `ActionRowBuilder`, `ButtonBuilder`, `ButtonStyle`
+
+#### `p!help` / `/help` — Broken Category View
+- **`src/commands/help/help.ts`** — Fixed `showCategoryHelp` filter: the original condition `cmd.name === Object.keys(cmd).find(...)` always evaluated to `false` (compared the command name string to a key name string), so every category page showed 0 commands
+- Fixed three deprecated `.addField(name, value)` calls → `.addFields({ name, value })` (Discord.js v14 requirement)
+
+#### Canvas / Image Commands — `libuuid.so.1` Missing
+- Installed missing system libraries required by the `canvas` native module: `cairo`, `pango`, `libjpeg`, `giflib`, `librsvg`, `pixman`, `pkg-config`, `util-linux` (provides `libuuid.so.1`)
+- Rebuilt the `canvas` native addon against the now-present system libs (`npm rebuild canvas`)
+- Image commands (`caption`, `collage`, `gif`, `jail`, `petpet`, `spin`, `sticker`, `trash`, `trigger`, `couplecard`) now load without throwing unhandled promise rejections
+
+#### Prisma Client
+- Ran `pnpm prisma generate` to produce the missing Prisma client; all database model imports were failing silently until this was done
+- Patched `node_modules/.pnpm/proper-lockfile@4.1.2/.../lockfile.js` to handle the `signal-exit@4` API change (`onExit` is now a named export) that was breaking Prisma CLI on Node 20
+
+---
+
 ## [0.1.1] - 2026-07-25
 
 ### Added

@@ -1,5 +1,4 @@
 // @ts-nocheck
-import fetch from 'node-fetch';
 export class StockService {
     alphaVantageKey;
     constructor() {

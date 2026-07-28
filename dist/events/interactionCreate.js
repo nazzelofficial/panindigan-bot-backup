@@ -1,12 +1,18 @@
 import { checkCooldown } from '../handlers/CooldownHandler.js';
 import { getUserPremiumTier } from '../handlers/PremiumHandler.js';
 import { Permissions } from '../utils/Permissions.js';
+import { handleComponent } from '../handlers/ComponentHandler.js';
 import { loggers, logCommandExecution } from '../utils/Logger.js';
 import config from '../../config.json' with { type: 'json' };
 export const event = {
     name: 'interactionCreate',
     once: false,
     async execute(interaction, client) {
+        // Route buttons, select menus, and modals to the component handler
+        if (interaction.isButton() || interaction.isStringSelectMenu() || interaction.isModalSubmit()) {
+            await handleComponent(interaction, client);
+            return;
+        }
         if (!interaction.isChatInputCommand())
             return;
         const command = client.commands.get(interaction.commandName);

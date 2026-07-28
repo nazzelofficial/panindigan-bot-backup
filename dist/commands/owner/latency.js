@@ -2,8 +2,8 @@
 import { BaseCommand } from '../../structures/BaseCommand.js';
 import { EmbedBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
-import getPrismaClient from '../../database/postgresql/client.js';
-import getRedisClient from '../../database/redis/client.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
+import { getRedisClient } from '../../database/redis/client.js';
 export class LatencyCommand extends BaseCommand {
     constructor() {
         super({ name: 'latency', description: 'Show API latency breakdown (Discord, DB, Redis)', category: 'owner', premiumTier: 'free', cooldown: 0, guildOnly: false, ownerOnly: true, slashCommand: true, prefixCommand: true, aliases: ['ping2', 'latency'], examples: ['p!latency'] });

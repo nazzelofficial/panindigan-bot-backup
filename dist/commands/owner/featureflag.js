@@ -2,7 +2,7 @@
 import { BaseCommand } from '../../structures/BaseCommand.js';
 import { EmbedBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
-import getRedisClient from '../../database/redis/client.js';
+import { getRedisClient } from '../../database/redis/client.js';
 export class FeatureflagCommand extends BaseCommand {
     constructor() {
         super({ name: 'featureflag', description: 'Toggle a feature flag on/off', category: 'owner', premiumTier: 'free', cooldown: 0, guildOnly: false, ownerOnly: true, slashCommand: true, prefixCommand: true, aliases: ['ff', 'feature'], examples: ['p!featureflag music on', 'p!featureflag economy off'] });

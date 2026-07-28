@@ -17,7 +17,7 @@ function formatBirthday(date) {
 export class BirthdayCommand extends BaseCommand {
     constructor() {
         super({
-            name: 'birthday',
+            name: 'bday',
             description: 'Set, view, or list birthdays in the server',
             category: 'utility',
             premiumTier: 'free',

@@ -1,6 +1,6 @@
 import { logger } from '../utils/Logger.js';
 export const event = {
-    name: 'ready',
+    name: 'clientReady',
     once: true,
     async execute(client) {
         logger.info(`🚀 Logged in as ${client.user?.tag}`);

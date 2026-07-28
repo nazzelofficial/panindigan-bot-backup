@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { EmbedBuilder, } from 'discord.js';
+import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, } from 'discord.js';
 import { coupleConsentService } from '../features/couple/CoupleConsentService.js';
 import { coupleHistoryService } from '../features/couple/CoupleHistoryService.js';
 import { getPrismaClient } from '../database/postgresql/client.js';
@@ -55,6 +55,10 @@ async function handleButton(interaction, client) {
         // Starboard reaction tracking (handled by StarboardHandler)
         else if (customId.startsWith('starboard_')) {
             // no-op
+        }
+        // Help category buttons
+        else if (customId.startsWith('help_')) {
+            await handleHelpButton(interaction, client);
         }
     }
     catch (error) {
@@ -266,6 +270,82 @@ async function handleVerificationButton(interaction) {
 async function handleApplicationButton(interaction) {
     // Application accept/deny buttons handled by application command collectors
     await interaction.reply({ content: '❌ Please use the application command to manage applications.', ephemeral: true });
+}
+const CATEGORY_EMOJIS = {
+    moderation: '🛡️', admin: '👑', music: '🎵', economy: '💰', games: '🎮',
+    fun: '🎉', ai: '🤖', info: 'ℹ️', utility: '🔧', social: '🌐',
+    leveling: '📈', giveaway: '🎁', image: '🖼️', starboard: '⭐',
+    applications: '📝', premium: '💎', owner: '🔑', help: 'ℹ️',
+};
+function capitalizeFirst(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+function buildMainHelpEmbed(client) {
+    return new EmbedBuilder()
+        .setTitle(`🤖 ${client.config.bot.name} v0.1 • All-in-One Discord Bot`)
+        .setDescription(`Prefix: \`${client.config.bot.prefix}\` • ${client.commands.size} Commands • 18 Categories`)
+        .setColor(0x5865f2)
+        .addFields([
+        { name: '🆓 Free', value: 'Essential commands — always available', inline: true },
+        { name: '💎 Premium', value: 'Bronze→Diamond — feature-based tiers', inline: true },
+        { name: '🔑 Owner', value: 'System-level control', inline: true },
+    ])
+        .setFooter({ text: 'Use the buttons below to browse command categories' });
+}
+function buildMainHelpRows() {
+    const row1 = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('help_moderation').setLabel('🛡️ Mod').setStyle(ButtonStyle.Primary), new ButtonBuilder().setCustomId('help_admin').setLabel('👑 Admin').setStyle(ButtonStyle.Primary), new ButtonBuilder().setCustomId('help_music').setLabel('🎵 Music').setStyle(ButtonStyle.Primary), new ButtonBuilder().setCustomId('help_economy').setLabel('💰 Economy').setStyle(ButtonStyle.Primary), new ButtonBuilder().setCustomId('help_games').setLabel('🎮 Games').setStyle(ButtonStyle.Primary));
+    const row2 = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('help_fun').setLabel('🎉 Fun').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('help_ai').setLabel('🤖 AI').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('help_info').setLabel('ℹ️ Info').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('help_utility').setLabel('🔧 Utility').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('help_social').setLabel('🌐 Social').setStyle(ButtonStyle.Secondary));
+    const row3 = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('help_leveling').setLabel('📈 Level').setStyle(ButtonStyle.Success), new ButtonBuilder().setCustomId('help_giveaway').setLabel('🎁 Giveaway').setStyle(ButtonStyle.Success), new ButtonBuilder().setCustomId('help_image').setLabel('🖼️ Image').setStyle(ButtonStyle.Success), new ButtonBuilder().setCustomId('help_starboard').setLabel('⭐ Starboard').setStyle(ButtonStyle.Success), new ButtonBuilder().setCustomId('help_applications').setLabel('📝 Apply').setStyle(ButtonStyle.Success));
+    const row4 = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('help_premium').setLabel('💎 Premium').setStyle(ButtonStyle.Danger), new ButtonBuilder().setCustomId('help_owner').setLabel('🔑 Owner').setStyle(ButtonStyle.Danger), new ButtonBuilder().setCustomId('help_main').setLabel('🏠 Home').setStyle(ButtonStyle.Secondary));
+    return [row1, row2, row3, row4];
+}
+async function handleHelpButton(interaction, client) {
+    const categoryOrAction = interaction.customId.replace('help_', '');
+    if (categoryOrAction === 'main') {
+        const embed = buildMainHelpEmbed(client);
+        const rows = buildMainHelpRows();
+        await interaction.update({ embeds: [embed], components: rows });
+        return;
+    }
+    const category = categoryOrAction;
+    const emoji = CATEGORY_EMOJIS[category] || '📌';
+    // Collect unique commands for this category
+    const seen = new Set();
+    const categoryCommands = [];
+    for (const [key, cmd] of client.commands.entries()) {
+        if (cmd.category !== category || key !== cmd.name || seen.has(cmd.name))
+            continue;
+        seen.add(cmd.name);
+        categoryCommands.push(`\`${cmd.name}\` — ${cmd.description}`);
+    }
+    const embed = new EmbedBuilder()
+        .setTitle(`${emoji} ${capitalizeFirst(category)} Commands`)
+        .setDescription(`**${categoryCommands.length}** commands in this category`)
+        .setColor(0x5865f2);
+    // Split into chunks of 1024 chars max per field
+    const chunks = [];
+    let current = '';
+    for (const line of categoryCommands) {
+        if (current.length + line.length + 1 > 1024) {
+            chunks.push(current);
+            current = line;
+        }
+        else {
+            current += (current ? '\n' : '') + line;
+        }
+    }
+    if (current)
+        chunks.push(current);
+    if (chunks.length === 0) {
+        embed.addFields({ name: 'Commands', value: 'No commands found in this category.' });
+    }
+    else {
+        for (let i = 0; i < Math.min(chunks.length, 5); i++) {
+            embed.addFields({ name: i === 0 ? 'Commands' : '\u200b', value: chunks[i] });
+        }
+    }
+    const backRow = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('help_main').setLabel('🏠 Back to Main Menu').setStyle(ButtonStyle.Secondary));
+    await interaction.update({ embeds: [embed], components: [backRow] });
 }
 async function handleSelectMenu(interaction, client) {
     const { customId } = interaction;

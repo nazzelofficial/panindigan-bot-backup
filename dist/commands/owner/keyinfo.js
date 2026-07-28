@@ -2,7 +2,7 @@
 import { BaseCommand } from '../../structures/BaseCommand.js';
 import { EmbedBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
-import getMongoClient from '../../database/mongodb/client.js';
+import { getMongoDb as getMongoClient } from '../../database/mongodb/client.js';
 export class KeyinfoCommand extends BaseCommand {
     constructor() {
         super({ name: 'keyinfo', description: 'Show info about a specific premium key', category: 'owner', premiumTier: 'free', cooldown: 0, guildOnly: false, ownerOnly: true, slashCommand: true, prefixCommand: true, aliases: ['kinfo'], examples: ['p!keyinfo XXXX-XXXX-XXXX-XXXX'] });

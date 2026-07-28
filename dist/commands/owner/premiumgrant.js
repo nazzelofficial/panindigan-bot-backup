@@ -2,7 +2,7 @@
 import { BaseCommand } from '../../structures/BaseCommand.js';
 import { EmbedBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
-import getPrismaClient from '../../database/postgresql/client.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 export class PremiumgrantCommand extends BaseCommand {
     constructor() {
         super({ name: 'premiumgrant', description: 'Grant premium tier to a user', category: 'owner', premiumTier: 'free', cooldown: 0, guildOnly: false, ownerOnly: true, slashCommand: true, prefixCommand: true, aliases: ['pgrant'], examples: ['p!premiumgrant 123456789 gold'] });

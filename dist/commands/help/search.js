@@ -5,7 +5,7 @@ import { COLORS, EMOJIS } from '../../utils/Constants.js';
 export class SearchCommand extends BaseCommand {
     constructor() {
         const options = {
-            name: 'search',
+            name: 'cmdsearch',
             description: 'Search for commands by name or keyword',
             category: 'help',
             cooldown: 5,

@@ -7,7 +7,7 @@ import { Formatter } from '../../utils/Formatter.js';
 export class ClearCommand extends BaseCommand {
   constructor() {
     const options: CommandOptions = {
-      name: 'clear',
+      name: 'purge',
       description: 'Delete a specified number of messages',
       category: 'utility',
       cooldown: 5,

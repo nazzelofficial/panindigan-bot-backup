@@ -2,7 +2,7 @@
 import { BaseCommand } from '../../structures/BaseCommand.js';
 import { EmbedBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
-import getRedisClient from '../../database/redis/client.js';
+import { getRedisClient } from '../../database/redis/client.js';
 export class RedisflushCommand extends BaseCommand {
     constructor() {
         super({

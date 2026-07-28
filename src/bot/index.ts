@@ -48,18 +48,21 @@ process.on('warning', (warning) => {
 
 // ─── Health check server ──────────────────────────────────────────────────────
 
-let isBotReady = false;
+let isBotReady = false;       // true only after clientReady fires
+let isStartupComplete = false; // true after all startup steps finish (even if Discord delayed)
 const PORT = process.env.PORT || 3000;
 
 const server = createServer((req, res) => {
   if (req.url === '/health') {
+    const status = isBotReady ? 'healthy' : isStartupComplete ? 'degraded' : 'starting';
     const body = {
-      status: isBotReady ? 'healthy' : 'starting',
+      status,
       currentStep: startupState.step,
       completedSteps: startupState.completedSteps,
       uptime: Date.now() - startupState.startTime,
       errors: startupState.errors.length,
     };
+    // 200 only when fully connected; 503 for starting/degraded
     res.writeHead(isBotReady ? 200 : 503, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(body));
   } else if (req.url === '/startup') {
@@ -183,7 +186,7 @@ async function main(): Promise<void> {
     await runStep('commands', async () => {
       await loadCommands(client);
       loggers.bot.info('Commands loaded', { count: client.commands.size });
-    }, 30_000);
+    }, 120_000);
 
     await runStep('events', async () => {
       await loadEvents(client);
@@ -193,31 +196,50 @@ async function main(): Promise<void> {
     await runStep('login', async () => {
       const token = process.env.DISCORD_TOKEN;
       if (!token) throw new Error('DISCORD_TOKEN is not set');
-      await client.login(token);
-      loggers.bot.info('Login initiated');
-    }, 30_000);
 
-    await runStep('ready', async () => {
-      return new Promise<void>((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          reject(new Error('Ready event not received within 60s'));
-        }, 60_000);
-
-        client.once('clientReady', () => {
-          clearTimeout(timeout);
+      // Persist a clientReady listener so isBotReady is set on first connect
+      // AND on any subsequent reconnect (e.g. after a gateway rate-limit delay).
+      client.on('clientReady', () => {
+        if (!isBotReady) {
           loggers.bot.info('Bot is ready', {
             tag: client.user?.tag,
             guilds: client.guilds.cache.size,
           });
-          resolve();
-        });
-
-        client.on('error', (error) => {
-          clearTimeout(timeout);
-          reject(error);
-        });
+        } else {
+          loggers.bot.info('Bot reconnected', {
+            tag: client.user?.tag,
+            guilds: client.guilds.cache.size,
+          });
+        }
+        isBotReady = true;
       });
-    }, 65_000);
+
+      // Await login() directly — rejects fast on an invalid/revoked token (fatal).
+      // A slow gateway that delays clientReady is handled by the non-fatal window below.
+      loggers.bot.info('Login initiated — awaiting token validation…');
+      await client.login(token);
+      loggers.bot.info('Token accepted — awaiting clientReady…');
+
+      // Non-fatal wait: if Discord's gateway is slow (e.g. IDENTIFY rate-limit after
+      // rapid restarts), keep the process alive so Discord.js can reconnect on its own.
+      if (!isBotReady) {
+        await new Promise<void>((resolve) => {
+          const READY_TIMEOUT_MS = 120_000;
+          const timeout = setTimeout(() => {
+            loggers.bot.warn(
+              'clientReady not received within window — running in degraded mode; Discord.js will reconnect automatically',
+              { waitedMs: READY_TIMEOUT_MS },
+            );
+            resolve(); // non-fatal: process stays alive
+          }, READY_TIMEOUT_MS);
+
+          client.once('clientReady', () => {
+            clearTimeout(timeout);
+            resolve();
+          });
+        });
+      }
+    }, 125_000);
 
     await runStep('health-logger', () => {
       startHealthCheckLogger(() => ({
@@ -234,15 +256,16 @@ async function main(): Promise<void> {
       startupTimeout = null;
     }
 
+    isStartupComplete = true;
+
     const elapsed = Date.now() - startupState.startTime;
     loggers.bot.info('Startup complete', {
       ms: elapsed,
       steps: startupState.completedSteps.length,
-      tag: client.user?.tag,
-      guilds: client.guilds.cache.size,
+      discordReady: isBotReady,
+      tag: client.user?.tag ?? '(awaiting clientReady)',
+      guilds: isBotReady ? client.guilds.cache.size : 0,
     });
-
-    isBotReady = true;
   } catch (error) {
     if (startupTimeout) clearTimeout(startupTimeout);
 

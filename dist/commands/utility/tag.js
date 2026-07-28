@@ -2,7 +2,7 @@
 import { BaseCommand } from '../../structures/BaseCommand.js';
 import { EmbedBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
-import getMongoClient from '../../database/mongodb/client.js';
+import { getMongoDb as getMongoClient } from '../../database/mongodb/client.js';
 export class TagCommand extends BaseCommand {
     constructor() {
         super({ name: 'tag', description: 'Custom server tags — create, show, list, delete', category: 'utility', premiumTier: 'diamond', cooldown: 3, guildOnly: true, ownerOnly: false, slashCommand: true, prefixCommand: true, aliases: ['tags', 'snippet'], examples: ['/tag show rules', 'p!tag create rules Read the rules!', 'p!tag list'] });

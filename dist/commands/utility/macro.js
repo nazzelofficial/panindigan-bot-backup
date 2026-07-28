@@ -2,7 +2,7 @@
 import { BaseCommand } from '../../structures/BaseCommand.js';
 import { EmbedBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
-import getMongoClient from '../../database/mongodb/client.js';
+import { getMongoDb as getMongoClient } from '../../database/mongodb/client.js';
 export class MacroCommand extends BaseCommand {
     constructor() {
         super({ name: 'macro', description: 'Command macros — create, list, delete, run', category: 'utility', premiumTier: 'diamond', cooldown: 3, guildOnly: true, ownerOnly: false, slashCommand: true, prefixCommand: true, aliases: ['macros'], examples: ['p!macro create greet hello | wave | hug', 'p!macro list', 'p!macro run greet'] });

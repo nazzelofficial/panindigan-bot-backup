@@ -6,7 +6,7 @@ import { COLORS, EMOJIS } from '../../utils/Constants.js';
 export class CheerCommand extends BaseCommand {
   constructor() {
     const options: CommandOptions = {
-      name: 'cheer',
+      name: 'funccheer',
       description: 'Cheer for someone',
       category: 'fun',
       cooldown: 5,

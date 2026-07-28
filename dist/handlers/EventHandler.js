@@ -21,10 +21,10 @@ export async function loadEvents(client) {
                 continue;
             }
             if (event.once) {
-                client.once(event.name, (...args) => event.execute(...args));
+                client.once(event.name, (...args) => event.execute(...args, client));
             }
             else {
-                client.on(event.name, (...args) => event.execute(...args));
+                client.on(event.name, (...args) => event.execute(...args, client));
             }
             loaded++;
             loggers.events.debug('Loaded event', { name: event.name, once: event.once ?? false });

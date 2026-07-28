@@ -2,7 +2,7 @@
 import { BaseCommand } from '../../structures/BaseCommand.js';
 import { EmbedBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
-import getRedisClient from '../../database/redis/client.js';
+import { getRedisClient } from '../../database/redis/client.js';
 export class RateconfigCommand extends BaseCommand {
     constructor() {
         super({ name: 'rateconfig', description: 'Update rate limit config for a tier', category: 'owner', premiumTier: 'free', cooldown: 0, guildOnly: false, ownerOnly: true, slashCommand: true, prefixCommand: true, aliases: ['ratelimit'], examples: ['p!rateconfig gold 60'] });

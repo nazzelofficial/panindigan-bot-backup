@@ -2,7 +2,7 @@
 import { BaseCommand } from '../../structures/BaseCommand.js';
 import { EmbedBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
-import getRedisClient from '../../database/redis/client.js';
+import { getRedisClient } from '../../database/redis/client.js';
 export class AimodelglobalCommand extends BaseCommand {
     constructor() {
         super({ name: 'aimodelglobal', description: 'Set the global default AI model', category: 'owner', premiumTier: 'free', cooldown: 0, guildOnly: false, ownerOnly: true, slashCommand: true, prefixCommand: true, aliases: ['aimglobal'], examples: ['p!aimodelglobal gpt-4o-mini'] });

@@ -1,5 +1,7 @@
 // @ts-nocheck
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import pg from 'pg';
 import { loggers } from '../../utils/Logger.js';
 import config from '../../../config.json' with { type: 'json' };
 let prisma = null;
@@ -11,12 +13,15 @@ let prisma = null;
 export async function initializePrisma() {
     if (prisma)
         return; // Already initialized
+    // In Prisma 7, a driver adapter is required for direct database connections.
     const postgresUrl = process.env[config.databases.postgresql.urlEnv];
     if (!postgresUrl) {
         throw new Error(`PostgreSQL URL not found in environment variable: ${config.databases.postgresql.urlEnv}`);
     }
+    const pool = new pg.Pool({ connectionString: postgresUrl, ssl: { rejectUnauthorized: false } });
+    const adapter = new PrismaPg(pool);
     prisma = new PrismaClient({
-        datasourceUrl: postgresUrl,
+        adapter,
         log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
     });
     try {

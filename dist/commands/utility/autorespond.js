@@ -2,7 +2,7 @@
 import { BaseCommand } from '../../structures/BaseCommand.js';
 import { EmbedBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
-import getMongoClient from '../../database/mongodb/client.js';
+import { getMongoDb as getMongoClient } from '../../database/mongodb/client.js';
 export class AutorespondCommand extends BaseCommand {
     constructor() {
         super({ name: 'autorespond', description: 'Auto-response triggers — add, list, delete', category: 'utility', premiumTier: 'diamond', cooldown: 3, guildOnly: true, ownerOnly: false, slashCommand: true, prefixCommand: true, aliases: ['ar', 'autoresponse'], examples: ['/autorespond add hello Hi there!', 'p!autorespond list'] });

@@ -77,13 +77,14 @@ export async function loadCommands(client: PanindiganClient): Promise<void> {
   loggers.commands.info('Commands loaded', { loaded, skipped, total: client.commands.size });
 
   if (config.loader.enableSlashCommands) {
-    try {
-      await registerSlashCommands(client);
-    } catch (err) {
-      loggers.commands.warn('Slash command registration failed — bot will continue without registered slash commands', {
-        errorMessage: err instanceof Error ? err.message : String(err),
+    // Register slash commands in the background — don't block startup
+    setImmediate(() => {
+      registerSlashCommands(client).catch((err) => {
+        loggers.commands.warn('Slash command registration failed — bot will continue without registered slash commands', {
+          errorMessage: err instanceof Error ? err.message : String(err),
+        });
       });
-    }
+    });
   }
 }
 

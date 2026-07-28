@@ -202,11 +202,11 @@ export class HelpCommand extends BaseCommand {
       ]);
 
     if (command.aliases.length > 0) {
-      embed.addField('Aliases', command.aliases.map(a => `\`${a}\``).join(', '));
+      embed.addFields({ name: 'Aliases', value: command.aliases.map(a => `\`${a}\``).join(', ') });
     }
 
     if (command.examples.length > 0) {
-      embed.addField('Examples', command.examples.map(e => `\`${e}\``).join('\n'));
+      embed.addFields({ name: 'Examples', value: command.examples.map(e => `\`${e}\``).join('\n') });
     }
 
     if (interaction instanceof ChatInputCommandInteraction) {
@@ -225,12 +225,18 @@ export class HelpCommand extends BaseCommand {
       .setDescription(`Total: ${commands.size} commands`)
       .setColor(COLORS[category as keyof typeof COLORS] || COLORS.default);
 
-    const commandList = Array.from(commands.values())
-      .filter(cmd => cmd.name === Object.keys(cmd).find(k => cmd[k] === cmd))
-      .map(cmd => `\`${cmd.name}\` - ${cmd.description}`)
+    // Deduplicate — the collection stores alias keys pointing to the same command object
+    const seen = new Set<string>();
+    const commandList = Array.from(commands.entries())
+      .filter(([key, cmd]) => {
+        if (key !== cmd.name || seen.has(cmd.name)) return false;
+        seen.add(cmd.name);
+        return true;
+      })
+      .map(([, cmd]) => `\`${cmd.name}\` — ${cmd.description}`)
       .join('\n');
 
-    embed.addField('Commands', commandList.substring(0, 1024));
+    embed.addFields({ name: 'Commands', value: commandList.substring(0, 1024) || 'No commands found.' });
 
     if (interaction instanceof ChatInputCommandInteraction) {
       await interaction.reply({ embeds: [embed] });

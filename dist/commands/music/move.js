@@ -5,7 +5,7 @@ import { COLORS, EMOJIS } from '../../utils/Constants.js';
 export class MoveCommand extends BaseCommand {
     constructor() {
         const options = {
-            name: 'move',
+            name: 'movesong',
             description: 'Move a song in the queue to a new position',
             category: 'music',
             cooldown: 3,

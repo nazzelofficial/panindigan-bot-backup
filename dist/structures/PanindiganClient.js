@@ -1,7 +1,7 @@
 // @ts-nocheck
-import { Client, GatewayIntentBits, Collection, Partials } from 'discord.js';
+import { Client, GatewayIntentBits, Collection, Partials, ActivityType } from 'discord.js';
 import { Kazagumo } from 'kazagumo';
-import { Shoukaku } from 'shoukaku';
+import { Connectors } from 'shoukaku';
 import { connectMongoDB } from '../database/mongodb/client.js';
 import { initializePrisma } from '../database/postgresql/client.js';
 import { connectRedis } from '../database/redis/client.js';
@@ -16,6 +16,7 @@ export class PanindiganClient extends Client {
     config = config;
     shardId;
     totalShards;
+    _presenceIndex = 0;
     constructor(shardId = 0, totalShards = 1) {
         super({
             intents: [
@@ -93,7 +94,7 @@ export class PanindiganClient extends Client {
                 if (guild)
                     guild.shard.send(packet);
             },
-        }, new Shoukaku({ nodes }), this);
+        }, new Connectors.DiscordJS(this), nodes, {});
         this.kazagumo.on('playerStart', (player, track) => {
             loggers.music.info('Track started', { guildId: player.guildId, track: track.title });
             const channel = this.channels.cache.get(player.textId);
@@ -142,12 +143,21 @@ export class PanindiganClient extends Client {
     async updatePresence() {
         if (!this.config.presence.enabled)
             return;
+        const ACTIVITY_TYPE_MAP = {
+            playing: ActivityType.Playing,
+            streaming: ActivityType.Streaming,
+            listening: ActivityType.Listening,
+            watching: ActivityType.Watching,
+            competing: ActivityType.Competing,
+        };
         const activities = this.config.presence.activities;
-        const activity = activities[this.shardId % activities.length];
+        const activity = activities[this._presenceIndex % activities.length];
+        this._presenceIndex++;
         const text = activity.text
             .replace('{shardId}', this.shardId.toString())
             .replace('{guildCount}', this.guilds.cache.size.toString())
             .replace('{memberCount}', this.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0).toString());
-        this.user?.setActivity(text, { type: activity.type });
+        const activityType = ACTIVITY_TYPE_MAP[activity.type.toLowerCase()] ?? ActivityType.Playing;
+        this.user?.setActivity(text, { type: activityType });
     }
 }

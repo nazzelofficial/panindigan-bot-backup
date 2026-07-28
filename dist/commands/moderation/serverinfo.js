@@ -7,7 +7,7 @@ import { getPrismaClient } from '../../database/postgresql/client.js';
 export class ServerInfoCommand extends BaseCommand {
     constructor() {
         const options = {
-            name: 'serverinfo',
+            name: 'modserverinfo',
             description: 'View detailed information about the server',
             category: 'moderation',
             cooldown: 5,

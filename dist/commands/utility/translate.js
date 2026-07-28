@@ -5,7 +5,7 @@ import { COLORS, EMOJIS } from '../../utils/Constants.js';
 export class TranslateUtilityCommand extends BaseCommand {
     constructor() {
         const options = {
-            name: 'translate',
+            name: 'utranslate',
             description: 'Translate text',
             category: 'utility',
             cooldown: 5,

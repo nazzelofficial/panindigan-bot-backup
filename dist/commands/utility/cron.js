@@ -2,7 +2,7 @@
 import { BaseCommand } from '../../structures/BaseCommand.js';
 import { EmbedBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
-import getMongoClient from '../../database/mongodb/client.js';
+import { getMongoDb as getMongoClient } from '../../database/mongodb/client.js';
 export class CronCommand extends BaseCommand {
     constructor() {
         super({ name: 'cron', description: 'Schedule recurring commands with cron expressions', category: 'utility', premiumTier: 'diamond', cooldown: 5, guildOnly: true, ownerOnly: false, slashCommand: true, prefixCommand: true, aliases: ['schedule', 'scheduler'], examples: ['p!cron "0 9 * * *" announce Good morning!', 'p!cron list', 'p!cron delete 1'] });

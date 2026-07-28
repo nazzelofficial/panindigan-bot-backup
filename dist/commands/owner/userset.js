@@ -2,7 +2,7 @@
 import { BaseCommand } from '../../structures/BaseCommand.js';
 import { EmbedBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
-import getPrismaClient from '../../database/postgresql/client.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
 export class UsersetCommand extends BaseCommand {
     constructor() {
         super({ name: 'userset', description: 'Set economy balance for any user', category: 'owner', premiumTier: 'free', cooldown: 0, guildOnly: false, ownerOnly: true, slashCommand: true, prefixCommand: true, aliases: ['uset'], examples: ['p!userset economy 123456789 50000'] });

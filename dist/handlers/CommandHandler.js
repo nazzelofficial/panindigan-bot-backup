@@ -20,7 +20,22 @@ export async function loadCommands(client) {
             const filePath = join(commandsPath, file);
             try {
                 const commandModule = await import(filePath);
-                const command = commandModule.default || commandModule[Object.keys(commandModule)[0]];
+                const raw = commandModule.default || commandModule[Object.keys(commandModule)[0]];
+                // Commands may be exported as a class (constructor) or as an already-constructed instance.
+                let command;
+                if (typeof raw === 'function') {
+                    try {
+                        command = new raw();
+                    }
+                    catch (err) {
+                        loggers.commands.warn('Skipped command file — constructor threw', { filePath, error: String(err) });
+                        skipped++;
+                        continue;
+                    }
+                }
+                else {
+                    command = raw;
+                }
                 if (!command || !(command instanceof BaseCommand)) {
                     loggers.commands.warn('Skipped invalid command file', { filePath });
                     skipped++;
@@ -50,16 +65,40 @@ export async function loadCommands(client) {
     }
     loggers.commands.info('Commands loaded', { loaded, skipped, total: client.commands.size });
     if (config.loader.enableSlashCommands) {
-        await registerSlashCommands(client);
+        // Register slash commands in the background — don't block startup
+        setImmediate(() => {
+            registerSlashCommands(client).catch((err) => {
+                loggers.commands.warn('Slash command registration failed — bot will continue without registered slash commands', {
+                    errorMessage: err instanceof Error ? err.message : String(err),
+                });
+            });
+        });
     }
 }
+const DISCORD_GLOBAL_COMMAND_LIMIT = 100;
 async function registerSlashCommands(client) {
     const commands = [];
+    let skippedOwner = 0;
+    let skippedLimit = 0;
     for (const [name, command] of client.commands) {
-        if (command.slashCommand && name === command.name) {
-            commands.push(command.buildSlashCommand().toJSON());
+        if (!command.slashCommand || name !== command.name)
+            continue;
+        // Skip owner-only commands — they don't need global slash commands
+        if (command.ownerOnly) {
+            skippedOwner++;
+            continue;
         }
+        // Respect Discord's 100 global command limit
+        if (commands.length >= DISCORD_GLOBAL_COMMAND_LIMIT) {
+            skippedLimit++;
+            continue;
+        }
+        commands.push(command.buildSlashCommand().toJSON());
     }
+    if (skippedOwner > 0)
+        loggers.commands.debug('Owner-only commands excluded from slash registration', { skippedOwner });
+    if (skippedLimit > 0)
+        loggers.commands.warn('Some commands not registered (Discord 100-command limit reached)', { skippedLimit });
     const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
     try {
         loggers.commands.info('Refreshing application (/) commands…', { count: commands.length });

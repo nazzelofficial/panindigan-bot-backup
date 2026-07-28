@@ -6,7 +6,7 @@ import { getPrismaClient } from '../../database/postgresql/client.js';
 export class SearchCommand extends BaseCommand {
     constructor() {
         const options = {
-            name: 'search',
+            name: 'moneysearch',
             description: 'Search for money in various locations',
             category: 'economy',
             cooldown: 30,

@@ -5,7 +5,7 @@ import { COLORS, EMOJIS } from '../../utils/Constants.js';
 export class InviteCommand extends BaseCommand {
     constructor() {
         const options = {
-            name: 'invite',
+            name: 'botinvite',
             description: 'Get the bot invite link',
             category: 'info',
             cooldown: 60,

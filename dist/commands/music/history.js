@@ -5,7 +5,7 @@ import { COLORS, EMOJIS } from '../../utils/Constants.js';
 export class HistoryCommand extends BaseCommand {
     constructor() {
         const options = {
-            name: 'history',
+            name: 'queuehistory',
             description: 'View the song history for this session',
             category: 'music',
             cooldown: 5,

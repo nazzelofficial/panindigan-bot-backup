@@ -3,7 +3,6 @@ import { BaseCommand } from '../../structures/BaseCommand.js';
 import { EmbedBuilder, SlashCommandBuilder, AttachmentBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
 import sharp from 'sharp';
-import fetch from 'node-fetch';
 export class GrayscaleCommand extends BaseCommand {
     constructor() {
         super({ name: 'grayscale', description: 'Convert a user\'s avatar to grayscale', category: 'image', premiumTier: 'free', cooldown: 5, guildOnly: false, slashCommand: true, prefixCommand: true, aliases: ['greyscale', 'bw', 'blackwhite'], examples: ['/grayscale @user', 'p!grayscale @user'] });

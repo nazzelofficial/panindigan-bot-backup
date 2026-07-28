@@ -2,7 +2,7 @@
 import { BaseCommand } from '../../structures/BaseCommand.js';
 import { EmbedBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
-import getMongoClient from '../../database/mongodb/client.js';
+import { getMongoDb as getMongoClient } from '../../database/mongodb/client.js';
 import crypto from 'crypto';
 function generateKey() {
     return Array.from({ length: 4 }, () => crypto.randomBytes(2).toString('hex').toUpperCase()).join('-');

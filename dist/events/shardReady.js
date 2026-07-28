@@ -1,4 +1,13 @@
+// @ts-nocheck
+import { ActivityType } from 'discord.js';
 import { logger } from '../utils/Logger.js';
+const ACTIVITY_TYPE_MAP = {
+    playing: ActivityType.Playing,
+    streaming: ActivityType.Streaming,
+    listening: ActivityType.Listening,
+    watching: ActivityType.Watching,
+    competing: ActivityType.Competing,
+};
 export const event = {
     name: 'shardReady',
     once: false,
@@ -18,7 +27,8 @@ export const event = {
                     .replace('{shardId}', shardId.toString())
                     .replace('{guildCount}', client.guilds.cache.size.toString())
                     .replace('{memberCount}', client.guilds.cache.reduce((acc, g) => acc + g.memberCount, 0).toString());
-                client.user?.setActivity(text, { type: activity.type });
+                const activityType = ACTIVITY_TYPE_MAP[activity.type.toLowerCase()] ?? ActivityType.Playing;
+                client.user?.setActivity(text, { type: activityType });
             };
             rotatePresence();
             setInterval(rotatePresence, (client.config.presence.updateIntervalSeconds || 30) * 1000);

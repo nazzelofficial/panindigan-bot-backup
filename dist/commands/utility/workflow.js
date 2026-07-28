@@ -2,7 +2,7 @@
 import { BaseCommand } from '../../structures/BaseCommand.js';
 import { EmbedBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
-import getMongoClient from '../../database/mongodb/client.js';
+import { getMongoDb as getMongoClient } from '../../database/mongodb/client.js';
 export class WorkflowCommand extends BaseCommand {
     constructor() {
         super({ name: 'workflow', description: 'Automation workflows — create, list, run, delete', category: 'utility', premiumTier: 'diamond', cooldown: 3, guildOnly: true, ownerOnly: false, slashCommand: true, prefixCommand: true, aliases: ['workflows', 'automation'], examples: ['p!workflow create welcome "Send welcome message"', 'p!workflow list'] });

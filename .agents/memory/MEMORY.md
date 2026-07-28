@@ -1,0 +1,4 @@
+- [Discord gateway login latency](discord-login-latency.md) — clientReady can take 90–120 s+ on Replit; login step must be non-fatal with long timeout.
+- [Canvas libuuid fix](canvas-libuuid-fix.md) — canvas needs system libs + npm rebuild; not automatic on pnpm install.
+- [Command dedup strategy](command-dedup.md) — rejectDuplicateNames:false + manual renames fixed 87 dropped commands; 899/0 loaded now.
+- [Slash command registration blocking](slash-reg-nonblocking.md) — registration must be fire-and-forget (setImmediate) or startup times out.

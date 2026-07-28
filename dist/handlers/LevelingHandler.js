@@ -177,3 +177,19 @@ export async function setUserXP(userId, guildId, xp) {
         update: { xp, level },
     });
 }
+// ─── LevelingHandler class (wraps module functions for command use) ───────────
+export class LevelingHandler {
+    async giveXP(userId, guildId, amount) {
+        await addXP(userId, guildId, amount, 1);
+    }
+    async removeXP(userId, guildId, amount) {
+        const prisma = getPrismaClient();
+        const user = await prisma.leveling.findUnique({ where: { userId_guildId: { userId, guildId } } });
+        const currentXP = user?.xp ?? 0;
+        const newXP = Math.max(0, currentXP - amount);
+        await setUserXP(userId, guildId, newXP);
+    }
+    async setXP(userId, guildId, amount) {
+        await setUserXP(userId, guildId, amount);
+    }
+}

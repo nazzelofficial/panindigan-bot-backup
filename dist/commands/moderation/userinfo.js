@@ -7,7 +7,7 @@ import { getPrismaClient } from '../../database/postgresql/client.js';
 export class UserInfoCommand extends BaseCommand {
     constructor() {
         const options = {
-            name: 'userinfo',
+            name: 'moduserinfo',
             description: 'View detailed information about a user',
             category: 'moderation',
             cooldown: 3,

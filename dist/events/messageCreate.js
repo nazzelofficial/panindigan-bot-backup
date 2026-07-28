@@ -1,5 +1,6 @@
 import { checkCooldown } from '../handlers/CooldownHandler.js';
 import { getUserPremiumTier } from '../handlers/PremiumHandler.js';
+import { getGuildPrefix } from '../database/postgresql/models/Guild.js';
 import { Permissions } from '../utils/Permissions.js';
 import { loggers, logCommandExecution } from '../utils/Logger.js';
 import config from '../../config.json' with { type: 'json' };
@@ -11,9 +12,18 @@ export const event = {
             return;
         if (message.author.bot)
             return;
-        if (!message.content.startsWith(config.bot.prefix))
+        let prefix;
+        try {
+            prefix = message.guild
+                ? await getGuildPrefix(message.guild.id)
+                : (process.env.BOT_PREFIX ?? config.bot.prefix);
+        }
+        catch {
+            prefix = process.env.BOT_PREFIX ?? config.bot.prefix;
+        }
+        if (!message.content.startsWith(prefix))
             return;
-        const _args = message.content.slice(config.bot.prefix.length).trim().split(/ +/);
+        const _args = message.content.slice(prefix.length).trim().split(/ +/);
         const commandName = _args.shift()?.toLowerCase();
         if (!commandName)
             return;
@@ -59,7 +69,7 @@ export const event = {
                 await message.reply(`⏳ Please wait ${cooldownCheck.remaining} seconds before using this command again.`);
                 return;
             }
-            await command.executePrefix(message, args);
+            await command.executePrefix(message, _args);
             const executionTime = Date.now() - startTime;
             logCommandExecution(client.shardId, message.guild?.id || 'dm', message.author.id, command.name, _args, executionTime, true);
         }

@@ -5,7 +5,7 @@ import { COLORS, EMOJIS } from '../../utils/Constants.js';
 export class BonkCommand extends BaseCommand {
     constructor() {
         const options = {
-            name: 'bonk',
+            name: 'funbonk',
             description: 'Bonk someone (fun action)',
             category: 'fun',
             cooldown: 5,

@@ -3,7 +3,6 @@ import { BaseCommand } from '../../structures/BaseCommand.js';
 import { EmbedBuilder, SlashCommandBuilder, AttachmentBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
 import sharp from 'sharp';
-import fetch from 'node-fetch';
 export class InvertCommand extends BaseCommand {
     constructor() {
         super({ name: 'invert', description: 'Invert the colors of a user\'s avatar', category: 'image', premiumTier: 'free', cooldown: 5, guildOnly: false, slashCommand: true, prefixCommand: true, aliases: ['negative', 'invertcolors'], examples: ['/invert @user', 'p!invert @user'] });

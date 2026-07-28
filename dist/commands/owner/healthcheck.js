@@ -2,9 +2,9 @@
 import { BaseCommand } from '../../structures/BaseCommand.js';
 import { EmbedBuilder } from 'discord.js';
 import { COLORS } from '../../utils/Constants.js';
-import getPrismaClient from '../../database/postgresql/client.js';
-import getMongoClient from '../../database/mongodb/client.js';
-import getRedisClient from '../../database/redis/client.js';
+import { getPrismaClient } from '../../database/postgresql/client.js';
+import { getMongoDb as getMongoClient } from '../../database/mongodb/client.js';
+import { getRedisClient } from '../../database/redis/client.js';
 export class HealthcheckCommand extends BaseCommand {
     constructor() {
         super({ name: 'healthcheck', description: 'Full health check: Discord, PostgreSQL, MongoDB, Redis', category: 'owner', premiumTier: 'free', cooldown: 0, guildOnly: false, ownerOnly: true, slashCommand: true, prefixCommand: true, aliases: ['health', 'hc'], examples: ['p!healthcheck'] });

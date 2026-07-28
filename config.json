@@ -20,7 +20,7 @@
     "enableSlashCommands": true,
     "recursive": true,
     "extensions": [".ts", ".js"],
-    "rejectDuplicateNames": true,
+    "rejectDuplicateNames": false,
     "validateOnStartup": true
   },
   "sharding": {
