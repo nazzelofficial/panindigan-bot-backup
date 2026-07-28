@@ -88,7 +88,7 @@ export class CoinflipCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const choice = args[0]?.toLowerCase();
     const amount = parseInt(args[1]);
 

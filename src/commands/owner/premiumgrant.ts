@@ -28,6 +28,6 @@ export class PremiumgrantCommand extends BaseCommand {
     }
   }
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> { await this.run(i, null, i.options.getString('user_id', true), i.options.getString('tier', true)); }
-  public async executePrefix(m: Message, _args: string[]): Promise<void> { await this.run(null, m, args[0], args[1]); }
+  public async executePrefix(m: Message, args: string[]): Promise<void> { await this.run(null, m, args[0], args[1]); }
 }
 export default PremiumgrantCommand;

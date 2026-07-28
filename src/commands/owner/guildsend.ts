@@ -28,14 +28,14 @@ export class GuildSendCommand extends BaseCommand {
     await i.reply({ content: 'Use prefix command `p!guildsend <guildId> <channelId> <message>` for this.', ephemeral: true });
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     try {
       if (args.length < 3) {
         await m.reply({ embeds: [new EmbedBuilder().setColor(COLORS.error).setDescription('❌ Usage: `p!guildsend <guildId> <channelId> <message...>`')] });
         return;
       }
 
-      const [guildId, channelId, ...msgParts] = _args;
+      const [guildId, channelId, ...msgParts] = args;
       const text = msgParts.join(' ');
 
       const guild = m.client.guilds.cache.get(guildId);

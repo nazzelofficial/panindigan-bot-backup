@@ -87,9 +87,9 @@ export class PlayAlbumCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const album = args[0];
-    const artist = _args.slice(1).join(' ');
+    const artist = args.slice(1).join(' ');
 
     if (!album) {
       await message.reply('❌ Please provide an album name.');

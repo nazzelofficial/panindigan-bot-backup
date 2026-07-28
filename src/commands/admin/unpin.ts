@@ -40,7 +40,7 @@ export class UnpinCommand extends BaseCommand {
     await this.handle(i.channel, i.options.getString('message_id', true), (c) => i.reply(c));
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     if (!args[0]) { await m.reply('❌ Usage: `p!unpin <message_id>`'); return; }
     await this.handle(m.channel, args[0], (c) => m.reply(typeof c === 'string' ? c : c.content || c));
   }

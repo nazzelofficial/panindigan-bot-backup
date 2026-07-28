@@ -29,7 +29,7 @@ export class ImagineCommand extends BaseCommand {
     } catch (e: any) { await i.editReply({ content: `❌ ${e.message || 'Failed to generate image.'}` }); }
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     if (!args.length) { await m.reply('❌ Usage: `p!imagine <prompt>`'); return; }
     const msg = await m.reply('⏳ Generating image...');
     try {

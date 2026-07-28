@@ -1,7 +1,13 @@
 // @ts-nocheck
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
-import { ChatInputCommandInteraction, Message, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import {
+  ChatInputCommandInteraction,
+  Message,
+  EmbedBuilder,
+  PermissionFlagsBits,
+  SlashCommandBuilder,
+} from 'discord.js';
+import { PALETTE, KIT, errorEmbed } from '../../utils/EmbedSystem.js';
 import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class KickCommand extends BaseCommand {
@@ -17,155 +23,85 @@ export class KickCommand extends BaseCommand {
       slashCommand: true,
       prefixCommand: true,
       aliases: ['k'],
-      examples: ['/kick @user', 'p!kick @user spamming'],
+      examples: ['/kick @user Spamming', 'p!kick @user'],
     };
     super(options);
   }
 
+  public buildSlashCommand(): SlashCommandBuilder {
+    return new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .setDMPermission(false)
+      .addUserOption(o => o.setName('target').setDescription('User to kick').setRequired(true))
+      .addStringOption(o => o.setName('reason').setDescription('Reason for the kick').setRequired(false)) as SlashCommandBuilder;
+  }
+
+  private buildEmbed(target: any, mod: any, reason: string): EmbedBuilder {
+    const now = Math.floor(Date.now() / 1000);
+    return new EmbedBuilder()
+      .setColor(PALETTE.warning)
+      .setAuthor({ name: `${KIT.mod} Kick — ${target.username}`, iconURL: target.displayAvatarURL({ size: 64 }) })
+      .addFields(
+        { name: '👟 Kicked User',  value: `<@${target.id}> \`${target.id}\``, inline: true  },
+        { name: '👮 Moderator',    value: `<@${mod.id}>`,                      inline: true  },
+        { name: '📋 Reason',       value: reason,                              inline: false },
+        { name: '📅 Timestamp',    value: `<t:${now}:F>`,                      inline: true  },
+      )
+      .setFooter({ text: 'Panindigan Moderation' })
+      .setTimestamp();
+  }
+
+  private async saveCase(userId: string, guildId: string, modId: string, reason: string): Promise<void> {
+    try {
+      const prisma = getPrismaClient();
+      await prisma.moderation.upsert({
+        where: { userId_guildId: { userId, guildId } },
+        update: { cases: { push: { action: 'kick', moderatorId: modId, reason, timestamp: new Date() } } },
+        create: { userId, guildId, cases: [{ action: 'kick', moderatorId: modId, reason, timestamp: new Date() }] },
+      });
+    } catch {}
+  }
+
   public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const target = interaction.options.getUser('target');
-    const reason = interaction.options.getString('reason') || 'No reason provided';
+    const target = interaction.options.getUser('target', true);
+    const reason = interaction.options.getString('reason') ?? 'No reason provided';
 
-    if (!target) {
-      await interaction.reply({ content: '❌ Please provide a user to kick.', ephemeral: true });
-      return;
-    }
+    if (target.id === interaction.user.id)
+      return void interaction.reply({ embeds: [errorEmbed('Cannot Kick', 'You cannot kick yourself.')], ephemeral: true });
+    if (target.id === interaction.client.user!.id)
+      return void interaction.reply({ embeds: [errorEmbed('Cannot Kick', 'I cannot kick myself.')], ephemeral: true });
 
-    if (target.id === interaction.user.id) {
-      await interaction.reply({ content: '❌ You cannot kick yourself.', ephemeral: true });
-      return;
-    }
-
-    if (target.id === interaction.client.user.id) {
-      await interaction.reply({ content: '❌ I cannot kick myself.', ephemeral: true });
-      return;
-    }
-
-    if (!interaction.guild) return;
-
-    const member = await interaction.guild.members.fetch(target.id).catch(() => null);
-    if (!member) {
-      await interaction.reply({ content: '❌ User not found in server.', ephemeral: true });
-      return;
-    }
-
-    if (!member.kickable) {
-      await interaction.reply({ content: '❌ I cannot kick this user due to role hierarchy.', ephemeral: true });
-      return;
-    }
+    const member = await interaction.guild!.members.fetch(target.id).catch(() => null);
+    if (!member) return void interaction.reply({ embeds: [errorEmbed('Not Found', 'That user is not in this server.')], ephemeral: true });
+    if (!member.kickable) return void interaction.reply({ embeds: [errorEmbed('Insufficient Permissions', 'I cannot kick this user — their role is higher than mine.')], ephemeral: true });
 
     try {
       await member.kick(reason);
-
-      const prisma = getPrismaClient();
-      await prisma.moderation.upsert({
-        where: { userId_guildId: { userId: target.id, guildId: interaction.guild.id } },
-        update: {
-          cases: {
-            push: {
-              action: 'kick',
-              moderatorId: interaction.user.id,
-              reason,
-              timestamp: new Date(),
-            },
-          },
-        },
-        create: {
-          userId: target.id,
-          guildId: interaction.guild.id,
-          cases: [{
-            action: 'kick',
-            moderatorId: interaction.user.id,
-            reason,
-            timestamp: new Date(),
-          }],
-        },
-      });
-
-      const embed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.moderation} User Kicked`)
-        .setColor(COLORS.warning)
-        .addFields([
-          { name: 'User', value: `${target.tag} (${target.id})`, inline: true },
-          { name: 'Moderator', value: interaction.user.tag, inline: true },
-          { name: 'Reason', value: reason, inline: false },
-        ])
-        .setTimestamp();
-
-      await interaction.reply({ embeds: [embed] });
-    } catch (error) {
-      await interaction.reply({ content: '❌ Failed to kick user.', ephemeral: true });
+      await this.saveCase(target.id, interaction.guild!.id, interaction.user.id, reason);
+      await interaction.reply({ embeds: [this.buildEmbed(target, interaction.user, reason)] });
+    } catch {
+      await interaction.reply({ embeds: [errorEmbed('Kick Failed', 'Failed to kick the user.')], ephemeral: true });
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const target = message.mentions.users.first();
-    const reason = _args.slice(1).join(' ') || 'No reason provided';
+    const reason = args.slice(1).join(' ') || 'No reason provided';
 
-    if (!target) {
-      await message.reply('❌ Please mention a user to kick.');
-      return;
-    }
+    if (!target) return void message.reply({ embeds: [errorEmbed('No User', 'Please mention a user to kick.')] });
+    if (target.id === message.author.id) return void message.reply({ embeds: [errorEmbed('Cannot Kick', 'You cannot kick yourself.')] });
 
-    if (target.id === message.author.id) {
-      await message.reply('❌ You cannot kick yourself.');
-      return;
-    }
-
-    if (!message.guild) return;
-
-    const member = await message.guild.members.fetch(target.id).catch(() => null);
-    if (!member) {
-      await message.reply('❌ User not found in server.');
-      return;
-    }
-
-    if (!member.kickable) {
-      await message.reply('❌ I cannot kick this user due to role hierarchy.');
-      return;
-    }
+    const member = await message.guild!.members.fetch(target.id).catch(() => null);
+    if (!member) return void message.reply({ embeds: [errorEmbed('Not Found', 'That user is not in this server.')] });
+    if (!member.kickable) return void message.reply({ embeds: [errorEmbed('Insufficient Permissions', 'I cannot kick this user.')] });
 
     try {
       await member.kick(reason);
-
-      const prisma = getPrismaClient();
-      await prisma.moderation.upsert({
-        where: { userId_guildId: { userId: target.id, guildId: message.guild.id } },
-        update: {
-          cases: {
-            push: {
-              action: 'kick',
-              moderatorId: message.author.id,
-              reason,
-              timestamp: new Date(),
-            },
-          },
-        },
-        create: {
-          userId: target.id,
-          guildId: message.guild.id,
-          cases: [{
-            action: 'kick',
-            moderatorId: message.author.id,
-            reason,
-            timestamp: new Date(),
-          }],
-        },
-      });
-
-      const embed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.moderation} User Kicked`)
-        .setColor(COLORS.warning)
-        .addFields([
-          { name: 'User', value: `${target.tag} (${target.id})`, inline: true },
-          { name: 'Moderator', value: message.author.tag, inline: true },
-          { name: 'Reason', value: reason, inline: false },
-        ])
-        .setTimestamp();
-
-      await message.reply({ embeds: [embed] });
-    } catch (error) {
-      await message.reply('❌ Failed to kick user.');
+      await this.saveCase(target.id, message.guild!.id, message.author.id, reason);
+      await message.reply({ embeds: [this.buildEmbed(target, message.author, reason)] });
+    } catch {
+      await message.reply({ embeds: [errorEmbed('Kick Failed', 'Failed to kick the user.')] });
     }
   }
 }

@@ -59,7 +59,7 @@ export class BackgroundCommand extends BaseCommand {
     await this.handle(i.user.id, i.options.getString('theme', true), i.options.getString('url'), (c) => i.reply(c));
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     const theme = args[0]?.toLowerCase() || 'default';
     const customUrl = theme === 'custom' ? args[1] : null;
     await this.handle(m.author.id, theme, customUrl, (c) => m.reply(c));

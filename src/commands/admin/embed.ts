@@ -56,7 +56,7 @@ export class EmbedCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     if (!args.length) { await m.reply('❌ Usage: `p!embed <message>`'); return; }
     const embed = new EmbedBuilder()
       .setDescription(args.join(' '))

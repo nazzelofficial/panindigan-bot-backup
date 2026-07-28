@@ -40,6 +40,6 @@ export class NotesCommand extends BaseCommand {
     const sub = i.options.getSubcommand(false) ?? i.options.getString('action') ?? 'list';
     await this.run(i, null, sub, i.options.getString('content') ?? '');
   }
-  public async executePrefix(m: Message, _args: string[]): Promise<void> { await this.run(null, m, args[0] ?? 'list', _args.slice(1).join(' ')); }
+  public async executePrefix(m: Message, args: string[]): Promise<void> { await this.run(null, m, args[0] ?? 'list', args.slice(1).join(' ')); }
 }
 export default NotesCommand;

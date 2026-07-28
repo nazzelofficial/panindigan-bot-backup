@@ -72,7 +72,7 @@ export class TimestampCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     try {
       const unix = this.parseInput(args[0]);
       if (unix === null) {

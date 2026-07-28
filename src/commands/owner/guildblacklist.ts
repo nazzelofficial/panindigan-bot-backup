@@ -29,10 +29,10 @@ export class GuildBlacklistCommand extends BaseCommand {
     await i.reply({ content: 'Use prefix command `p!guildblacklist <guildId> <reason>` for this.', ephemeral: true });
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     try {
       const guildId = args[0];
-      const reason = _args.slice(1).join(' ') || 'No reason provided';
+      const reason = args.slice(1).join(' ') || 'No reason provided';
 
       if (!guildId) {
         await m.reply({ embeds: [new EmbedBuilder().setColor(COLORS.error).setDescription('❌ Usage: `p!guildblacklist <guildId> <reason>`')] });

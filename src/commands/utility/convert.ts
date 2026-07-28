@@ -120,7 +120,7 @@ export class ConvertCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     try {
       if (args.length < 3) {
         await m.reply({ embeds: [new EmbedBuilder().setColor(COLORS.error).setDescription(`${EMOJIS.error} Usage: \`p!convert <value> <from> <to>\`\nExample: \`p!convert 100 km mi\``)] });

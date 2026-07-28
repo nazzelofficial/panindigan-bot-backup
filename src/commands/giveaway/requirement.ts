@@ -42,9 +42,9 @@ export class GiveawayRequirementCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     if (args.length < 3) { await m.reply('❌ Usage: `p!grequire role <id> @role` or `p!grequire level <id> <level>`'); return; }
-    const [sub, id, value] = _args;
+    const [sub, id, value] = args;
     const prisma = getPrismaClient();
     const g = await prisma.giveaway.findFirst({ where: { id, guildId: m.guildId!, active: true } });
     if (!g) { await m.reply('❌ Active giveaway not found.'); return; }

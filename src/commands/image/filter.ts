@@ -39,7 +39,7 @@ export class FilterCommand extends BaseCommand {
     } catch { await i.editReply({ content: '❌ Failed.' }); }
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     const filterName = args[0]?.toLowerCase();
     if (!filterName || !FILTERS[filterName]) { await m.reply(`❌ Valid filters: ${Object.keys(FILTERS).join(', ')}`); return; }
     const target = m.mentions.users.first() || m.author;

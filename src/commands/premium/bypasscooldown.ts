@@ -24,7 +24,7 @@ export class BypassCooldownCommand extends BaseCommand {
     await i.reply({ embeds: [embed], ephemeral: true });
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     const command = args[0] || 'play';
     const redis = getRedisClient();
     if (redis) { await redis.del(`cooldown:${m.author.id}:${command}`); }

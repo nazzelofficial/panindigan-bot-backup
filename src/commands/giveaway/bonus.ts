@@ -33,9 +33,9 @@ export class GiveawayBonusCommand extends BaseCommand {
     await i.reply({ content: `✅ Members with <@&${role.id}> will receive **${entries}** bonus entries!`, ephemeral: true });
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     if (args.length < 3) { await m.reply('❌ Usage: `p!gbonus <id> @role <entries>`'); return; }
-    const [id, , bonusStr] = _args;
+    const [id, , bonusStr] = args;
     const role = m.mentions.roles.first();
     if (!role) { await m.reply('❌ Mention a role.'); return; }
     const bonusEntries = parseInt(bonusStr) || 2;

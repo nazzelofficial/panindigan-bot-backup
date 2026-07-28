@@ -39,7 +39,7 @@ export class CustomColorCommand extends BaseCommand {
     await i.reply({ embeds: [embed] });
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     const colorStr = args[0];
     if (!colorStr) { await m.reply('❌ Usage: `p!customcolor <#hexcode>`'); return; }
     const color = this.parseColor(colorStr);

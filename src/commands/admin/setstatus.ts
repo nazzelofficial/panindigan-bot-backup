@@ -71,9 +71,9 @@ export class SetStatusCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const type = args[0]?.toLowerCase() || 'playing';
-    const status = _args.slice(1).join(' ') || '';
+    const status = args.slice(1).join(' ') || '';
 
     const validTypes = ['playing', 'watching', 'listening', 'competing', 'streaming'];
     if (!validTypes.includes(type)) {

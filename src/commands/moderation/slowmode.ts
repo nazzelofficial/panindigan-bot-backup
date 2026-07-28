@@ -62,7 +62,7 @@ export class SlowmodeCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const duration = args[0] || 'off';
 
     if (!message.channel || !message.channel.isTextBased()) return;

@@ -163,7 +163,7 @@ export class TicketCommand extends BaseCommand {
     await interaction.editReply({ embeds: [embed] });
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const sub = args[0]?.toLowerCase();
     if (!sub) {
       const embed = new EmbedBuilder()

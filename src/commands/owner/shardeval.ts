@@ -29,7 +29,7 @@ export class ShardEvalCommand extends BaseCommand {
     await i.reply({ content: 'Use prefix command `p!shardeval <shardId> <code>` for this.', ephemeral: true });
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     try {
       const client = m.client as any;
 
@@ -44,7 +44,7 @@ export class ShardEvalCommand extends BaseCommand {
         return;
       }
 
-      const code = _args.slice(1).join(' ');
+      const code = args.slice(1).join(' ');
 
       if (!client.shard) {
         // No shard manager — just eval locally

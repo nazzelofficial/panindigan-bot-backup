@@ -49,7 +49,7 @@ export class ApplicationExportCommand extends BaseCommand {
     await i.editReply({ content: '✅ Export ready!', files: [attachment] });
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     if (!args[0]) { await m.reply('❌ Usage: `p!application-export <id> [pending|accepted|denied|all]`'); return; }
     const result = await this.export(m.guildId!, args[0], args[1] || 'all');
     if (typeof result === 'string') { await m.reply(result); return; }

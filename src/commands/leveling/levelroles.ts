@@ -48,8 +48,8 @@ export class LevelRolesCommand extends BaseCommand {
     else if (sub === 'remove') { await i.reply(await this.handleRemove(i.guildId!, role)); }
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
-    const [sub] = _args;
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
+    const [sub] = args;
     if (!sub || sub === 'list') { const e = await this.handleList(m.guildId!); await m.reply({ embeds: [e] }); return; }
     const role = m.mentions.roles.first();
     if (!role) { await m.reply('❌ Please mention a role.'); return; }

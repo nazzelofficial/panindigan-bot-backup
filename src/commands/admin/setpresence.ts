@@ -48,7 +48,7 @@ export class SetPresenceCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const status = args[0]?.toLowerCase() || 'online';
 
     const validStatuses = ['online', 'idle', 'dnd', 'invisible'];

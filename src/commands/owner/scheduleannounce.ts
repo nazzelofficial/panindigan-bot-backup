@@ -23,6 +23,6 @@ export class ScheduleannounceCommand extends BaseCommand {
     }
   }
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> { await this.run(i, null, i.options.getString('time', true), i.options.getString('message', true)); }
-  public async executePrefix(m: Message, _args: string[]): Promise<void> { await this.run(null, m, args[0], args.slice(1).join(' ')); }
+  public async executePrefix(m: Message, args: string[]): Promise<void> { await this.run(null, m, args[0], args.slice(1).join(' ')); }
 }
 export default ScheduleannounceCommand;

@@ -68,7 +68,7 @@ export class CreateChannelCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const name = args[0];
     const type = args[1]?.toLowerCase() || 'text';
     const category = message.mentions.channels.first();

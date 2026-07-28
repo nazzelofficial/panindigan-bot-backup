@@ -123,7 +123,7 @@ export class ScreenshotCommand extends BaseCommand {
     await this.run(i, null, url, size);
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     if (!args[0]) { await m.reply('❌ Usage: `p!screenshot <url>`'); return; }
     await this.run(null, m, args[0], args[1] || '1280x720');
   }

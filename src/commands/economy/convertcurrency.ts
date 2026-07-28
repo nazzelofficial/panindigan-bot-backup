@@ -103,7 +103,7 @@ export class ConvertCurrencyCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const from = args[0];
     const amount = parseInt(args[1]);
 

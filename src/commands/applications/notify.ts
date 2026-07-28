@@ -29,9 +29,9 @@ export class ApplicationNotifyCommand extends BaseCommand {
     await i.reply({ content: `✅ DM notifications ${enabled ? 'enabled' : 'disabled'} for **${app.name}**.`, ephemeral: true });
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     if (args.length < 2) { await m.reply('❌ Usage: `p!application-notify <id> on/off`'); return; }
-    const [id, toggle] = _args;
+    const [id, toggle] = args;
     const enabled = toggle === 'on' || toggle === 'true';
     const prisma = getPrismaClient();
     const app = await prisma.application.findFirst({ where: { id, guildId: m.guildId! } });

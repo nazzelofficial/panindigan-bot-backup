@@ -81,7 +81,7 @@ export class SetLogsCommand extends BaseCommand {
     await this.handle(i.guildId!, logType, channel?.id || null, (c) => i.reply(c));
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     const logType = args[0]?.toLowerCase();
     if (!logType || !LOG_TYPES.find(t => t.value === logType)) {
       const list = LOG_TYPES.map(t => `\`${t.value}\` — ${t.name}`).join('\n');

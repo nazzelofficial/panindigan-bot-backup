@@ -17,6 +17,6 @@ export class RateconfigCommand extends BaseCommand {
       .addFields({ name: 'Tier', value: tier, inline: true }, { name: 'Requests/Hour', value: amount.toString(), inline: true }));
   }
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> { await this.run(i, null, i.options.getString('tier', true), i.options.getInteger('amount', true)); }
-  public async executePrefix(m: Message, _args: string[]): Promise<void> { await this.run(null, m, args[0], parseInt(args[1])); }
+  public async executePrefix(m: Message, args: string[]): Promise<void> { await this.run(null, m, args[0], parseInt(args[1])); }
 }
 export default RateconfigCommand;

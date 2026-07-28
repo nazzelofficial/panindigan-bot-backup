@@ -78,7 +78,7 @@ export class DictionaryCommand extends BaseCommand {
     await interaction.editReply({ embeds: [this.buildEmbed(data)] });
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     if (!args.length) {
       const embed = new EmbedBuilder()
         .setColor(COLORS.error)

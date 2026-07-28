@@ -80,7 +80,7 @@ export class CryptoCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const coin = args[0] || 'bitcoin';
     const thinking = await message.reply(`${EMOJIS.info} Fetching crypto data...`);
     try {

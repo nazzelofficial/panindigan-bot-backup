@@ -39,7 +39,7 @@ export class SpinCommand extends BaseCommand {
     } catch { await i.editReply({ content: '❌ Failed.' }); }
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     const target = m.mentions.users.first() || m.author;
     const degrees = parseInt(args.find(a => /^\d+$/.test(a)) || '90') || 90;
     try {

@@ -123,10 +123,10 @@ export class TempBanCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const target = message.mentions.users.first();
     const duration = args[1] || '1d';
-    const reason = _args.slice(2).join(' ') || 'No reason provided';
+    const reason = args.slice(2).join(' ') || 'No reason provided';
 
     if (!target) {
       await message.reply('❌ Please mention a user to tempban.');

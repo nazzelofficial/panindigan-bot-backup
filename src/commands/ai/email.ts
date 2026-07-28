@@ -125,7 +125,7 @@ Keep the email between 150–400 words. Write the full email, ready to send.`;
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     if (!args.length) {
       return void message.reply(
         `${EMOJIS.error} Usage: \`p!email <tone> <topic>\`\nTones: ${TONES.join(', ')}\nExample: \`p!email professional Request a meeting\``,
@@ -133,11 +133,11 @@ Keep the email between 150–400 words. Write the full email, ready to send.`;
     }
 
     let tone = 'professional';
-    let topicArgs = _args;
+    let topicArgs = args;
 
     if (TONES.includes(args[0].toLowerCase())) {
       tone = args[0].toLowerCase();
-      topicArgs = _args.slice(1);
+      topicArgs = args.slice(1);
     }
 
     const topic = topicArgs.join(' ');

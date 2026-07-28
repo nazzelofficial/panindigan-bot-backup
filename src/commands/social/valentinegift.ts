@@ -105,7 +105,7 @@ export class ValentineGiftCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     try {
       const target = m.mentions.users.first();
       if (!target) {

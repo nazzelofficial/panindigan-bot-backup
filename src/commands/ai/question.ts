@@ -153,7 +153,7 @@ Keep each question concise (under 150 characters ideally).`;
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     if (!args.length) {
       return void message.reply(
         `${EMOJIS.error} Usage: \`p!question [type] <topic>\`\nTypes: ${QUESTION_TYPES.join(', ')}\nExample: \`p!question debate artificial intelligence\``,
@@ -161,12 +161,12 @@ Keep each question concise (under 150 characters ideally).`;
     }
 
     let type = 'discussion';
-    let topicArgs = _args;
+    let topicArgs = args;
     let count = 5;
 
     if (QUESTION_TYPES.includes(args[0].toLowerCase())) {
       type = args[0].toLowerCase();
-      topicArgs = _args.slice(1);
+      topicArgs = args.slice(1);
     }
 
     // Check if last arg is a number (count)

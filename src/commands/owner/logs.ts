@@ -24,7 +24,7 @@ export class LogsCommand extends BaseCommand {
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> {
     await this.run(i, null, i.options.getString('level') ?? '', i.options.getInteger('lines') ?? 20);
   }
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     const level = isNaN(parseInt(args[0])) ? (args[0] ?? '') : '';
     const lines = level ? parseInt(args[1]) || 20 : parseInt(args[0]) || 20;
     await this.run(null, m, level, lines);

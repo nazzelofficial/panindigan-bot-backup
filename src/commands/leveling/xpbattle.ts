@@ -97,7 +97,7 @@ export class XpbattleCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     if (!args[0]) {
       await message.reply(`${EMOJIS.error} Please provide a duration. Example: \`p!xpbattle 2h\``);
       return;

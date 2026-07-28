@@ -94,7 +94,7 @@ export class BidCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const amount = parseInt(args[0]);
 
     if (isNaN(amount) || amount <= 0) {

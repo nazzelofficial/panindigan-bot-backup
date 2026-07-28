@@ -98,7 +98,7 @@ export class PremiumGiftCommand extends BaseCommand {
     await interaction.editReply({ embeds: [embed] });
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const target = message.mentions.users.first();
     const tier = args[1]?.toLowerCase();
 

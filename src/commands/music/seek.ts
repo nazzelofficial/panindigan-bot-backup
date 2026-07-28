@@ -82,7 +82,7 @@ export class SeekCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const position = args[0];
 
     if (!position) {

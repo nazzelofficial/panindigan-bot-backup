@@ -89,9 +89,9 @@ export class RemindCommand extends BaseCommand {
   }
 
   public async executePrefix(message: Message): Promise<void> {
-    const _args = message.content.split(' ').slice(1);
+    const args = message.content.split(' ').slice(1);
     const time = args[0];
-    const reminderMessage = _args.slice(1).join(' ');
+    const reminderMessage = args.slice(1).join(' ');
 
     if (!time) {
       const errorEmbed = new EmbedBuilder()

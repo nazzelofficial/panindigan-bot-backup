@@ -25,7 +25,7 @@ export class GiveawayWhitelistCommand extends BaseCommand {
     await i.reply({ content: `✅ Giveaway is now exclusive to <@&${role.id}> members only.`, ephemeral: true });
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     if (!args[0]) { await m.reply('❌ Usage: `p!gwhitelist <id> @role`'); return; }
     const role = m.mentions.roles.first();
     if (!role) { await m.reply('❌ Mention a role.'); return; }

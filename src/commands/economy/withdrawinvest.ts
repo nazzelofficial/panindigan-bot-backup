@@ -80,7 +80,7 @@ export class WithdrawInvestCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const item = args[0];
 
     if (!item) {

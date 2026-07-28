@@ -43,8 +43,8 @@ export class MongoaggregateCommand extends BaseCommand {
   public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
     await this.run(interaction, null, interaction.options.getString('collection', true), interaction.options.getString('pipeline', true));
   }
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
-    await this.run(null, message, args[0], _args.slice(1).join(' '));
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
+    await this.run(null, message, args[0], args.slice(1).join(' '));
   }
 }
 export default MongoaggregateCommand;

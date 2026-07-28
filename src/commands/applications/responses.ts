@@ -41,7 +41,7 @@ export class ApplicationResponsesCommand extends BaseCommand {
     else await i.reply({ embeds: [result] });
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     if (!args[0]) { await m.reply('❌ Usage: `p!application-responses <form-id>`'); return; }
     const result = await this.getResponses(m.guildId!, args[0]);
     if (typeof result === 'string') await m.reply(result);

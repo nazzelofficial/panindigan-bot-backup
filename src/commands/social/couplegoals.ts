@@ -66,9 +66,9 @@ export class CoupleGoalsCommand extends BaseCommand {
     await this.handle(sub, i.user.id, i.guildId!, i.options.getString('goal'), i.options.getInteger('number'), (c) => i.reply(c));
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     const sub = args[0]?.toLowerCase() || 'list';
-    const goalText = _args.slice(1).join(' ') || null;
+    const goalText = args.slice(1).join(' ') || null;
     const goalNum = parseInt(args[1]) || null;
     await this.handle(sub, m.author.id, m.guildId!, goalText, goalNum, (c) => m.reply(c));
   }

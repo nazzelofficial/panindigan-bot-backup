@@ -57,7 +57,7 @@ export class ThreadcreateCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     if (!args.length) {
       const embed = new EmbedBuilder()
         .setColor(COLORS.error)
@@ -67,7 +67,7 @@ export class ThreadcreateCommand extends BaseCommand {
       return;
     }
 
-    const name = _args.join(' ');
+    const name = args.join(' ');
     const channel = message.channel as TextChannel;
 
     if (!channel || !channel.threads) {

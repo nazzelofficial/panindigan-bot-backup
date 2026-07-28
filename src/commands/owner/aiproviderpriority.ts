@@ -17,6 +17,6 @@ export class AiproviderprioritytCommand extends BaseCommand {
       .setDescription(providers.map((p, i) => `**${i + 1}.** ${p}`).join('\n')));
   }
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> { await this.run(i, null, (i.options.getString('providers', true)).split(' ')); }
-  public async executePrefix(m: Message, _args: string[]): Promise<void> { await this.run(null, m, args); }
+  public async executePrefix(m: Message, args: string[]): Promise<void> { await this.run(null, m, args); }
 }
 export default AiproviderprioritytCommand;

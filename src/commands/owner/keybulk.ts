@@ -25,6 +25,6 @@ export class KeybulkCommand extends BaseCommand {
     await send(embed);
   }
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> { await this.run(i, null, i.options.getString('tier', true), i.options.getInteger('count', true)); }
-  public async executePrefix(m: Message, _args: string[]): Promise<void> { await this.run(null, m, args[0], parseInt(args[1]) || 1); }
+  public async executePrefix(m: Message, args: string[]): Promise<void> { await this.run(null, m, args[0], parseInt(args[1]) || 1); }
 }
 export default KeybulkCommand;

@@ -34,7 +34,7 @@ export class BlurCommand extends BaseCommand {
     } catch { await i.editReply({ content: '❌ Failed.' }); }
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     const target = m.mentions.users.first() || m.author;
     const intensity = parseInt(args.find(a => /^\d+$/.test(a)) || '5') || 5;
     try {

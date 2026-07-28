@@ -74,7 +74,7 @@ export class SnowflakeCommand extends BaseCommand {
     await interaction.reply({ embeds: [this.buildEmbed(id)] });
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const id = args[0];
     if (!id) {
       await message.reply(`${EMOJIS.error} Please provide a Discord snowflake ID.\nExample: \`p!snowflake 123456789012345678\``);

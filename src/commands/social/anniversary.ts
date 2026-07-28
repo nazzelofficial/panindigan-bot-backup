@@ -125,7 +125,7 @@ export class AnniversaryCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     try {
       const prisma = getPrismaClient();
       const userId = m.author.id;

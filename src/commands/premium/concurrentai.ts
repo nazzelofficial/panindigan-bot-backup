@@ -69,7 +69,7 @@ export class ConcurrentAiCommand extends BaseCommand {
     await this.runConcurrent(prompt, (c) => i.editReply(c));
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     if (!args.length) { await m.reply('❌ Usage: `p!concurrentai <prompt>`\nExample: `p!concurrentai What is AI?`'); return; }
     const msg = await m.reply('⏳ Querying multiple AI providers concurrently...');
     await this.runConcurrent(args.join(' '), (c) => msg.edit(c));

@@ -48,7 +48,7 @@ export class GiveawayRerollCommand extends BaseCommand {
     await i.editReply({ content: result });
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     if (!args[0]) { await m.reply('❌ Usage: `p!greroll <id> [winners]`'); return; }
     const prisma = getPrismaClient();
     const giveaway = await prisma.giveaway.findFirst({ where: { id: args[0], guildId: m.guildId! } });

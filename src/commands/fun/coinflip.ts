@@ -1,59 +1,34 @@
 // @ts-nocheck
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { PALETTE } from '../../utils/EmbedSystem.js';
 
-export class CoinFlipCommand extends BaseCommand {
+export class CoinflipCommand extends BaseCommand {
   constructor() {
-    const options: CommandOptions = {
-      name: 'coinflip',
-      description: 'Flip a coin',
-      category: 'fun',
-      cooldown: 3,
-      userPermissions: [],
-      botPermissions: [],
-      guildOnly: false,
-      slashCommand: true,
-      prefixCommand: true,
-      aliases: ['flip', 'coin'],
-      examples: ['/coinflip', 'p!coinflip'],
-    };
-    super(options);
+    super({
+      name: 'coinflip', description: 'Flip a coin', category: 'fun',
+      cooldown: 3, userPermissions: [], botPermissions: [], guildOnly: false,
+      slashCommand: true, prefixCommand: true,
+      aliases: ['flip', 'coin', 'cf'], examples: ['/coinflip', 'p!coinflip'],
+    });
   }
 
   public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const result = Math.random() < 0.5 ? 'Heads' : 'Tails';
-    const emoji = result === 'Heads' ? '🪙' : '🪙';
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${emoji} Coin Flip`)
-      .setColor(COLORS.info)
-      .setDescription(`The coin landed on: **${result}**`)
-      .addFields([
-        { name: 'Result', value: result, inline: true },
-        { name: 'Chance', value: '50/50', inline: true },
-      ])
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed] });
+    const heads = Math.random() < 0.5;
+    await interaction.reply({ embeds: [this.build(heads, interaction.user)] });
   }
 
-  public async executePrefix(message: Message): Promise<void> {
-    const result = Math.random() < 0.5 ? 'Heads' : 'Tails';
-    const emoji = result === 'Heads' ? '🪙' : '🪙';
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const heads = Math.random() < 0.5;
+    await message.reply({ embeds: [this.build(heads, message.author)] });
+  }
 
-    const embed = new EmbedBuilder()
-      .setTitle(`${emoji} Coin Flip`)
-      .setColor(COLORS.info)
-      .setDescription(`The coin landed on: **${result}**`)
-      .addFields([
-        { name: 'Result', value: result, inline: true },
-        { name: 'Chance', value: '50/50', inline: true },
-      ])
+  private build(heads: boolean, user: any): EmbedBuilder {
+    return new EmbedBuilder()
+      .setColor(heads ? PALETTE.success : PALETTE.warning)
+      .setDescription(`${heads ? '🪙 **Heads!**' : '🪙 **Tails!**'}\n\n*${user.username} flipped a coin...*`)
+      .setFooter({ text: '50/50 — pure luck!' })
       .setTimestamp();
-
-    await message.reply({ embeds: [embed] });
   }
 }
-
-export default CoinFlipCommand;
+export default CoinflipCommand;

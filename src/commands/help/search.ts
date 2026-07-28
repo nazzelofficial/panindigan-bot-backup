@@ -27,7 +27,7 @@ export class SearchCommand extends BaseCommand {
     await this.searchCommands(interaction, query);
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const query = args[0];
     if (!query) {
       await message.reply('❌ Please provide a search query.');

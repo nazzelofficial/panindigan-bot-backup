@@ -25,9 +25,9 @@ export class ApplicationReviewerCommand extends BaseCommand {
     await i.reply({ content: `✅ **${app.name}** reviewers set to <@&${role.id}>.`, ephemeral: true });
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     if (args.length < 2) { await m.reply('❌ Usage: `p!application-reviewer <id> @role`'); return; }
-    const [id] = _args;
+    const [id] = args;
     const role = m.mentions.roles.first();
     if (!role) { await m.reply('❌ Mention a role.'); return; }
     const prisma = getPrismaClient();

@@ -1,72 +1,90 @@
 // @ts-nocheck
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
-import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants.js';
+import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
+import { PALETTE, KIT, paginate, errorEmbed } from '../../utils/EmbedSystem.js';
 import { getPrismaClient } from '../../database/postgresql/client.js';
+
+const MEDALS = ['🥇', '🥈', '🥉'];
 
 export class LeaderboardCommand extends BaseCommand {
   constructor() {
-    super({ name: 'leaderboard', description: 'View the XP leaderboard for this server', category: 'leveling', premiumTier: 'free', cooldown: 10, guildOnly: true, slashCommand: true, prefixCommand: true, aliases: ['lb', 'levels', 'top'], examples: ['/leaderboard', 'p!leaderboard'] } as CommandOptions);
-  }
-  public buildSlashCommand(): SlashCommandBuilder {
-    return (new SlashCommandBuilder().setName(this.name).setDescription(this.description)
-      .addIntegerOption(o => o.setName('page').setDescription('Page number').setRequired(false).setMinValue(1))
-      .setDMPermission(false)) as SlashCommandBuilder;
+    super({
+      name: 'leaderboard', description: 'View the top members by XP in this server', category: 'leveling',
+      cooldown: 10, userPermissions: [], botPermissions: [], guildOnly: true,
+      slashCommand: true, prefixCommand: true,
+      aliases: ['lb', 'top', 'levels'], examples: ['/leaderboard', 'p!leaderboard'],
+    });
   }
 
-  private async getLeaderboard(guildId: string, page: number = 1, perPage: number = 10) {
+  private async buildPages(guildId: string, guild: any): Promise<EmbedBuilder[]> {
     const prisma = getPrismaClient();
-    const skip = (page - 1) * perPage;
-    const [entries, total] = await Promise.all([
-      prisma.leveling.findMany({ where: { guildId }, orderBy: [{ level: 'desc' }, { xp: 'desc' }], skip, take: perPage }),
-      prisma.leveling.count({ where: { guildId } }),
-    ]);
-    return { entries, total, pages: Math.ceil(total / perPage) };
-  }
+    const entries = await prisma.leveling.findMany({
+      where: { guildId },
+      orderBy: { totalXp: 'desc' },
+      take: 50,
+    });
 
-  private formatEntry(i: number, offset: number, e: any, tag: string): string {
-    const rank = i + offset + 1;
-    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
-    return `${medal} **${tag}** — Level ${e.level} (${e.totalXp} XP)`;
-  }
+    if (!entries.length) {
+      return [new EmbedBuilder()
+        .setColor(PALETTE.leveling)
+        .setTitle(`${KIT.leveling} Level Leaderboard`)
+        .setDescription('No one has earned XP yet! Start chatting to appear here.')
+        .setTimestamp()];
+    }
 
-  public async executeSlash(i: ChatInputCommandInteraction): Promise<void> {
-    const page = i.options.getInteger('page') || 1;
-    await i.deferReply();
-    try {
-      const { entries, total, pages } = await this.getLeaderboard(i.guildId!, page);
-      if (!entries.length) { await i.editReply({ content: '❌ No leveling data found.' }); return; }
-      const lines = await Promise.all(entries.map(async (e, idx) => {
-        const user = await i.client.users.fetch(e.userId).catch(() => null);
-        return this.formatEntry(idx, (page - 1) * 10, e, user?.tag || e.userId);
-      }));
-      const embed = new EmbedBuilder()
-        .setTitle(`🏆 XP Leaderboard — ${i.guild!.name}`)
+    const PER_PAGE = 10;
+    const pages: EmbedBuilder[] = [];
+
+    for (let i = 0; i < entries.length; i += PER_PAGE) {
+      const slice = entries.slice(i, i + PER_PAGE);
+      const lines: string[] = [];
+
+      for (let j = 0; j < slice.length; j++) {
+        const e    = slice[j];
+        const pos  = i + j + 1;
+        const icon = MEDALS[pos - 1] ?? `\`#${pos}\``;
+        let name: string;
+        try {
+          const member = await guild.members.fetch(e.userId).catch(() => null);
+          name = member?.user.username ?? `<@${e.userId}>`;
+        } catch {
+          name = `<@${e.userId}>`;
+        }
+        lines.push(`${icon} **${name}** — Level **${e.level}** · ${Number(e.totalXp ?? 0).toLocaleString()} XP`);
+      }
+
+      pages.push(new EmbedBuilder()
+        .setColor(PALETTE.leveling)
+        .setAuthor({ name: `${guild.name} — Level Leaderboard`, iconURL: guild.iconURL({ size: 64 }) ?? undefined })
         .setDescription(lines.join('\n'))
-        .setColor(COLORS.gold)
-        .setFooter({ text: `Page ${page}/${pages} • ${total} members` })
-        .setTimestamp();
-      await i.editReply({ embeds: [embed] });
-    } catch { await i.editReply({ content: '❌ Failed to fetch leaderboard.' }); }
+        .setFooter({ text: `Showing ${i + 1}–${Math.min(i + PER_PAGE, entries.length)} of ${entries.length} members` })
+        .setTimestamp());
+    }
+
+    return pages;
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
-    const page = parseInt(args[0]) || 1;
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    await interaction.deferReply();
     try {
-      const { entries, total, pages } = await this.getLeaderboard(m.guildId!, page);
-      if (!entries.length) { await m.reply('❌ No leveling data found.'); return; }
-      const lines = await Promise.all(entries.map(async (e, idx) => {
-        const user = await m.client.users.fetch(e.userId).catch(() => null);
-        return this.formatEntry(idx, (page - 1) * 10, e, user?.tag || e.userId);
-      }));
-      const embed = new EmbedBuilder()
-        .setTitle(`🏆 XP Leaderboard — ${m.guild!.name}`)
-        .setDescription(lines.join('\n'))
-        .setColor(COLORS.gold)
-        .setFooter({ text: `Page ${page}/${pages} • ${total} members` })
-        .setTimestamp();
-      await m.reply({ embeds: [embed] });
-    } catch { await m.reply('❌ Failed to fetch leaderboard.'); }
+      const pages = await this.buildPages(interaction.guildId!, interaction.guild!);
+      if (pages.length === 1) return void interaction.editReply({ embeds: [pages[0]] });
+      await interaction.editReply({ embeds: [pages[0]] });
+      const msg = await interaction.fetchReply();
+      // Re-use paginate via message edit
+      await paginate(interaction, pages, 'lb');
+    } catch {
+      await interaction.editReply({ embeds: [errorEmbed('Error', 'Failed to fetch leaderboard.')] });
+    }
+  }
+
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    try {
+      const pages = await this.buildPages(message.guildId!, message.guild!);
+      await paginate(message, pages, 'lb');
+    } catch {
+      await message.reply({ embeds: [errorEmbed('Error', 'Failed to fetch leaderboard.')] });
+    }
   }
 }
 export default LeaderboardCommand;

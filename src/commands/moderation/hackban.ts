@@ -82,9 +82,9 @@ export class HackBanCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const userId = args[0];
-    const reason = _args.slice(1).join(' ') || 'No reason provided';
+    const reason = args.slice(1).join(' ') || 'No reason provided';
 
     if (!userId) {
       await message.reply('❌ Please provide a user ID.');

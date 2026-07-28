@@ -92,13 +92,13 @@ export class BioCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     try {
       const prisma = getPrismaClient();
       const sub = args[0]?.toLowerCase();
 
       if (sub === 'set') {
-        const text = _args.slice(1).join(' ');
+        const text = args.slice(1).join(' ');
         if (!text) {
           await m.reply('❌ Magbigay ng bio text. Example: `bio set I love Discord!`');
           return;

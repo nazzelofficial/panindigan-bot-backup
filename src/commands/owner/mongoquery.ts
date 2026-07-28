@@ -48,13 +48,13 @@ export class MongoQueryCommand extends BaseCommand {
     await interaction.editReply({ embeds: [embed] });
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     if (args.length < 2) {
       await message.reply(`${EMOJIS.error} Usage: \`p!mongoquery <collection> <json_query>\``);
       return;
     }
     const collection = args[0];
-    const query = _args.slice(1).join(' ');
+    const query = args.slice(1).join(' ');
     const loadingMsg = await message.reply(`${EMOJIS.loading} Running query...`);
     const embed = await this.runQuery(collection, query);
     await loadingMsg.edit({ content: '', embeds: [embed] });

@@ -86,7 +86,7 @@ export class AiModelCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     const modelName = args[0];
     if (!modelName) {
       await m.reply({ embeds: [this.buildListEmbed()] });

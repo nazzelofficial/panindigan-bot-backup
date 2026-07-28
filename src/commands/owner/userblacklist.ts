@@ -21,6 +21,6 @@ export class UserblacklistCommand extends BaseCommand {
     }
   }
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> { await this.run(i, null, i.options.getString('user_id', true), i.options.getString('reason') ?? ''); }
-  public async executePrefix(m: Message, _args: string[]): Promise<void> { await this.run(null, m, args[0], args.slice(1).join(' ')); }
+  public async executePrefix(m: Message, args: string[]): Promise<void> { await this.run(null, m, args[0], args.slice(1).join(' ')); }
 }
 export default UserblacklistCommand;

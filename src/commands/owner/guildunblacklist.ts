@@ -29,7 +29,7 @@ export class GuildUnblacklistCommand extends BaseCommand {
     await i.reply({ content: 'Use prefix command `p!guildunblacklist <guildId>` for this.', ephemeral: true });
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     try {
       const guildId = args[0];
       if (!guildId) {

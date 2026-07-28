@@ -58,7 +58,7 @@ export class SetXpCommand extends BaseCommand {
     await interaction.reply({ embeds: [embed] });
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const user = message.mentions.users.first();
     const amount = parseInt(args[1]);
 

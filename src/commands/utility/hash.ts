@@ -66,7 +66,7 @@ export class HashCommand extends BaseCommand {
     await interaction.reply({ embeds: [embed] });
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     if (args.length < 2) {
       const embed = new EmbedBuilder()
         .setColor(COLORS.error)
@@ -77,7 +77,7 @@ export class HashCommand extends BaseCommand {
     }
 
     const algorithm = args[0].toLowerCase();
-    const text = _args.slice(1).join(' ');
+    const text = args.slice(1).join(' ');
 
     if (!SUPPORTED_ALGORITHMS.includes(algorithm)) {
       const embed = new EmbedBuilder()

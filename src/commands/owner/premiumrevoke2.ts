@@ -20,6 +20,6 @@ export class Premiumrevoke2Command extends BaseCommand {
     }
   }
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> { await this.run(i, null, i.options.getString('user_id', true)); }
-  public async executePrefix(m: Message, _args: string[]): Promise<void> { await this.run(null, m, args[0]); }
+  public async executePrefix(m: Message, args: string[]): Promise<void> { await this.run(null, m, args[0]); }
 }
 export default Premiumrevoke2Command;

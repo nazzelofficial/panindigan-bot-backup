@@ -79,7 +79,7 @@ export class PlayChartCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const chart = args[0] || 'top100';
 
     if (!message.member || !message.guild) return;

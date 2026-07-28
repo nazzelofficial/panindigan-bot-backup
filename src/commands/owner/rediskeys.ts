@@ -42,7 +42,7 @@ export class RediskeysCommand extends BaseCommand {
   public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
     await this.run(interaction, null, interaction.options.getString('pattern') ?? '*');
   }
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     await this.run(null, message, args[0] ?? '*');
   }
 }

@@ -86,7 +86,7 @@ export class RadioCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const station = args[0] || 'lofi';
 
     if (!message.member || !message.guild) return;

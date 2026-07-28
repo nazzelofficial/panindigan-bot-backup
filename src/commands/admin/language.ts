@@ -57,7 +57,7 @@ export class LanguageCommand extends BaseCommand {
     await interaction.reply({ embeds: [embed] });
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const language = args[0];
 
     if (!language) {

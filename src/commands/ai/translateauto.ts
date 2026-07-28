@@ -39,7 +39,7 @@ export class TranslateAutoCommand extends BaseCommand {
   }
 
   public async executePrefix(message: Message): Promise<void> {
-    const _args = message.content.split(' ').slice(1);
+    const args = message.content.split(' ').slice(1);
     const action = args[0] || 'off';
     const language = args[1] || 'English';
 

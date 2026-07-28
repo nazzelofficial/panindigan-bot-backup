@@ -34,9 +34,9 @@ export class HdImageCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     if (!args.length) { await m.reply('❌ Usage: `p!hdimage <prompt>`'); return; }
-    const prompt = _args.join(' ');
+    const prompt = args.join(' ');
     const msg = await m.reply('⏳ Generating HD image...');
     try {
       const result = await aiEngine.generateImage(prompt, { size: '1792x1024', quality: 'hd' });

@@ -86,9 +86,9 @@ export class ReasonCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const caseNumber = parseInt(args[0]);
-    const newReason = _args.slice(1).join(' ');
+    const newReason = args.slice(1).join(' ');
 
     if (!caseNumber) {
       await message.reply('❌ Please provide a case number.');

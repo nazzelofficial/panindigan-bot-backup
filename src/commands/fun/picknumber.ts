@@ -40,7 +40,7 @@ export class PickNumberCommand extends BaseCommand {
   }
 
   public async executePrefix(message: Message): Promise<void> {
-    const _args = message.content.split(' ').slice(1);
+    const args = message.content.split(' ').slice(1);
     const min = args[0] ? parseInt(args[0]) : 1;
     const max = args[1] ? parseInt(args[1]) : 10;
     const validMin = isNaN(min) ? 1 : min;

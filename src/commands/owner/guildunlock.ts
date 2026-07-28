@@ -16,6 +16,6 @@ export class GuildunlockCommand extends BaseCommand {
     await send(new EmbedBuilder().setColor(COLORS.success).setTitle('🔓 Guild Unlocked').setDescription(`Guild \`${guildId}\` is now unlocked and fully operational.`));
   }
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> { await this.run(i, null, i.options.getString('guild_id', true)); }
-  public async executePrefix(m: Message, _args: string[]): Promise<void> { await this.run(null, m, args[0]); }
+  public async executePrefix(m: Message, args: string[]): Promise<void> { await this.run(null, m, args[0]); }
 }
 export default GuildunlockCommand;

@@ -1,97 +1,53 @@
 // @ts-nocheck
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
-import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+import { PALETTE, errorEmbed } from '../../utils/EmbedSystem.js';
 
 export class UwuCommand extends BaseCommand {
   constructor() {
-    const options: CommandOptions = {
-      name: 'uwu',
-      description: 'UwUify your text',
-      category: 'fun',
-      premiumTier: 'free',
-      cooldown: 3,
-      userPermissions: [],
-      botPermissions: [],
-      ownerOnly: false,
-      guildOnly: false,
-      slashCommand: true,
-      prefixCommand: true,
-      aliases: ['uwuify', 'owo'],
-      examples: ['/uwu text:hello world', 'p!uwu hello world'],
-    };
-    super(options);
+    super({
+      name: 'uwu', description: 'UwUify any text OwO', category: 'fun',
+      cooldown: 3, userPermissions: [], botPermissions: [], guildOnly: false,
+      slashCommand: true, prefixCommand: true,
+      aliases: ['owo', 'uwuify'], examples: ['/uwu Hello world', 'p!uwu I love cats'],
+    });
   }
 
-  private uwuExtras = ['uwu', 'owo', 'UwU', 'OwO', '(ꈍᴗꈍ)', '(⁄ ⁄•⁄ω⁄•⁄ ⁄)', '~', 'nyaa~', '>w<'];
+  public buildSlashCommand(): SlashCommandBuilder {
+    return new SlashCommandBuilder()
+      .setName(this.name).setDescription(this.description)
+      .addStringOption(o => o.setName('text').setDescription('Text to UwUify').setRequired(true)) as SlashCommandBuilder;
+  }
 
   private uwuify(text: string): string {
-    let result = text
-      .replace(/r/g, 'w')
-      .replace(/R/g, 'W')
-      .replace(/l/g, 'w')
-      .replace(/L/g, 'W')
-      .replace(/n([aeiou])/g, 'ny$1')
-      .replace(/N([aeiou])/g, 'Ny$1')
-      .replace(/ove/g, 'uv')
-      .replace(/th/g, 'd')
-      .replace(/Th/g, 'D');
+    const faces = ['(・`ω´・)', ';;w;;', 'owo', 'UwU', '>w<', '^w^'];
+    return text
+      .replace(/[rl]/gi, 'w')
+      .replace(/th/gi, 'd')
+      .replace(/n([aeiou])/gi, 'ny$1')
+      .replace(/!+/g, () => ` ${faces[Math.floor(Math.random() * faces.length)]}!`)
+      .replace(/\./g, ' uwu.')
+      .replace(/,/g, ' owo,');
+  }
 
-    // Add random uwu extras after sentences
-    result = result.replace(/[.!?]/g, (match) => {
-      const extra = this.uwuExtras[Math.floor(Math.random() * this.uwuExtras.length)];
-      return `${match} ${extra}`;
-    });
-
-    // Add a random extra at the end if no punctuation
-    if (!/[.!?]/.test(text)) {
-      const extra = this.uwuExtras[Math.floor(Math.random() * this.uwuExtras.length)];
-      result += ` ${extra}`;
-    }
-
-    return result;
+  private build(original: string, uwued: string, user: any): EmbedBuilder {
+    return new EmbedBuilder()
+      .setColor(PALETTE.fun ?? 0xFF6B6B)
+      .setAuthor({ name: `${user.username} UwU'd`, iconURL: user.displayAvatarURL({ size: 64 }) })
+      .setDescription(`UwU *${uwued}*`)
+      .setFooter({ text: `Original: ${original.slice(0, 80)}` })
+      .setTimestamp();
   }
 
   public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
     const text = interaction.options.getString('text', true);
-    const uwuified = this.uwuify(text);
-
-    const embed = new EmbedBuilder()
-      .setTitle('(ꈍᴗꈍ) UwU Text')
-      .addFields(
-        { name: 'Original', value: text },
-        { name: 'UwUified', value: uwuified }
-      )
-      .setColor(COLORS.default)
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed] });
+    await interaction.reply({ embeds: [this.build(text, this.uwuify(text), interaction.user)] });
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
-    if (!args.length) {
-      const embed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.error} Missing Text`)
-        .setDescription('Please provide text to UwUify!\nUsage: `p!uwu <text>`')
-        .setColor(COLORS.error);
-      await message.reply({ embeds: [embed] });
-      return;
-    }
-
-    const text = _args.join(' ');
-    const uwuified = this.uwuify(text);
-
-    const embed = new EmbedBuilder()
-      .setTitle('(ꈍᴗꈍ) UwU Text')
-      .addFields(
-        { name: 'Original', value: text },
-        { name: 'UwUified', value: uwuified }
-      )
-      .setColor(COLORS.default)
-      .setTimestamp();
-
-    await message.reply({ embeds: [embed] });
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
+    const text = args.join(' ');
+    if (!text) return void message.reply({ embeds: [errorEmbed('No Text', 'Provide text to UwUify!')] });
+    await message.reply({ embeds: [this.build(text, this.uwuify(text), message.author)] });
   }
 }
-
 export default UwuCommand;

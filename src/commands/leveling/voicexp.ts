@@ -65,7 +65,7 @@ export class VoiceXpCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     if (!m.member?.permissions.has(PermissionFlagsBits.ManageGuild)) {
       await m.reply(`${EMOJIS.error} You need **Manage Server** permission.`);
       return;

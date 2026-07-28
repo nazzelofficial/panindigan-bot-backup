@@ -63,7 +63,7 @@ export class UnloadCommand extends BaseCommand {
     await interaction.editReply({ embeds: [embed] });
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const commandName = args[0]?.toLowerCase();
     if (!commandName) {
       await message.reply(`${EMOJIS.error} Please provide a command name to unload.`);

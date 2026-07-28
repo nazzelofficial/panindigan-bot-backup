@@ -1,13 +1,14 @@
 // @ts-nocheck
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { PALETTE, KIT } from '../../utils/EmbedSystem.js';
+import { Formatter } from '../../utils/Formatter.js';
 
 export class UptimeCommand extends BaseCommand {
   constructor() {
     const options: CommandOptions = {
       name: 'uptime',
-      description: 'Display the bot uptime',
+      description: 'Display how long the bot has been online',
       category: 'info',
       cooldown: 5,
       userPermissions: [],
@@ -21,42 +22,29 @@ export class UptimeCommand extends BaseCommand {
     super(options);
   }
 
+  private buildEmbed(client: any): EmbedBuilder {
+    const ms      = client.uptime ?? 0;
+    const uptime  = Formatter.formatUptime(ms);
+    const since   = new Date(Date.now() - ms);
+    const sinceTs = `<t:${Math.floor(since.getTime() / 1000)}:R>`;
+
+    return new EmbedBuilder()
+      .setColor(PALETTE.success)
+      .setAuthor({
+        name: `${client.user.username} — Uptime`,
+        iconURL: client.user.displayAvatarURL({ size: 64 }),
+      })
+      .setDescription(`⏱️ **${uptime}**\n\nOnline since ${sinceTs}`)
+      .setFooter({ text: 'Panindigan Bot  •  Staying online 24/7' })
+      .setTimestamp();
+  }
+
   public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const uptime = this.formatUptime(interaction.client.uptime!);
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.info} ⏱️ Uptime`)
-      .setColor(COLORS.info)
-      .setDescription(uptime)
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed] });
+    await interaction.reply({ embeds: [this.buildEmbed(interaction.client)] });
   }
 
-  public async executePrefix(message: Message): Promise<void> {
-    const uptime = this.formatUptime(message.client.uptime!);
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.info} ⏱️ Uptime`)
-      .setColor(COLORS.info)
-      .setDescription(uptime)
-      .setTimestamp();
-
-    await message.reply({ embeds: [embed] });
-  }
-
-  private formatUptime(ms: number): string {
-    const seconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-
-    const d = days;
-    const h = hours % 24;
-    const m = minutes % 60;
-    const s = seconds % 60;
-
-    return `${d}d ${h}h ${m}m ${s}s`;
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    await message.reply({ embeds: [this.buildEmbed(message.client)] });
   }
 }
 

@@ -121,7 +121,7 @@ export class RouletteCommand extends BaseCommand {
     );
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const bet = args[0];
     await this.runRoulette(
       (c) => message.reply(c),

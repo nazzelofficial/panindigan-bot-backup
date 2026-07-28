@@ -82,7 +82,7 @@ export class SwapQueueCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const index1 = parseInt(args[0]);
     const index2 = parseInt(args[1]);
 

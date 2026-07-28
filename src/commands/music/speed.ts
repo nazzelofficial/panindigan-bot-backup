@@ -75,7 +75,7 @@ export class SpeedCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const speed = parseFloat(args[0]);
 
     if (isNaN(speed) || speed < 0.5 || speed > 2) {

@@ -25,7 +25,7 @@ export class ApplicationOpenCommand extends BaseCommand {
     await i.reply({ content: await this.open(i.guildId!, id), ephemeral: true });
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     if (!args[0]) { await m.reply('❌ Usage: `p!application-open <id>`'); return; }
     await m.reply(await this.open(m.guildId!, args[0]));
   }

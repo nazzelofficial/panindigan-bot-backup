@@ -75,7 +75,7 @@ export class ClearCommand extends BaseCommand {
   }
 
   public async executePrefix(message: Message): Promise<void> {
-    const _args = message.content.split(' ').slice(1);
+    const args = message.content.split(' ').slice(1);
     const amount = parseInt(args[0]) || 10;
     
     if (amount < 1 || amount > 100) {

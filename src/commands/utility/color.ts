@@ -70,7 +70,7 @@ export class ColorCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     try {
       if (!args[0]) {
         await m.reply({ embeds: [new EmbedBuilder().setColor(COLORS.error).setDescription(`${EMOJIS.error} Please provide a hex color code.\nExample: \`p!color #5865F2\``)] });

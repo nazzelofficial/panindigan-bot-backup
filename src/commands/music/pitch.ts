@@ -75,7 +75,7 @@ export class PitchCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const pitch = parseFloat(args[0]);
 
     if (isNaN(pitch) || pitch < 0.5 || pitch > 2) {

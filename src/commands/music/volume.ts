@@ -75,7 +75,7 @@ export class VolumeCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const volume = parseInt(args[0]);
 
     if (isNaN(volume) || volume < 0 || volume > 100) {

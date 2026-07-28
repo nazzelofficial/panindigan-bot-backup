@@ -68,7 +68,7 @@ export class ImagineUpscaleCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     const attachment = m.attachments.first();
     if (!attachment) { await m.reply('❌ Please attach an image to upscale.'); return; }
     const scale = parseInt(args.find(a => a === '2' || a === '4') || '2') as 2 | 4;

@@ -18,6 +18,6 @@ export class KeyrevokeCommand extends BaseCommand {
       .setDescription(result.modifiedCount ? `Key \`${key}\` has been revoked and is now available again.` : `Key \`${key}\` not found.`));
   }
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> { await this.run(i, null, i.options.getString('key', true)); }
-  public async executePrefix(m: Message, _args: string[]): Promise<void> { await this.run(null, m, args[0]); }
+  public async executePrefix(m: Message, args: string[]): Promise<void> { await this.run(null, m, args[0]); }
 }
 export default KeyrevokeCommand;

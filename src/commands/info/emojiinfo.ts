@@ -66,7 +66,7 @@ export class EmojiInfoCommand extends BaseCommand {
   }
 
   public async executePrefix(message: Message): Promise<void> {
-    const _args = message.content.split(' ').slice(1);
+    const args = message.content.split(' ').slice(1);
     const emoji = args[0];
     if (!emoji) {
       const errorEmbed = new EmbedBuilder()

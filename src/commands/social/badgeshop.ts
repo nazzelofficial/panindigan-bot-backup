@@ -72,7 +72,7 @@ export class BadgeShopCommand extends BaseCommand {
     await this.handle(sub, i.user.id, i.options.getString('badge'), (c) => i.reply(c));
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     const sub = args[0]?.toLowerCase() === 'buy' ? 'buy' : 'list';
     const badgeId = sub === 'buy' ? args[1] : null;
     await this.handle(sub, m.author.id, badgeId, (c) => m.reply(c));

@@ -48,13 +48,13 @@ export class BoostLogCommand extends BaseCommand {
     await this.handle(i.guildId!, channel?.id || null, msg, (c) => i.reply(c));
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     if (args[0]?.toLowerCase() === 'disable') {
       await this.handle(m.guildId!, null, null, (c) => m.reply(c));
       return;
     }
     const channel = m.mentions.channels.first();
-    const msg = _args.slice(1).join(' ') || null;
+    const msg = args.slice(1).join(' ') || null;
     await this.handle(m.guildId!, channel?.id || null, msg, (c) => m.reply(c));
   }
 }

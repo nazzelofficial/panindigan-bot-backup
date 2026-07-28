@@ -26,6 +26,6 @@ export class KeyinfoCommand extends BaseCommand {
     await send(embed);
   }
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> { await this.run(i, null, i.options.getString('key', true)); }
-  public async executePrefix(m: Message, _args: string[]): Promise<void> { await this.run(null, m, args[0]); }
+  public async executePrefix(m: Message, args: string[]): Promise<void> { await this.run(null, m, args[0]); }
 }
 export default KeyinfoCommand;

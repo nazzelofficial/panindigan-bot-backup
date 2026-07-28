@@ -85,7 +85,7 @@ export class PurgeUserCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const target = message.mentions.users.first();
     const days = parseInt(args[1]) || 7;
 

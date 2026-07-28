@@ -37,6 +37,6 @@ export class AutorespondCommand extends BaseCommand {
     const sub = i.options.getSubcommand(false) ?? 'list';
     await this.run(i, null, sub, i.options.getString('trigger') ?? '', i.options.getString('response') ?? '');
   }
-  public async executePrefix(m: Message, _args: string[]): Promise<void> { await this.run(null, m, args[0] ?? 'list', args[1] ?? '', _args.slice(2).join(' ')); }
+  public async executePrefix(m: Message, args: string[]): Promise<void> { await this.run(null, m, args[0] ?? 'list', args[1] ?? '', args.slice(2).join(' ')); }
 }
 export default AutorespondCommand;

@@ -86,7 +86,7 @@ export class AntiRaidCommand extends BaseCommand {
     await interaction.reply({ embeds: [embed] });
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const setting = args[0] || 'status';
     const value = args[1] || 'toggle';
 

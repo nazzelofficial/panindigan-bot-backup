@@ -57,7 +57,7 @@ export class AuditLogCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const limit = parseInt(args[0]) || 10;
 
     if (!message.guild) return;

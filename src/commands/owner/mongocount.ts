@@ -42,7 +42,7 @@ export class MongoCountCommand extends BaseCommand {
     await interaction.editReply({ embeds: [embed] });
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     if (!args[0]) {
       await message.reply(`${EMOJIS.error} Usage: \`p!mongocount <collection_name>\``);
       return;

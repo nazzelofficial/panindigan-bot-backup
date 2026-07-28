@@ -101,7 +101,7 @@ export class FilterCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const action = args[0] || 'list';
     const word = args[1];
 

@@ -67,7 +67,7 @@ export class XpRemoveCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     const target = m.mentions.users.first();
     const amount = parseInt(args[1]);
     if (!target) { await m.reply(`${EMOJIS.error} Please mention a user. Usage: \`p!xpremove @user <amount>\``); return; }

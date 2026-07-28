@@ -91,7 +91,7 @@ export class AsciiCommand extends BaseCommand {
     await interaction.reply({ embeds: [embed] });
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     if (!args.length) {
       const embed = new EmbedBuilder()
         .setTitle(`${EMOJIS.error} Missing Text`)
@@ -101,7 +101,7 @@ export class AsciiCommand extends BaseCommand {
       return;
     }
 
-    const text = _args.join(' ');
+    const text = args.join(' ');
     const ascii = this.textToAscii(text);
 
     const embed = new EmbedBuilder()

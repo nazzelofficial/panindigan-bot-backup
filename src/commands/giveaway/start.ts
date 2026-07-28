@@ -67,7 +67,7 @@ export class GiveawayStartCommand extends BaseCommand {
     await this.handle(id, i.guildId!, (c) => i.reply(c), i.client);
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     if (!args[0]) { await m.reply('❌ Usage: `p!giveaway start <id>`'); return; }
     await this.handle(args[0], m.guildId!, (c) => m.reply(c), m.client);
   }

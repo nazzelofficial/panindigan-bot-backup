@@ -49,14 +49,14 @@ export class ImagineStyleCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     const style = args[0]?.toLowerCase();
     if (!style || !STYLES[style]) {
       const list = Object.keys(STYLES).join(', ');
       await m.reply(`❌ Usage: \`p!imaginestyle <style> <prompt>\`\n**Styles:** ${list}`);
       return;
     }
-    const prompt = _args.slice(1).join(' ');
+    const prompt = args.slice(1).join(' ');
     if (!prompt) { await m.reply('❌ Provide a prompt after the style.'); return; }
     const msg = await m.reply('⏳ Generating styled image...');
     try {

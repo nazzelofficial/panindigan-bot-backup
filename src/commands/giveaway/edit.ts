@@ -40,9 +40,9 @@ export class GiveawayEditCommand extends BaseCommand {
     await i.reply({ content: `✅ Giveaway updated successfully!${prize ? ` New prize: **${prize}**` : ''}${winners ? ` New winners: **${winners}**` : ''}${addTime ? ` Added **${addTime}** to duration.` : ''}`, ephemeral: true });
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     if (args.length < 3) { await m.reply('❌ Usage: `p!gedit <id> prize <new prize>` or `p!gedit <id> winners <count>`'); return; }
-    const [id, field, ...rest] = _args;
+    const [id, field, ...rest] = args;
     const prisma = getPrismaClient();
     const g = await prisma.giveaway.findFirst({ where: { id, guildId: m.guildId!, active: true } });
     if (!g) { await m.reply('❌ Active giveaway not found.'); return; }

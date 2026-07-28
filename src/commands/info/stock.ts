@@ -97,7 +97,7 @@ export class StockCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const symbol = args[0]?.toUpperCase();
     if (!symbol) return void message.reply(`${EMOJIS.error} Please provide a stock symbol (e.g., \`AAPL\`).`);
     const thinking = await message.reply(`${EMOJIS.info} Fetching stock data...`);

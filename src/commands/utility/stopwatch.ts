@@ -111,7 +111,7 @@ export class StopwatchCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     try {
       const action = args[0]?.toLowerCase();
       if (!['start', 'stop', 'lap'].includes(action)) {

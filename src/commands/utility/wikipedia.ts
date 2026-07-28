@@ -69,7 +69,7 @@ export class WikipediaCommand extends BaseCommand {
     await interaction.editReply({ embeds: [this.buildEmbed(data)] });
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     if (!args.length) {
       const embed = new EmbedBuilder()
         .setColor(COLORS.error)
@@ -79,7 +79,7 @@ export class WikipediaCommand extends BaseCommand {
       return;
     }
 
-    const topic = _args.join(' ');
+    const topic = args.join(' ');
     const msg = await message.reply({ content: `${EMOJIS.loading} Searching Wikipedia for **${topic}**...` });
 
     const data = await this.fetchSummary(topic);

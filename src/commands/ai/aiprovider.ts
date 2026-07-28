@@ -80,7 +80,7 @@ export class AiProviderCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     const provider = args[0]?.toLowerCase();
     if (!provider || !PROVIDERS.includes(provider as any)) {
       return void m.reply(

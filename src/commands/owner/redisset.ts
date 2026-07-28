@@ -49,7 +49,7 @@ export class RedissetCommand extends BaseCommand {
   public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
     await this.run(interaction, null, interaction.options.getString('key', true), interaction.options.getString('value', true), interaction.options.getInteger('ttl') ?? undefined);
   }
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     await this.run(null, message, args[0], args[1], args[2] ? parseInt(args[2]) : undefined);
   }
 }

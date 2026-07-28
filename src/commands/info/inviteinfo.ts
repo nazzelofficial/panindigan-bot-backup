@@ -51,7 +51,7 @@ export class InviteInfoCommand extends BaseCommand {
   }
 
   public async executePrefix(message: Message): Promise<void> {
-    const _args = message.content.split(' ').slice(1);
+    const args = message.content.split(' ').slice(1);
     const inviteCode = args[0] || '';
     if (!inviteCode) {
       const errorEmbed = new EmbedBuilder()

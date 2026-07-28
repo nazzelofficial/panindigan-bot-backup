@@ -52,7 +52,7 @@ export class CouplebgCommand extends BaseCommand {
     await this.handle(i.user.id, i.guildId!, i.options.getString('theme', true), (c) => i.reply(c));
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     const theme = args[0]?.toLowerCase();
     if (!theme) {
       const list = PRESET_BACKGROUNDS.map(b => `\`${b.id}\` — ${b.label}`).join('\n');

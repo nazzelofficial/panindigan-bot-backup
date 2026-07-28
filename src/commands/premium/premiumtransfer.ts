@@ -32,7 +32,7 @@ export class PremiumTransferCommand extends BaseCommand {
     await i.reply({ embeds: [embed], components: [row], ephemeral: true });
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     if (!args[0]) { await m.reply('❌ Usage: `p!premium-transfer <guild_id>`'); return; }
     const prisma = getPrismaClient();
     const premium = await prisma.premium.findFirst({ where: { userId: m.author.id, guildId: m.guildId!, active: true } });

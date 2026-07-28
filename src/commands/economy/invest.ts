@@ -90,7 +90,7 @@ export class InvestCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const item = args[0];
     const amount = parseInt(args[1]);
 

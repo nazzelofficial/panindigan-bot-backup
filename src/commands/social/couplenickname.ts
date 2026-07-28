@@ -53,9 +53,9 @@ export class CoupleNicknameCommand extends BaseCommand {
     await this.handle(sub, i.user.id, i.guildId!, i.options.getString('nickname'), (c) => i.reply(c));
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     const sub = args[0]?.toLowerCase() === 'set' || args[0]?.toLowerCase() === 'view' || args[0]?.toLowerCase() === 'remove' ? args[0].toLowerCase() : 'set';
-    const nickname = sub === 'set' ? (args[1] ? args.slice(sub === 'set' && args[0].toLowerCase() === 'set' ? 1 : 0).join(' ') : _args.join(' ')) : null;
+    const nickname = sub === 'set' ? (args[1] ? args.slice(sub === 'set' && args[0].toLowerCase() === 'set' ? 1 : 0).join(' ') : args.join(' ')) : null;
     await this.handle(sub, m.author.id, m.guildId!, nickname, (c) => m.reply(c));
   }
 }

@@ -54,9 +54,9 @@ export class GiveawayScheduleCommand extends BaseCommand {
     await i.reply({ embeds: [embed] });
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     if (args.length < 4) { await m.reply('❌ Usage: `p!gschedule <prize> <start_in> <duration> [winners]`\nExample: `p!gschedule "Nitro" 2h 1d 1`'); return; }
-    const [prize, startIn, duration, wStr] = _args;
+    const [prize, startIn, duration, wStr] = args;
     const startMs = this.parseDuration(startIn);
     const durationMs = this.parseDuration(duration);
     if (!startMs || !durationMs) { await m.reply('❌ Invalid duration format.'); return; }

@@ -38,9 +38,9 @@ export class ApplicationAutoCommand extends BaseCommand {
     await i.reply({ content: msg, ephemeral: true });
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     if (args.length < 2) { await m.reply('❌ Usage: `p!application-auto <id> accept|deny|manual`'); return; }
-    const [id, mode] = _args;
+    const [id, mode] = args;
     const prisma = getPrismaClient();
     const app = await prisma.application.findFirst({ where: { id, guildId: m.guildId! } });
     if (!app) { await m.reply('❌ Application not found.'); return; }

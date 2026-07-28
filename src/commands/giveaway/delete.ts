@@ -28,7 +28,7 @@ export class GiveawayDeleteCommand extends BaseCommand {
     await i.reply({ content: await this.doDelete(i.guildId!, id), ephemeral: true });
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     if (!args[0]) { await m.reply('❌ Usage: `p!gdelete <id>`'); return; }
     await m.reply(await this.doDelete(m.guildId!, args[0]));
   }

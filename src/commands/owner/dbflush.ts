@@ -40,7 +40,7 @@ export class DbflushCommand extends BaseCommand {
     await interaction.reply({ embeds: [embed], ephemeral: true });
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const tableName = args[0];
     if (!tableName) {
       const errEmbed = new EmbedBuilder()

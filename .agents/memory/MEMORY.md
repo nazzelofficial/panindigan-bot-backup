@@ -6,3 +6,5 @@
 - [Lavalink env-only config](lavalink-config.md) — music only initializes when LAVALINK_HOST is set; no hardcoded defaults; supports LAVALINK_NODES JSON array.
 - [Prisma v7 + pg SSL](prisma-pg-ssl.md) — pg.Pool needs checkServerIdentity:()=>undefined plus stripping sslmode from URL to avoid TLS cert chain errors.
 - [Prisma generate required](prisma-generate.md) — must run pnpm prisma generate after install or pnpm install --force; PrismaClient export missing otherwise.
+- [Args parameter bug](args-bug.md) — all executePrefix commands had _args parameter but used args; bulk-fixed with sed; new commands must use args not _args.
+- [EmbedSystem utility](embed-system.md) — modern UI system at src/utils/EmbedSystem.ts; use PALETTE, KIT, divider, successEmbed/errorEmbed/etc. for all new commands.

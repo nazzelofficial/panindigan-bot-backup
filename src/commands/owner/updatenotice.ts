@@ -15,6 +15,6 @@ export class UpdatenoticeCommand extends BaseCommand {
     await send(embed);
   }
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> { await this.run(i, null, i.options.getString('message', true)); }
-  public async executePrefix(m: Message, _args: string[]): Promise<void> { await this.run(null, m, args.join(' ')); }
+  public async executePrefix(m: Message, args: string[]): Promise<void> { await this.run(null, m, args.join(' ')); }
 }
 export default UpdatenoticeCommand;

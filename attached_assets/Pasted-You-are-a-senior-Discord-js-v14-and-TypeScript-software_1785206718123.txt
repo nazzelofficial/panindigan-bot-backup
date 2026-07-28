@@ -1,0 +1,562 @@
+You are a senior Discord.js v14 and TypeScript software engineer with expertise in UI/UX design for production Discord bots.
+
+Your mission is to completely modernize the ENTIRE Discord bot while preserving all existing functionality.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Transform the bot into a premium, flagship-quality Discord bot with a modern, polished, and consistent user experience.
+
+The bot should feel comparable to the highest quality commercial Discord bots available today.
+
+Every command, embed, button, select menu, modal, autocomplete interaction, pagination, and music interface should share one professional design language.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STRICT REQUIREMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DO NOT:
+
+• Remove commands
+• Remove features
+• Break existing functionality
+• Break slash commands
+• Break prefix commands
+• Change APIs
+• Change database logic
+• Change permissions
+• Change cooldowns
+• Change business logic
+
+ONLY improve:
+
+• UI
+• UX
+• Visual consistency
+• Readability
+• Maintainability
+• Reusable components
+• Accessibility
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MODERN DESIGN SYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Replace every outdated interface with a modern design.
+
+Avoid old layouts.
+
+Avoid plain embeds.
+
+Avoid generic Discord responses.
+
+Everything should look polished and premium.
+
+Use:
+
+• Better spacing
+• Better alignment
+• Modern typography
+• Professional markdown
+• Consistent icons
+• Consistent colors
+• Better hierarchy
+• Cleaner layouts
+• Minimal but informative design
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EMBED SYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every command must use a professional embed unless an ephemeral message is more appropriate.
+
+Each embed should include:
+
+• Modern title
+• Context icon
+• Clean description
+• Organized sections
+• Inline fields when appropriate
+• Footer
+• Timestamp
+• Thumbnail when useful
+• Images only when they add value
+
+Formatting example:
+
+━━━━━━━━━━━━━━━━━━
+
+**Overview**
+
+• Information
+
+• Information
+
+• Information
+
+━━━━━━━━━━━━━━━━━━
+
+**Details**
+
+• Item
+
+• Item
+
+• Item
+
+━━━━━━━━━━━━━━━━━━
+
+Avoid walls of text.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GLOBAL EMBED BUILDERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create reusable builders for:
+
+Success
+
+Error
+
+Warning
+
+Information
+
+Loading
+
+Confirmation
+
+Music
+
+Moderation
+
+Utility
+
+Economy
+
+Leveling
+
+Premium
+
+AI
+
+Server
+
+User
+
+Logging
+
+Configuration
+
+Dashboard
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BUTTONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Modernize every button.
+
+Use clear labels.
+
+Use emojis consistently.
+
+Disable buttons correctly.
+
+Keep layouts clean.
+
+Standard buttons:
+
+🏠 Home
+
+⬅ Previous
+
+➡ Next
+
+🔄 Refresh
+
+⚙ Settings
+
+💾 Save
+
+✏ Edit
+
+➕ Add
+
+➖ Remove
+
+📄 Details
+
+❤️ Favorite
+
+⭐ Premium
+
+📊 Statistics
+
+❌ Close
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SELECT MENUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Improve every select menu.
+
+Include:
+
+• Better labels
+
+• Helpful descriptions
+
+• Better emojis
+
+• Logical ordering
+
+• Better placeholders
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MODALS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Replace old text-input flows with Discord Modals wherever appropriate.
+
+Examples:
+
+Moderation
+
+• Ban reason
+
+• Warn reason
+
+• Timeout reason
+
+• Nickname
+
+• Announcement
+
+Music
+
+• Search song
+
+• Playlist URL
+
+• Jump to track
+
+• Seek
+
+• Custom volume
+
+AI
+
+• Prompt
+
+• Translate
+
+• Summarize
+
+• Rewrite
+
+Economy
+
+• Transfer
+
+• Deposit
+
+• Withdraw
+
+• Gift
+
+Utility
+
+• Poll Creator
+
+• Reminder
+
+• Embed Builder
+
+• QR Generator
+
+• Webhook Sender
+
+Configuration
+
+• Welcome Message
+
+• Goodbye Message
+
+• Verification
+
+• Reaction Roles
+
+• Auto Role
+
+• Logging
+
+• Tickets
+
+• Premium Settings
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+HELP COMMAND
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Redesign completely.
+
+Modern dashboard.
+
+Category browser.
+
+Autocomplete.
+
+Command search.
+
+Usage examples.
+
+Aliases.
+
+Permissions.
+
+Cooldown.
+
+Required bot permissions.
+
+Required user permissions.
+
+Examples.
+
+Related commands.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MUSIC PLAYER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Completely redesign the player.
+
+Professional layout.
+
+Beautiful progress bar.
+
+Display:
+
+🎵 Track
+
+👤 Artist
+
+💿 Album
+
+📻 Source
+
+🎧 Requested By
+
+🔊 Volume
+
+📜 Queue
+
+🔁 Loop
+
+🔀 Shuffle
+
+📡 Lavalink Node
+
+📶 Ping
+
+📈 Bitrate
+
+🎤 Voice Channel
+
+⏱ Current / Total
+
+Progress Bar
+
+━━━━━━━━━━━━⬤━━━━━━━━━━━━
+
+Buttons:
+
+⏮ Previous
+
+⏯ Pause
+
+⏭ Skip
+
+🔀 Shuffle
+
+🔁 Loop
+
+📜 Queue
+
+🔉 Volume
+
+❤️ Favorite
+
+🛑 Stop
+
+❌ Close
+
+Queue should display:
+
+Now Playing
+
+Upcoming Tracks
+
+Remaining Duration
+
+Queue Size
+
+Loop Status
+
+Shuffle Status
+
+Node Status
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PAGINATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every paginated command should share one UI.
+
+Buttons:
+
+⬅ Previous
+
+🏠 Home
+
+➡ Next
+
+🔄 Refresh
+
+❌ Close
+
+Display:
+
+Current Page
+
+Total Pages
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AUTOCOMPLETE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Improve all autocomplete interactions.
+
+Provide:
+
+Better suggestions
+
+Sorted results
+
+Matching highlights
+
+Fast responses
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ERROR HANDLING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every error should return a beautiful error embed.
+
+Never expose stack traces.
+
+Never send ugly error text.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SUCCESS RESPONSES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every successful action should return a success embed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LOADING STATES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every long-running operation should use:
+
+Loading embed
+
+Loading animation
+
+Progress updates where possible
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+INTERACTION UX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prefer editing existing messages.
+
+Avoid duplicate replies.
+
+Automatically disable expired components.
+
+Handle interaction timeouts gracefully.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ACCESSIBILITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Readable colors.
+
+Clear contrast.
+
+Consistent spacing.
+
+Meaningful emojis.
+
+Short labels.
+
+Mobile-friendly layouts.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE QUALITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Refactor repeated code into reusable modules.
+
+Create reusable:
+
+Embed System
+
+Button System
+
+Modal System
+
+Pagination System
+
+Music UI
+
+Formatter Utilities
+
+Permission Formatter
+
+Time Formatter
+
+Number Formatter
+
+Logger
+
+Error Handler
+
+Interaction Manager
+
+Component Factory
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PERFORMANCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Reduce duplicate code.
+
+Improve maintainability.
+
+Optimize interaction handling.
+
+Reuse builders.
+
+Keep the project clean and scalable.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINAL GOAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every command should feel modern, polished, and premium.
+
+Nothing should look outdated.
+
+The entire bot should have one consistent flagship UI with professional embeds, interactive components, clean layouts, responsive interactions, and excellent user experience while maintaining 100% backward compatibility with the existing codebase.

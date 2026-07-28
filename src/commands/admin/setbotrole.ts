@@ -41,9 +41,9 @@ export class SetBotRoleCommand extends BaseCommand {
     await this.handle(i.guildId!, role?.id || null, (c) => i.reply(c));
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     const role = m.mentions.roles.first();
-    if (!_args.length) {
+    if (!args.length) {
       await m.reply('❌ Usage: `p!setbotrole @role` or `p!setbotrole disable`');
       return;
     }

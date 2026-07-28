@@ -20,6 +20,6 @@ export class BulkdeleteCommand extends BaseCommand {
     await send(new EmbedBuilder().setColor(COLORS.success).setTitle('🗑️ Bulk Delete Complete').setDescription(`Deleted **${toDelete.length}** messages from <@${userId}>.`));
   }
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> { await this.run(i, null, i.options.getUser('user', true).id, i.options.getInteger('count') ?? 50); }
-  public async executePrefix(m: Message, _args: string[]): Promise<void> { await this.run(null, m, args[0]?.replace(/[<@!>]/g, ''), parseInt(args[1]) || 50); }
+  public async executePrefix(m: Message, args: string[]): Promise<void> { await this.run(null, m, args[0]?.replace(/[<@!>]/g, ''), parseInt(args[1]) || 50); }
 }
 export default BulkdeleteCommand;

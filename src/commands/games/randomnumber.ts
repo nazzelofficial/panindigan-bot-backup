@@ -41,7 +41,7 @@ export class RandomNumberCommand extends BaseCommand {
     await interaction.reply({ embeds: [embed] });
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const min = parseInt(args[0]) || 1;
     const max = parseInt(args[1]) || 100;
 

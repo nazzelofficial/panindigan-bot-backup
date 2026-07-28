@@ -76,10 +76,10 @@ export class EditShopItemCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const name = args[0];
     const price = parseInt(args[1]);
-    const description = _args.slice(2).join(' ');
+    const description = args.slice(2).join(' ');
 
     if (!name) {
       await message.reply('❌ Please provide an item name.');

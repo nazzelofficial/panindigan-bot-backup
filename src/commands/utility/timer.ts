@@ -115,14 +115,14 @@ export class TimerCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     try {
       if (!args[0]) {
         await m.reply({ embeds: [new EmbedBuilder().setColor(COLORS.error).setDescription(`${EMOJIS.error} Please specify a duration.\nExample: \`p!timer 5m Break\``)] });
         return;
       }
       const durationMs = this.parseDuration(args[0]);
-      const label = _args.slice(1).join(' ');
+      const label = args.slice(1).join(' ');
 
       if (!durationMs || durationMs <= 0 || durationMs > 3600000) {
         await m.reply({ embeds: [new EmbedBuilder().setColor(COLORS.error).setDescription(`${EMOJIS.error} Invalid duration. Use formats like \`30s\`, \`5m\`, \`1h\` (max 1h).`)] });

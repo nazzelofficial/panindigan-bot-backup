@@ -1,98 +1,87 @@
 // @ts-nocheck
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { PALETTE, KIT, divider, errorEmbed } from '../../utils/EmbedSystem.js';
 import { getPrismaClient } from '../../database/postgresql/client.js';
+
+function xpBar(current: number, needed: number, length = 15): string {
+  const filled = Math.min(length, Math.floor((current / needed) * length));
+  return '█'.repeat(filled) + '░'.repeat(length - filled);
+}
 
 export class RankCommand extends BaseCommand {
   constructor() {
     super({
-      name: 'rank',
-      description: 'Check your rank and level in this server',
-      category: 'leveling',
-      premiumTier: 'free',
-      cooldown: 5,
-      guildOnly: true,
-      slashCommand: true,
-      prefixCommand: true,
-      aliases: ['level', 'xp', 'lvl'],
-      examples: ['/rank', '/rank @user', 'p!rank', 'p!rank @user'],
-    } as CommandOptions);
+      name: 'rank', description: "Check your or another user's level and XP", category: 'leveling',
+      cooldown: 5, userPermissions: [], botPermissions: [], guildOnly: true,
+      slashCommand: true, prefixCommand: true,
+      aliases: ['level', 'lvl', 'xp'], examples: ['/rank', '/rank @user', 'p!rank'],
+    });
   }
 
   public buildSlashCommand(): SlashCommandBuilder {
-    return (new SlashCommandBuilder()
-      .setName(this.name)
-      .setDescription(this.description)
-      .addUserOption(o => o.setName('user').setDescription('User to check').setRequired(false))
-      .setDMPermission(false)) as SlashCommandBuilder;
+    return new SlashCommandBuilder()
+      .setName(this.name).setDescription(this.description).setDMPermission(false)
+      .addUserOption(o => o.setName('user').setDescription('User to check').setRequired(false)) as SlashCommandBuilder;
   }
 
-  private async getData(userId: string, guildId: string) {
+  private async run(targetUser: any, guildId: string): Promise<EmbedBuilder> {
     const prisma = getPrismaClient();
 
-    await prisma.user.upsert({ where: { userId_guildId: { userId, guildId } }, create: { userId, guildId }, update: {} });
-
-    const leveling = await prisma.leveling.upsert({
-      where: { userId_guildId: { userId, guildId } },
-      create: { userId, guildId, xp: 0, level: 0, totalXp: 0 },
-      update: {},
+    const leveling = await prisma.leveling.findUnique({
+      where: { userId_guildId: { userId: targetUser.id, guildId } },
     });
 
-    // Rank calculation
-    const higherRanked = await prisma.leveling.count({
-      where: { guildId, OR: [{ level: { gt: leveling.level } }, { level: leveling.level, xp: { gt: leveling.xp } }] },
-    });
+    if (!leveling) {
+      return new EmbedBuilder()
+        .setColor(PALETTE.leveling)
+        .setAuthor({ name: `${targetUser.username} — Rank`, iconURL: targetUser.displayAvatarURL({ size: 64 }) })
+        .setDescription(`${KIT.sparkle} This user hasn't earned any XP yet!\nSend some messages to start leveling up.`)
+        .setTimestamp();
+    }
 
-    const xpForCurrentLevel = Math.floor(5 * Math.pow(leveling.level, 2) + 50 * leveling.level + 100);
-    const xpProgress = leveling.xp;
-    const progressPercent = Math.min(100, Math.floor((xpProgress / xpForCurrentLevel) * 100));
-    const barFilled = Math.floor(progressPercent / 5);
-    const bar = `${'█'.repeat(barFilled)}${'░'.repeat(20 - barFilled)} ${progressPercent}%`;
+    const level    = leveling.level ?? 0;
+    const xp       = Number(leveling.xp ?? 0);
+    const totalXp  = Number(leveling.totalXp ?? xp);
+    const needed   = Math.floor(100 * Math.pow(1.5, level));
+    const pct      = needed > 0 ? Math.min(100, Math.floor((xp / needed) * 100)) : 0;
+    const bar      = xpBar(xp, needed);
 
-    return { leveling, rank: higherRanked + 1, xpForCurrentLevel, bar };
+    // Get rank position
+    const rank = await prisma.leveling.count({
+      where: { guildId, totalXp: { gt: leveling.totalXp ?? 0 } },
+    }).then(c => c + 1).catch(() => '?');
+
+    return new EmbedBuilder()
+      .setColor(PALETTE.leveling)
+      .setAuthor({ name: `${targetUser.username} — Rank`, iconURL: targetUser.displayAvatarURL({ size: 64 }) })
+      .setThumbnail(targetUser.displayAvatarURL({ size: 128 }))
+      .addFields(
+        { name: `${KIT.leveling} Level`, value: `**${level}**`,                   inline: true },
+        { name: `🏆 Server Rank`,        value: `**#${rank}**`,                   inline: true },
+        { name: `✨ Total XP`,           value: `**${totalXp.toLocaleString()}**`,  inline: true },
+        { name: `${KIT.dot} Progress`, value: `\`[${bar}]\` ${pct}%\n${xp.toLocaleString()} / ${needed.toLocaleString()} XP to Level ${level + 1}`, inline: false },
+      )
+      .setFooter({ text: 'Keep chatting to earn more XP!' })
+      .setTimestamp();
   }
 
-  public async executeSlash(i: ChatInputCommandInteraction): Promise<void> {
-    const target = i.options.getUser('user') || i.user;
-    await i.deferReply();
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    await interaction.deferReply();
     try {
-      const { leveling, rank, xpForCurrentLevel, bar } = await this.getData(target.id, i.guildId!);
-      const embed = new EmbedBuilder()
-        .setTitle(`${EMOJIS.level || '⭐'} ${target.username}'s Rank`)
-        .setColor(COLORS.default)
-        .setThumbnail(target.displayAvatarURL({ size: 128 }))
-        .addFields(
-          { name: '🏆 Server Rank', value: `#${rank}`, inline: true },
-          { name: '📊 Level', value: `${leveling.level}`, inline: true },
-          { name: '✨ Total XP', value: `${leveling.totalXp}`, inline: true },
-          { name: `Progress to Level ${leveling.level + 1}`, value: `${bar}\n${leveling.xp} / ${xpForCurrentLevel} XP`, inline: false },
-        )
-        .setTimestamp();
-      await i.editReply({ embeds: [embed] });
-    } catch (e) {
-      await i.editReply({ content: '❌ Failed to fetch rank data.' });
+      const target = interaction.options.getUser('user') ?? interaction.user;
+      await interaction.editReply({ embeds: [await this.run(target, interaction.guildId!)] });
+    } catch {
+      await interaction.editReply({ embeds: [errorEmbed('Error', 'Failed to fetch rank data.')] });
     }
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
-    const target = m.mentions.users.first() || m.author;
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     try {
-      const { leveling, rank, xpForCurrentLevel, bar } = await this.getData(target.id, m.guildId!);
-      const embed = new EmbedBuilder()
-        .setTitle(`⭐ ${target.username}'s Rank`)
-        .setColor(COLORS.default)
-        .setThumbnail(target.displayAvatarURL({ size: 128 }))
-        .addFields(
-          { name: '🏆 Rank', value: `#${rank}`, inline: true },
-          { name: '📊 Level', value: `${leveling.level}`, inline: true },
-          { name: '✨ XP', value: `${leveling.xp} / ${xpForCurrentLevel}`, inline: true },
-          { name: 'Progress', value: bar, inline: false },
-        )
-        .setTimestamp();
-      await m.reply({ embeds: [embed] });
+      const target = message.mentions.users.first() ?? message.author;
+      await message.reply({ embeds: [await this.run(target, message.guildId!)] });
     } catch {
-      await m.reply('❌ Failed to fetch rank data.');
+      await message.reply({ embeds: [errorEmbed('Error', 'Failed to fetch rank data.')] });
     }
   }
 }

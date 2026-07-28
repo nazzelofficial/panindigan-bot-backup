@@ -37,7 +37,7 @@ export class ReloadCommand extends BaseCommand {
     const result = await this.doReload(i.client as PanindiganClient, target);
     await i.reply({ content: result, ephemeral: true });
   }
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     const target = args[0];
     if (!target) { await m.reply('❌ Specify a command name or "all".'); return; }
     const result = await this.doReload(m.client as PanindiganClient, target);

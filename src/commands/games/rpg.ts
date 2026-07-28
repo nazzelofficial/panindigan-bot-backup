@@ -157,7 +157,7 @@ export class RPGCommand extends BaseCommand {
     await interaction.reply({ embeds: [embed] });
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const sub = args[0]?.toLowerCase() || 'stats';
     const cls = args[1]?.toLowerCase();
     const embed = await this.handleSubcommand(sub, message.author.id, message.guildId!, message.author.username, cls);

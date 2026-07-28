@@ -1,13 +1,21 @@
 // @ts-nocheck
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
-import { ChatInputCommandInteraction, Message, EmbedBuilder, User } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import {
+  ChatInputCommandInteraction,
+  Message,
+  EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  SlashCommandBuilder,
+} from 'discord.js';
+import { PALETTE, KIT } from '../../utils/EmbedSystem.js';
 
 export class AvatarCommand extends BaseCommand {
   constructor() {
     const options: CommandOptions = {
       name: 'avatar',
-      description: 'Display a user avatar',
+      description: "Display a user's avatar in full resolution",
       category: 'info',
       cooldown: 5,
       userPermissions: [],
@@ -15,52 +23,77 @@ export class AvatarCommand extends BaseCommand {
       guildOnly: false,
       slashCommand: true,
       prefixCommand: true,
-      aliases: ['av', 'pfp'],
+      aliases: ['av', 'pfp', 'icon'],
       examples: ['/avatar', '/avatar @user', 'p!avatar @user'],
     };
     super(options);
   }
 
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const target = interaction.options.getUser('user') || interaction.user;
-    const member = interaction.options.getMember('user');
-
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.info} ${target.username}'s Avatar`)
-      .setColor(COLORS.info)
-      .setImage(target.displayAvatarURL({ size: 4096, extension: 'png' }))
-      .setDescription(`[Download](${target.displayAvatarURL({ size: 4096, extension: 'png' })})`)
-      .setTimestamp();
-
-    if (member && 'avatar' in member && member.avatar) {
-      embed.addFields([
-        { name: 'Server Avatar', value: `[Download](${member.displayAvatarURL({ size: 4096, extension: 'png' })})`, inline: false },
-      ]);
-      embed.setThumbnail(member.displayAvatarURL({ size: 4096, extension: 'png' }));
-    }
-
-    await interaction.reply({ embeds: [embed] });
+  public buildSlashCommand(): SlashCommandBuilder {
+    return new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .addUserOption(opt =>
+        opt.setName('user')
+          .setDescription('The user whose avatar to display')
+          .setRequired(false),
+      ) as SlashCommandBuilder;
   }
 
-  public async executePrefix(message: Message): Promise<void> {
-    const target = message.mentions.users.first() || message.author;
-    const member = message.mentions.members?.first() || message.member;
+  private buildEmbed(user: any, member: any): { embed: EmbedBuilder; row: ActionRowBuilder<ButtonBuilder> } {
+    const globalUrl = user.displayAvatarURL({ size: 4096, extension: 'png' });
+    const serverUrl = member?.avatar
+      ? member.displayAvatarURL({ size: 4096, extension: 'png' })
+      : null;
 
     const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.info} ${target.username}'s Avatar`)
-      .setColor(COLORS.info)
-      .setImage(target.displayAvatarURL({ size: 4096, extension: 'png' }))
-      .setDescription(`[Download](${target.displayAvatarURL({ size: 4096, extension: 'png' })})`)
+      .setColor(PALETTE.primary)
+      .setAuthor({ name: `${user.username}`, iconURL: globalUrl })
+      .setTitle(`${KIT.user} Avatar`)
+      .setImage(globalUrl)
+      .setFooter({ text: 'Click the buttons below to switch or download' })
       .setTimestamp();
 
-    if (member && 'avatar' in member && member.avatar) {
-      embed.addFields([
-        { name: 'Server Avatar', value: `[Download](${member.displayAvatarURL({ size: 4096, extension: 'png' })})`, inline: false },
-      ]);
-      embed.setThumbnail(member.displayAvatarURL({ size: 4096, extension: 'png' }));
+    if (serverUrl && serverUrl !== globalUrl) {
+      embed.setDescription(`${KIT.dot} **Global avatar** shown above\n${KIT.dot} **Server avatar** available — use the button below`);
     }
 
-    await message.reply({ embeds: [embed] });
+    const buttons = [
+      new ButtonBuilder()
+        .setLabel('PNG')
+        .setURL(user.displayAvatarURL({ size: 4096, extension: 'png' }))
+        .setStyle(ButtonStyle.Link),
+      new ButtonBuilder()
+        .setLabel('WEBP')
+        .setURL(user.displayAvatarURL({ size: 4096, extension: 'webp' }))
+        .setStyle(ButtonStyle.Link),
+    ];
+
+    if (serverUrl && serverUrl !== globalUrl) {
+      buttons.push(
+        new ButtonBuilder()
+          .setLabel('Server Avatar')
+          .setURL(serverUrl)
+          .setStyle(ButtonStyle.Link),
+      );
+    }
+
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(...buttons);
+    return { embed, row };
+  }
+
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    const user   = interaction.options.getUser('user') ?? interaction.user;
+    const member = interaction.options.getMember('user') ?? interaction.member;
+    const { embed, row } = this.buildEmbed(user, member);
+    await interaction.reply({ embeds: [embed], components: [row] });
+  }
+
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const user   = message.mentions.users.first() ?? message.author;
+    const member = message.mentions.members?.first() ?? (user.id === message.author.id ? message.member : null);
+    const { embed, row } = this.buildEmbed(user, member);
+    await message.reply({ embeds: [embed], components: [row] });
   }
 }
 

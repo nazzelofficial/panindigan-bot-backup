@@ -67,7 +67,7 @@ export class AddBalanceCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const targetUser = message.mentions.users.first();
     const amount = parseInt(args[1]);
 

@@ -66,11 +66,11 @@ export class CreateRoleCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const name = args[0];
     const color = args[1];
-    const hoist = _args.includes('--hoist');
-    const mentionable = _args.includes('--mentionable');
+    const hoist = args.includes('--hoist');
+    const mentionable = args.includes('--mentionable');
 
     if (!name) {
       await message.reply('❌ Please provide a role name.');

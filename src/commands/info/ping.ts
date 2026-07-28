@@ -1,13 +1,20 @@
 // @ts-nocheck
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Message, EmbedBuilder } from 'discord.js';
-import { COLORS, EMOJIS } from '../../utils/Constants.js';
+import { PALETTE, KIT } from '../../utils/EmbedSystem.js';
+
+function latencyBar(ms: number): string {
+  if (ms < 80)  return '🟢';
+  if (ms < 150) return '🟡';
+  if (ms < 300) return '🟠';
+  return '🔴';
+}
 
 export class PingCommand extends BaseCommand {
   constructor() {
     const options: CommandOptions = {
       name: 'ping',
-      description: 'Display the bot latency',
+      description: 'Check the bot latency and connection quality',
       category: 'info',
       cooldown: 5,
       userPermissions: [],
@@ -21,38 +28,40 @@ export class PingCommand extends BaseCommand {
     super(options);
   }
 
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const sent = await interaction.reply({ content: 'Pinging...', fetchReply: true });
-    const apiLatency = sent.createdTimestamp - interaction.createdTimestamp;
-    const wsLatency = interaction.client.ws.ping;
+  private buildEmbed(api: number, ws: number, client: any): EmbedBuilder {
+    const apiIcon = latencyBar(api);
+    const wsIcon  = latencyBar(ws);
+    const overall = Math.round((api + ws) / 2);
+    const qualityLabel = overall < 80 ? 'Excellent' : overall < 150 ? 'Good' : overall < 300 ? 'Fair' : 'Poor';
 
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.info} 🏓 Pong!`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'API Latency', value: `${apiLatency}ms`, inline: true },
-        { name: 'WebSocket Latency', value: `${wsLatency}ms`, inline: true },
-      ])
+    return new EmbedBuilder()
+      .setColor(overall < 150 ? PALETTE.success : overall < 300 ? PALETTE.warning : PALETTE.error)
+      .setAuthor({
+        name: '🏓 Pong!',
+        iconURL: client.user.displayAvatarURL({ size: 64 }),
+      })
+      .setDescription(`Connection quality: **${qualityLabel}**`)
+      .addFields(
+        { name: `${apiIcon} API Latency`,       value: `\`${api}ms\``,      inline: true },
+        { name: `${wsIcon} WebSocket`,           value: `\`${ws}ms\``,       inline: true },
+        { name: `📡 Overall`,                    value: `\`${overall}ms\``,  inline: true },
+      )
+      .setFooter({ text: 'Panindigan Bot  •  Real-time latency' })
       .setTimestamp();
-
-    await interaction.editReply({ embeds: [embed] });
   }
 
-  public async executePrefix(message: Message): Promise<void> {
-    const sent = await message.reply({ content: 'Pinging...' });
-    const apiLatency = sent.createdTimestamp - message.createdTimestamp;
-    const wsLatency = message.client.ws.ping;
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    const initial = await interaction.reply({ content: `${KIT.loading} Measuring latency...`, fetchReply: true });
+    const api = initial.createdTimestamp - interaction.createdTimestamp;
+    const ws  = Math.round(interaction.client.ws.ping);
+    await interaction.editReply({ content: null, embeds: [this.buildEmbed(api, ws, interaction.client)] });
+  }
 
-    const embed = new EmbedBuilder()
-      .setTitle(`${EMOJIS.info} 🏓 Pong!`)
-      .setColor(COLORS.info)
-      .addFields([
-        { name: 'API Latency', value: `${apiLatency}ms`, inline: true },
-        { name: 'WebSocket Latency', value: `${wsLatency}ms`, inline: true },
-      ])
-      .setTimestamp();
-
-    await sent.edit({ embeds: [embed] });
+  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+    const sent = await message.reply({ content: `${KIT.loading} Measuring latency...` });
+    const api  = sent.createdTimestamp - message.createdTimestamp;
+    const ws   = Math.round(message.client.ws.ping);
+    await sent.edit({ content: null, embeds: [this.buildEmbed(api, ws, message.client)] });
   }
 }
 

@@ -63,7 +63,7 @@ export class LevelsCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     try {
       const page = Math.min(3, Math.max(1, parseInt(args[0]) || 1));
       await m.reply({ embeds: [this.buildEmbed(page)] });

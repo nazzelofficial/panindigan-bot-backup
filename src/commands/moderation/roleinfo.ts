@@ -59,7 +59,7 @@ export class RoleInfoCommand extends BaseCommand {
     await interaction.reply({ embeds: [embed] });
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const role = message.mentions.roles.first() || message.guild?.roles.cache.get(args[0]);
 
     if (!role) {

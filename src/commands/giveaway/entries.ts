@@ -33,7 +33,7 @@ export class GiveawayEntriesCommand extends BaseCommand {
     else await i.reply({ embeds: [result] });
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     if (!args[0]) { await m.reply('❌ Usage: `p!gentries <id>`'); return; }
     const result = await this.getEntries(m.guildId!, args[0]);
     if (typeof result === 'string') await m.reply(result);

@@ -127,7 +127,7 @@ export class PokerCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const bet = Math.min(Math.max(parseInt(args[0]) || 50, 10), 10000);
     const deck = createDeck();
     const playerHand = deck.splice(0, 5);

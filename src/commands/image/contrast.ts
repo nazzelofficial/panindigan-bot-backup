@@ -41,7 +41,7 @@ export class ContrastCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(m: Message, _args: string[]): Promise<void> {
+  public async executePrefix(m: Message, args: string[]): Promise<void> {
     const target = m.mentions.users.first() || m.author;
     const intensity = args[1] ? Math.min(3, Math.max(1, parseInt(args[1]) || 2)) : 2;
     try {

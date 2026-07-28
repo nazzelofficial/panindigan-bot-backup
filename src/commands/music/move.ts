@@ -82,7 +82,7 @@ export class MoveCommand extends BaseCommand {
     }
   }
 
-  public async executePrefix(message: Message, _args: string[]): Promise<void> {
+  public async executePrefix(message: Message, args: string[]): Promise<void> {
     const fromIndex = parseInt(args[0]);
     const toIndex = parseInt(args[1]);
 

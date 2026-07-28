@@ -34,6 +34,6 @@ export class AliasCommand extends BaseCommand {
     const sub = i.options.getSubcommand(false) ?? 'list';
     await this.run(i, null, sub, i.options.getString('name') ?? '', i.options.getString('target') ?? '');
   }
-  public async executePrefix(m: Message, _args: string[]): Promise<void> { await this.run(null, m, args[0] ?? 'list', args[1] ?? '', args[2] ?? ''); }
+  public async executePrefix(m: Message, args: string[]): Promise<void> { await this.run(null, m, args[0] ?? 'list', args[1] ?? '', args[2] ?? ''); }
 }
 export default AliasCommand;
