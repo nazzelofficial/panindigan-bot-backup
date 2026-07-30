@@ -1,4 +1,12 @@
 // @ts-nocheck
+/**
+ * ══════════════════════════════════════════════════════
+ *  Panindigan Enterprise Logger
+ *  Asia/Manila timezone · Colorized console · JSON prod
+ *  Auto-redaction · Structured metadata · Per-module
+ * ══════════════════════════════════════════════════════
+ */
+
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { existsSync, mkdirSync } from 'fs';
@@ -6,7 +14,7 @@ import { join } from 'path';
 import chalk from 'chalk';
 import config from '../../config.json' with { type: 'json' };
 
-// ─── Directories ─────────────────────────────────────────────────────────────
+// ─── Directories ──────────────────────────────────────────────────────────────
 
 const LOGS_DIR = join(process.cwd(), 'logs');
 const SHARDS_DIR = join(LOGS_DIR, 'shards');
@@ -15,19 +23,61 @@ for (const dir of [LOGS_DIR, SHARDS_DIR]) {
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
 }
 
-// ─── Sensitive-field redaction ────────────────────────────────────────────────
+// ─── Timezone helper (Asia/Manila = UTC+8) ────────────────────────────────────
+
+function manilaTimestamp(): string {
+  return new Date().toLocaleString('en-PH', {
+    timeZone: 'Asia/Manila',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).replace(/(\d+)\/(\d+)\/(\d+),/, '$3-$1-$2');
+}
+
+function manilaTimestampShort(): string {
+  return new Date().toLocaleString('en-PH', {
+    timeZone: 'Asia/Manila',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  });
+}
+
+// ─── Sensitive-field redaction ─────────────────────────────────────────────────
 
 const SENSITIVE_KEYS = new Set([
-  'token', 'password', 'secret', 'apiKey', 'api_key',
-  'authorization', 'auth', 'credential', 'credentials',
+  'token', 'password', 'passwd', 'secret', 'secrets',
+  'apiKey', 'api_key', 'apikey', 'accessToken', 'access_token',
+  'refreshToken', 'refresh_token', 'authorization', 'auth',
+  'credential', 'credentials', 'cookie', 'cookies', 'session',
+  'privateKey', 'private_key', 'clientSecret', 'client_secret',
   'DISCORD_TOKEN', 'OPENAI_API_KEY', 'ANTHROPIC_API_KEY',
-  'GEMINI_API_KEY', 'GROQ_API_KEY', 'POSTGRES_URL', 'MONGODB_URI',
-  'REDIS_URL', 'SESSION_SECRET', 'SPOTIFY_CLIENT_SECRET',
+  'GEMINI_API_KEY', 'GROQ_API_KEY', 'POSTGRES_URL', 'DATABASE_URL',
+  'MONGODB_URI', 'REDIS_URL', 'SESSION_SECRET', 'SPOTIFY_CLIENT_SECRET',
+  'TOPGG_TOKEN', 'SENTRY_DSN', 'LOG_WEBHOOK_URL',
 ]);
 
-/** Recursively redact sensitive fields from a log metadata object. */
+const SENSITIVE_PATTERNS = [
+  /\b(token|password|secret|key)\s*[=:]\s*\S+/gi,
+  /(?:https?:\/\/)[^:]+:[^@]+@/g,
+  /\b[A-Za-z0-9-_]{20,}\.[A-Za-z0-9-_]{20,}\.[A-Za-z0-9-_]{20,}\b/g, // JWT
+  /sk-[A-Za-z0-9]{32,}/g,    // OpenAI / Anthropic
+  /gsk_[A-Za-z0-9]{20,}/g,   // Groq
+  /AIza[A-Za-z0-9_-]{35}/g,  // Google API key
+];
+
 function redact(obj: unknown, depth = 0): unknown {
-  if (depth > 6 || obj === null || typeof obj !== 'object') return obj;
+  if (depth > 6 || obj === null || typeof obj !== 'object') {
+    if (typeof obj === 'string') {
+      return SENSITIVE_PATTERNS.reduce((s, r) => s.replace(r, '[REDACTED]'), obj);
+    }
+    return obj;
+  }
   if (Array.isArray(obj)) return obj.map((v) => redact(v, depth + 1));
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
@@ -36,7 +86,6 @@ function redact(obj: unknown, depth = 0): unknown {
   return out;
 }
 
-/** Strip control characters / newlines from user-supplied strings to prevent log injection. */
 function sanitize(value: unknown): unknown {
   if (typeof value === 'string') {
     return value.replace(/[\r\n\t\x00-\x1F\x7F]/g, ' ').trim();
@@ -52,36 +101,83 @@ function sanitize(value: unknown): unknown {
   return value;
 }
 
-// ─── Level styling ────────────────────────────────────────────────────────────
+// ─── Level icons & styling ─────────────────────────────────────────────────────
 
-const LEVEL_STYLES: Record<string, (s: string) => string> = {
-  error: (s) => chalk.bgRed.white.bold(` ${s.toUpperCase().padEnd(5)} `),
-  warn:  (s) => chalk.bgYellow.black.bold(` ${s.toUpperCase().padEnd(5)} `),
-  info:  (s) => chalk.bgBlue.white.bold(` ${s.toUpperCase().padEnd(5)} `),
-  debug: (s) => chalk.bgGray.white.bold(` ${s.toUpperCase().padEnd(5)} `),
-  verbose:(s) => chalk.bgMagenta.white.bold(` ${s.toUpperCase().padEnd(5)} `),
+const LEVEL_CONFIG: Record<string, { icon: string; badge: (s: string) => string }> = {
+  error: {
+    icon: '✗',
+    badge: (s) => chalk.bgRed.white.bold(` ${s.toUpperCase().padEnd(7)} `),
+  },
+  warn: {
+    icon: '⚠',
+    badge: (s) => chalk.bgYellow.black.bold(` ${s.toUpperCase().padEnd(7)} `),
+  },
+  info: {
+    icon: '●',
+    badge: (s) => chalk.bgBlue.white.bold(` ${s.toUpperCase().padEnd(7)} `),
+  },
+  debug: {
+    icon: '◎',
+    badge: (s) => chalk.bgGray.white.bold(` ${s.toUpperCase().padEnd(7)} `),
+  },
+  verbose: {
+    icon: '◈',
+    badge: (s) => chalk.bgMagenta.white.bold(` ${s.toUpperCase().padEnd(7)} `),
+  },
+};
+
+const MODULE_COLORS: Record<string, (s: string) => string> = {
+  bot:        chalk.cyan,
+  shard:      chalk.magenta,
+  commands:   chalk.yellow,
+  events:     chalk.green,
+  music:      chalk.hex('#EB459E'),
+  lyrics:     chalk.hex('#FF79C6'),
+  database:   chalk.blue,
+  redis:      chalk.red,
+  mongodb:    chalk.hex('#47A248'),
+  postgresql: chalk.hex('#4169E1'),
+  economy:    chalk.hex('#F1C40F'),
+  moderation: chalk.hex('#E74C3C'),
+  ai:         chalk.hex('#00ADB5'),
+  leveling:   chalk.hex('#3498DB'),
+  starboard:  chalk.hex('#FFD700'),
+  premium:    chalk.hex('#FF9900'),
+  giveaways:  chalk.hex('#FF6B6B'),
+  health:     chalk.hex('#2ECC71'),
+  uptime:     chalk.hex('#1ABC9C'),
+  monitoring: chalk.hex('#9B59B6'),
+  security:   chalk.hex('#E67E22'),
+  cache:      chalk.hex('#16A085'),
+  scheduler:  chalk.hex('#8E44AD'),
+  telemetry:  chalk.hex('#2980B9'),
+  loader:     chalk.hex('#27AE60'),
 };
 
 function styleLevel(level: string): string {
-  const raw = level.replace(/\x1B\[[0-9;]*m/g, ''); // strip any existing ansi
-  const fn = LEVEL_STYLES[raw] ?? ((s) => ` ${s.toUpperCase().padEnd(5)} `);
-  return fn(raw);
+  const raw = level.replace(/\x1B\[[0-9;]*m/g, '');
+  const cfg = LEVEL_CONFIG[raw];
+  if (!cfg) return chalk.gray(` ${raw.toUpperCase().padEnd(7)} `);
+  return cfg.badge(raw);
 }
 
 function styleModule(mod?: string): string {
-  if (!mod) return chalk.gray('─'.padEnd(14));
-  return chalk.cyan(mod.padEnd(14));
+  if (!mod) return chalk.gray('─'.padEnd(16));
+  const color = MODULE_COLORS[mod.split('.')[0]] ?? chalk.white;
+  return color(mod.padEnd(16));
 }
 
-// ─── Formats ─────────────────────────────────────────────────────────────────
+function levelIcon(level: string): string {
+  const raw = level.replace(/\x1B\[[0-9;]*m/g, '');
+  return LEVEL_CONFIG[raw]?.icon ?? '·';
+}
+
+// ─── Formats ──────────────────────────────────────────────────────────────────
 
 const jsonFormat = winston.format.combine(
-  winston.format.timestamp({ format: 'YYYY-MM-DDTHH:mm:ss.SSSZ' }),
+  winston.format.timestamp({ format: () => manilaTimestamp() }),
   winston.format.errors({ stack: true }),
   winston.format((info) => {
-    // Mutate info in-place to preserve Winston's internal Symbol properties
-    // (e.g. Symbol.for('level')) — returning a new plain object loses them
-    // and causes Winston to silently drop every log entry.
     const { message, ...meta } = info;
     const cleaned = redact(sanitize(meta)) as Record<string, unknown>;
     info.message = sanitize(message) as string;
@@ -92,34 +188,41 @@ const jsonFormat = winston.format.combine(
 );
 
 const consoleFormat = winston.format.combine(
-  winston.format.timestamp({ format: 'HH:mm:ss' }),
-  winston.format.printf(({ timestamp, level, message, module: mod, shardId, ...meta }) => {
+  winston.format.timestamp({ format: () => manilaTimestampShort() }),
+  winston.format.printf(({
+    timestamp, level, message, module: mod,
+    shardId, durationMs, correlationId, ...meta
+  }) => {
     const sep    = chalk.gray('│');
     const lvl    = styleLevel(level);
+    const icon   = chalk.bold(levelIcon(level));
     const modStr = styleModule(mod as string | undefined);
     const ts     = chalk.dim(timestamp as string);
-    const shardStr = shardId !== undefined ? chalk.magenta(` [shard:${shardId}]`) : '';
+    const shard  = shardId !== undefined ? chalk.magenta(`  [S${shardId}]`) : '';
+    const dur    = durationMs !== undefined ? chalk.dim(`  +${durationMs}ms`) : '';
+    const corr   = correlationId ? chalk.gray(`  [${correlationId}]`) : '';
 
-    // Stringify remaining metadata (skip noise)
-    const remaining = Object.keys(meta).filter(k => k !== 'splat' && meta[k] !== undefined);
+    const skip = new Set(['splat', 'correlationId', 'durationMs', 'shardId']);
+    const remaining = Object.keys(meta).filter(k => !skip.has(k) && meta[k] !== undefined);
     const metaStr = remaining.length
-      ? chalk.gray('  ' + JSON.stringify(redact(sanitize(
-          Object.fromEntries(remaining.map(k => [k, meta[k]]))
-        ))))
+      ? chalk.gray('  ' + JSON.stringify(redact(sanitize(Object.fromEntries(remaining.map(k => [k, meta[k]]))))))
       : '';
 
-    return `${ts} ${sep} ${lvl} ${sep} ${modStr} ${sep} ${chalk.white(String(message))}${shardStr}${metaStr}`;
+    return `${ts} ${sep} ${lvl} ${icon} ${sep} ${modStr} ${sep} ${chalk.white(String(message))}${shard}${dur}${corr}${metaStr}`;
   }),
 );
 
 // ─── LOG_LEVEL env override ───────────────────────────────────────────────────
 
 const LOG_LEVEL = process.env.LOG_LEVEL ?? (config.logging as any).level ?? 'info';
+const JSON_LOGS = process.env.LOG_FORMAT === 'json' || process.env.NODE_ENV === 'production';
 
-// ─── Transports ───────────────────────────────────────────────────────────────
+// ─── Transports ──────────────────────────────────────────────────────────────
 
 const baseTransports: winston.transport[] = [
-  new winston.transports.Console({ format: consoleFormat }),
+  new winston.transports.Console({
+    format: JSON_LOGS ? jsonFormat : consoleFormat,
+  }),
 ];
 
 const rotationOpts = (config.logging as any).rotation;
@@ -140,15 +243,22 @@ if (rotationOpts?.enabled) {
 
 // ─── Discord Webhook Transport ────────────────────────────────────────────────
 
-const WEBHOOK_URL = process.env.LOG_WEBHOOK_URL;
-const WEBHOOK_BATCH_MS = 5000;
-let webhookQueue: string[] = [];
+const WEBHOOK_URL  = process.env.LOG_WEBHOOK_URL;
+const WEBHOOK_BATCH_MS = parseInt(process.env.LOG_WEBHOOK_BATCH_MS ?? '5000', 10);
+let webhookQueue: Array<{ level: string; module?: string; message: string }> = [];
 let webhookTimer: NodeJS.Timeout | null = null;
 
 async function flushWebhookQueue(): Promise<void> {
   if (!WEBHOOK_URL || webhookQueue.length === 0) return;
-  const batch = webhookQueue.splice(0, webhookQueue.length);
-  const content = batch.join('\n').slice(0, 2000);
+  const batch = webhookQueue.splice(0, 20);
+
+  const lines = batch.map(({ level, module: mod, message }) => {
+    const emoji = level === 'error' ? '🔴' : level === 'warn' ? '🟠' : '🔵';
+    const modLabel = mod ? `\`[${mod}]\` ` : '';
+    return `${emoji} **${level.toUpperCase()}** ${modLabel}${message}`;
+  });
+
+  const content = lines.join('\n').slice(0, 2000);
   try {
     await fetch(WEBHOOK_URL, {
       method: 'POST',
@@ -156,21 +266,22 @@ async function flushWebhookQueue(): Promise<void> {
       body: JSON.stringify({ content, username: 'Panindigan Logs' }),
     });
   } catch {
-    // Don't crash the bot if the webhook is down
+    // Never crash on webhook failures
   }
 }
 
 class DiscordWebhookTransport extends winston.Transport {
   constructor() {
-    super({ level: 'error' });
+    super({ level: process.env.LOG_WEBHOOK_LEVEL ?? 'error' });
   }
 
   log(info: Record<string, unknown>, callback: () => void): void {
     setImmediate(() => this.emit('logged', info));
-    const emoji = String(info.level).includes('error') ? '🔴' : '🟠';
-    const module = info.module ? `[${info.module}] ` : '';
-    const msg = `${emoji} **${String(info.level).toUpperCase()}** ${module}${String(info.message)}`;
-    webhookQueue.push(msg);
+    webhookQueue.push({
+      level: String(info.level).replace(/\x1B\[[0-9;]*m/g, ''),
+      module: info.module as string | undefined,
+      message: String(info.message),
+    });
     if (!webhookTimer) {
       webhookTimer = setTimeout(() => {
         webhookTimer = null;
@@ -193,21 +304,28 @@ export const logger = winston.createLogger({
   transports: baseTransports,
 });
 
-// ─── Child loggers (per module/subsystem) ────────────────────────────────────
+// ─── Child loggers ────────────────────────────────────────────────────────────
 
 function child(module: string, extra?: Record<string, unknown>): winston.Logger {
   return logger.child({ module, ...extra });
 }
 
 export const loggers = {
+  // Core
   bot:        child('bot'),
+  shard:      child('shard'),
   commands:   child('commands'),
   events:     child('events'),
+  loader:     child('loader'),
+  // Music
   music:      child('music'),
+  lyrics:     child('lyrics'),
+  // Databases
   database:   child('database'),
   mongodb:    child('database.mongodb'),
   postgresql: child('database.postgresql'),
   redis:      child('database.redis'),
+  // Features
   economy:    child('economy'),
   moderation: child('moderation'),
   tickets:    child('tickets'),
@@ -218,7 +336,14 @@ export const loggers = {
   premium:    child('premium'),
   automod:    child('automod'),
   antinuke:   child('antinuke'),
-  shard:      child('shard'),
+  // Infra
+  health:     child('health'),
+  uptime:     child('uptime'),
+  monitoring: child('monitoring'),
+  security:   child('security'),
+  cache:      child('cache'),
+  scheduler:  child('scheduler'),
+  telemetry:  child('telemetry'),
 } as const;
 
 /** Create an ad-hoc child logger for any module name. */
@@ -226,12 +351,14 @@ export function createModuleLogger(module: string, extra?: Record<string, unknow
   return child(module, extra);
 }
 
-// ─── Shard logger ────────────────────────────────────────────────────────────
+// ─── Shard logger ─────────────────────────────────────────────────────────────
 
 export function createShardLogger(shardId: number): winston.Logger {
   const shardLogPath = join(SHARDS_DIR, `shard-${shardId}-%DATE%.log`);
   const shardTransports: winston.transport[] = [
-    new winston.transports.Console({ format: consoleFormat }),
+    new winston.transports.Console({
+      format: JSON_LOGS ? jsonFormat : consoleFormat,
+    }),
   ];
 
   if (rotationOpts?.enabled) {
@@ -254,7 +381,7 @@ export function createShardLogger(shardId: number): winston.Logger {
   });
 }
 
-// ─── Command execution logger ─────────────────────────────────────────────────
+// ─── Structured log helpers ───────────────────────────────────────────────────
 
 export function logCommandExecution(
   shardId: number,
@@ -265,20 +392,18 @@ export function logCommandExecution(
   executionTime: number,
   success: boolean,
 ): void {
-  loggers.commands.info('Command executed', {
+  loggers.commands.info(`Command: ${command}`, {
     shardId,
     guildId,
     userId,
     command,
-    _args: _args.map((a) => sanitize(a) as string),
-    executionTimeMs: executionTime,
+    args: _args.map((a) => sanitize(a) as string),
+    durationMs: executionTime,
     success,
     environment: process.env.NODE_ENV ?? 'development',
     version: (config as any).configVersion ?? '0.1.1',
   });
 }
-
-// ─── Error logger ─────────────────────────────────────────────────────────────
 
 export function logError(
   shardId: number,
@@ -318,19 +443,27 @@ export function registerGlobalErrorHandlers(): void {
   process.on('SIGINT', () => {
     loggers.bot.info('SIGINT received — graceful shutdown initiated');
   });
+
+  process.on('SIGHUP', () => {
+    loggers.bot.info('SIGHUP received — reloading');
+  });
 }
 
-// ─── Periodic health-check log ───────────────────────────────────────────────
+// ─── Periodic health-check log ────────────────────────────────────────────────
 
 export function startHealthCheckLogger(
   getStats: () => Record<string, unknown>,
   intervalMs = 300_000,
 ): NodeJS.Timeout {
   return setInterval(() => {
+    const mem = process.memoryUsage();
     const stats = getStats();
-    loggers.bot.info('Health check', {
-      memoryMB: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+    loggers.health.info('Periodic health snapshot', {
+      memoryMB: Math.round(mem.heapUsed / 1024 / 1024),
+      heapTotalMB: Math.round(mem.heapTotal / 1024 / 1024),
+      rssMB: Math.round(mem.rss / 1024 / 1024),
       uptimeSeconds: Math.floor(process.uptime()),
+      pid: process.pid,
       ...stats,
     });
   }, intervalMs);

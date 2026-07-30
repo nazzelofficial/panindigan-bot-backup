@@ -1,4 +1,12 @@
 // @ts-nocheck
+/**
+ * ══════════════════════════════════════════════════
+ *  Panindigan Client
+ *  Discord.js client + Kazagumo + DB init
+ *  Metrics integration + auto-recovery music events
+ * ══════════════════════════════════════════════════
+ */
+
 import { Client, GatewayIntentBits, Collection, Partials, ActivityType } from 'discord.js';
 import { Kazagumo } from 'kazagumo';
 import { Connectors } from 'shoukaku';
@@ -8,27 +16,19 @@ import { connectRedis } from '../database/redis/client.js';
 import { BaseCommand } from './BaseCommand.js';
 import { AIHandler } from '../handlers/AIHandler.js';
 import { loggers } from '../utils/Logger.js';
+import { metrics } from '../health/MetricsCollector.js';
 import config from '../../config.json' with { type: 'json' };
 
 // ─── Lavalink node builder ─────────────────────────────────────────────────────
-// Reads node config entirely from environment variables — no hardcoded defaults.
-// Supports a single primary node via LAVALINK_HOST/PORT/PASSWORD/SECURE, and
-// optionally multiple nodes via LAVALINK_NODES (JSON array).
-//
-// LAVALINK_NODES format (overrides single-node vars when set):
-//   [{"name":"Node1","host":"host1","port":2333,"auth":"pass","secure":false}, ...]
-//
-// Returns null when no Lavalink is configured so music can be skipped gracefully.
 
 interface LavalinkNodeOption {
   name: string;
-  url: string;   // Shoukaku v4: "host:port" (no protocol prefix)
+  url: string;
   auth: string;
   secure: boolean;
 }
 
 function buildLavalinkNodes(): LavalinkNodeOption[] | null {
-  // Try multi-node JSON array first
   if (process.env.LAVALINK_NODES) {
     try {
       const parsed = JSON.parse(process.env.LAVALINK_NODES);
@@ -47,7 +47,6 @@ function buildLavalinkNodes(): LavalinkNodeOption[] | null {
     }
   }
 
-  // Single-node env vars — only if LAVALINK_HOST is explicitly set
   const host = process.env.LAVALINK_HOST;
   if (!host) return null;
 
@@ -152,7 +151,7 @@ export class PanindiganClient extends Client {
     }
 
     loggers.music.info('Initializing Kazagumo / Shoukaku', {
-      nodes: nodes.map(n => n.name),
+      nodes: nodes.map((n) => n.name),
     });
 
     this.kazagumo = new Kazagumo(
@@ -166,44 +165,64 @@ export class PanindiganClient extends Client {
       new Connectors.DiscordJS(this),
       nodes,
       {
-        // Shoukaku options — reconnect automatically on disconnect
-        reconnectTries: 5,
-        reconnectInterval: 5000,
-        restTimeout: 60000,
+        reconnectTries: parseInt(process.env.LAVALINK_RECONNECT_TRIES ?? '5', 10),
+        reconnectInterval: parseInt(process.env.LAVALINK_RECONNECT_INTERVAL_MS ?? '5000', 10),
+        restTimeout: parseInt(process.env.LAVALINK_REST_TIMEOUT_MS ?? '60000', 10),
         moveOnDisconnect: false,
       },
     );
 
-    // ── Player event hooks ──────────────────────────────────────────────────
+    // ── Player event hooks ─────────────────────────────────────────────────
 
     this.kazagumo.on('playerStart', (player, track) => {
+      metrics.increment('music.sessions');
+      metrics.setGauge('music.active_players', this.kazagumo!.players.size);
+
       loggers.music.info('Track started', {
         guildId: player.guildId,
         track: track.title,
         author: track.author,
+        source: (track as any).sourceName,
       });
+
       const channel = this.channels.cache.get(player.textId);
       if (channel?.isTextBased()) {
-        channel.send(`🎵 Now playing: **${track.title}** — *${track.author ?? 'Unknown'}*`);
+        const { MusicPlayer } = require('./MusicPlayer.js');
+        try {
+          const embed = MusicPlayer.getNowPlayingEmbed(player);
+          const controls = MusicPlayer.buildControlButtons(player);
+          const secondary = MusicPlayer.buildVolumeButtons(player);
+          channel.send({ embeds: [embed], components: [controls, secondary] }).catch(() => {});
+        } catch {
+          channel.send(`🎵 Now playing: **${track.title}** — *${track.author ?? 'Unknown'}*`).catch(() => {});
+        }
       }
     });
 
     this.kazagumo.on('playerEnd', (player) => {
+      metrics.setGauge('music.active_players', this.kazagumo!.players.size);
+
       if (!player.queue.current && player.queue.size === 0) {
-        const timeout = this.config.music.inactivityTimeoutMs ?? 300_000;
+        const timeout = parseInt(
+          process.env.MUSIC_INACTIVITY_TIMEOUT_MS ?? String(this.config.music.inactivityTimeoutMs ?? 300_000),
+          10,
+        );
         setTimeout(() => {
           if (!player.queue.current && player.queue.size === 0) {
             player.destroy();
+            loggers.music.debug('Player destroyed due to inactivity', { guildId: player.guildId });
           }
         }, timeout);
       }
     });
 
     this.kazagumo.on('playerDestroy', (player) => {
+      metrics.setGauge('music.active_players', Math.max(0, (this.kazagumo?.players.size ?? 1) - 1));
       loggers.music.info('Music player destroyed', { guildId: player.guildId });
+
       const channel = this.channels.cache.get(player.textId);
       if (channel?.isTextBased()) {
-        channel.send('🔊 Music queue ended. Goodbye!');
+        channel.send('🔊 Queue ended — player stopped.').catch(() => {});
       }
     });
 
@@ -211,7 +230,16 @@ export class PanindiganClient extends Client {
       loggers.music.debug('Queue empty', { guildId: player.guildId });
     });
 
-    // ── Shoukaku / node event hooks ─────────────────────────────────────────
+    this.kazagumo.on('playerError', (player, track, payload) => {
+      metrics.increment('commands.errors');
+      loggers.music.error('Player error', {
+        guildId: player.guildId,
+        track: track?.title,
+        error: payload?.exception?.message ?? String(payload),
+      });
+    });
+
+    // ── Shoukaku / node event hooks ────────────────────────────────────────
 
     this.kazagumo.shoukaku.on('error', (name, error) => {
       loggers.music.error('Lavalink node error', {
@@ -221,9 +249,9 @@ export class PanindiganClient extends Client {
     });
 
     this.kazagumo.shoukaku.on('disconnect', (name, players, moved) => {
-      loggers.music.warn('Lavalink node disconnected', {
+      loggers.music.warn('Lavalink node disconnected — Shoukaku will attempt reconnect', {
         node: name,
-        activePlayers: typeof players === 'number' ? players : players?.length ?? 0,
+        activePlayers: typeof players === 'number' ? players : (players?.length ?? 0),
         moved,
       });
     });
@@ -233,11 +261,11 @@ export class PanindiganClient extends Client {
     });
 
     this.kazagumo.shoukaku.on('ready', (name) => {
-      loggers.music.info('Lavalink node ready ✅', { node: name });
+      loggers.music.info('Lavalink node ready', { node: name });
     });
 
     loggers.music.info('Music system initialized', {
-      nodes: nodes.map(n => `${n.name} (${n.url})`),
+      nodes: nodes.map((n) => `${n.name} (${n.url})`),
     });
   }
 
@@ -254,22 +282,21 @@ export class PanindiganClient extends Client {
     if (!this.config.presence.enabled) return;
 
     const ACTIVITY_TYPE_MAP: Record<string, ActivityType> = {
-      playing: ActivityType.Playing,
+      playing:   ActivityType.Playing,
       streaming: ActivityType.Streaming,
       listening: ActivityType.Listening,
-      watching: ActivityType.Watching,
+      watching:  ActivityType.Watching,
       competing: ActivityType.Competing,
     };
 
-    const activities = this.config.presence.activities;
-    const activity = activities[this._presenceIndex % activities.length];
+    const activities  = this.config.presence.activities;
+    const activity    = activities[this._presenceIndex % activities.length];
     this._presenceIndex++;
 
-    // Use client.shard for accurate shard ID when running under ShardingManager
     const currentShardId = this.shard?.ids[0] ?? this.shardId;
 
     const text = activity.text
-      .replace('{shardId}', currentShardId.toString())
+      .replace('{shardId}',    currentShardId.toString())
       .replace('{guildCount}', this.guilds.cache.size.toString())
       .replace(
         '{memberCount}',

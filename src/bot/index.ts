@@ -1,12 +1,42 @@
 // @ts-nocheck
+/**
+ * ══════════════════════════════════════════════════
+ *  Panindigan Bot Entry Point
+ *  Enterprise health monitoring · Auto-recovery
+ *  Graceful shutdown · Metrics · Full observability
+ * ══════════════════════════════════════════════════
+ */
+
 import 'dotenv/config';
-import { createServer } from 'http';
 import { PanindiganClient } from '../structures/PanindiganClient.js';
 import { loadCommands } from '../handlers/CommandHandler.js';
 import { loadEvents } from '../handlers/EventHandler.js';
 import { loggers, registerGlobalErrorHandlers, startHealthCheckLogger } from '../utils/Logger.js';
 import { printBanner } from '../utils/Banner.js';
+import { HealthServer } from '../health/HealthServer.js';
+import { healthChecker } from '../health/HealthChecker.js';
+import { gracefulShutdown } from '../health/GracefulShutdown.js';
+import { metrics } from '../health/MetricsCollector.js';
+import { isRedisConnected } from '../database/redis/client.js';
+import { isMongoConnected } from '../database/mongodb/client.js';
 import config from '../../config.json' with { type: 'json' };
+
+// ─── Boot timestamp ────────────────────────────────────────────────────────────
+
+const BOOT_TIMESTAMP = Date.now();
+
+// ─── Print banner ──────────────────────────────────────────────────────────────
+
+printBanner({
+  version: (config as any).configVersion ?? '0.1.0',
+  environment: process.env.NODE_ENV ?? 'development',
+  nodeVersion: process.version,
+  mode: 'bot',
+});
+
+// ─── Register global handlers (keeps process alive through transient errors) ───
+
+registerGlobalErrorHandlers();
 
 // ─── Startup state ────────────────────────────────────────────────────────────
 
@@ -19,83 +49,13 @@ interface StartupState {
 
 const startupState: StartupState = {
   step: 'initialization',
-  startTime: Date.now(),
+  startTime: BOOT_TIMESTAMP,
   completedSteps: [],
   errors: [],
 };
 
-// ─── Print banner ─────────────────────────────────────────────────────────────
-
-printBanner({
-  version: (config as any).configVersion ?? '0.1.0',
-  environment: process.env.NODE_ENV ?? 'development',
-  nodeVersion: process.version,
-  mode: 'bot',
-});
-
-// ─── Error handlers ───────────────────────────────────────────────────────────
-
-registerGlobalErrorHandlers();
-
-process.on('uncaughtExceptionMonitor', (error) => {
-  loggers.bot.error('Uncaught exception monitor', { error: error.message });
-  startupState.errors.push({ step: startupState.step, error: error.message, timestamp: Date.now() });
-});
-
-process.on('warning', (warning) => {
-  loggers.bot.warn('Process warning', { name: warning.name, message: warning.message });
-});
-
-// ─── Health check server ──────────────────────────────────────────────────────
-
-let isBotReady = false;       // true only after clientReady fires
-let isStartupComplete = false; // true after all startup steps finish (even if Discord delayed)
-const PORT = process.env.PORT || 3000;
-
-const server = createServer((req, res) => {
-  if (req.url === '/health') {
-    const status = isBotReady ? 'healthy' : isStartupComplete ? 'degraded' : 'starting';
-    const body = {
-      status,
-      currentStep: startupState.step,
-      completedSteps: startupState.completedSteps,
-      uptime: Date.now() - startupState.startTime,
-      errors: startupState.errors.length,
-    };
-    // 200 only when fully connected; 503 for starting/degraded
-    res.writeHead(isBotReady ? 200 : 503, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(body));
-  } else if (req.url === '/startup') {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(startupState));
-  } else {
-    res.writeHead(404);
-    res.end('Not found');
-  }
-});
-
-server.listen(PORT, () => {
-  loggers.bot.info(`Health check server listening`, { port: PORT });
-});
-
-// ─── Environment validation ───────────────────────────────────────────────────
-
-function validateEnvironment(): void {
-  const required = [
-    'DISCORD_TOKEN',
-    'DISCORD_CLIENT_ID',
-    'POSTGRES_URL',
-    'MONGODB_URI',
-    'REDIS_URL',
-  ];
-
-  const missing = required.filter((v) => !process.env[v]);
-
-  if (missing.length > 0) {
-    loggers.bot.error('Missing required environment variables', { missing });
-    process.exit(1);
-  }
-}
+let isBotReady = false;
+let isStartupComplete = false;
 
 // ─── Startup step runner ──────────────────────────────────────────────────────
 
@@ -108,7 +68,7 @@ async function runStep<T>(
   timeoutMs = 30_000,
 ): Promise<T> {
   startupState.step = name;
-  loggers.bot.info(`Starting: ${name}`);
+  loggers.bot.info(`Starting step: ${name}`);
   const t0 = Date.now();
 
   return Promise.race([
@@ -117,15 +77,34 @@ async function runStep<T>(
       setTimeout(() => reject(new Error(`Step '${name}' timed out after ${timeoutMs}ms`)), timeoutMs),
     ),
   ]).then((result) => {
-    loggers.bot.info(`Done: ${name}`, { ms: Date.now() - t0 });
+    const ms = Date.now() - t0;
+    loggers.bot.info(`Step complete: ${name}`, { durationMs: ms });
     startupState.completedSteps.push(name);
     return result;
   }).catch((err) => {
+    const ms = Date.now() - t0;
     const msg = err instanceof Error ? err.message : String(err);
-    loggers.bot.error(`Failed: ${name}`, { ms: Date.now() - t0, error: msg });
+    loggers.bot.error(`Step failed: ${name}`, { durationMs: ms, error: msg });
     startupState.errors.push({ step: name, error: msg, timestamp: Date.now() });
     throw err;
   });
+}
+
+// ─── Environment validation ───────────────────────────────────────────────────
+
+function validateEnvironment(): void {
+  const required = [
+    'DISCORD_TOKEN',
+    'DISCORD_CLIENT_ID',
+    'POSTGRES_URL',
+    'MONGODB_URI',
+    'REDIS_URL',
+  ];
+  const missing = required.filter((v) => !process.env[v]);
+  if (missing.length > 0) {
+    loggers.bot.error('Missing required environment variables', { missing });
+    process.exit(1);
+  }
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -139,6 +118,10 @@ async function main(): Promise<void> {
     process.exit(1);
   }, STARTUP_TIMEOUT_MS);
 
+  // ── Build & start health server first so monitoring services see /health immediately ──
+
+  const healthServer = new HealthServer({ bootTimestamp: BOOT_TIMESTAMP });
+
   try {
     await runStep('environment', () => {
       validateEnvironment();
@@ -151,7 +134,6 @@ async function main(): Promise<void> {
     }, 5_000);
 
     const client = await runStep('client', async () => {
-      // When launched by ShardingManager, SHARDS and TOTAL_SHARDS env vars are set
       const shards = process.env.SHARDS ? JSON.parse(process.env.SHARDS as string) : [0];
       const shardId = shards[0] ?? 0;
       const totalShards = parseInt(process.env.TOTAL_SHARDS ?? '1', 10);
@@ -160,54 +142,165 @@ async function main(): Promise<void> {
       return c;
     }, 10_000);
 
-    await runStep('shutdown-handlers', () => {
-      const shutdown = async (signal: string): Promise<void> => {
-        loggers.bot.info(`${signal} received — shutting down gracefully`);
-        if (startupTimeout) clearTimeout(startupTimeout);
-        try {
-          await client.destroy();
-          loggers.bot.info('Client destroyed');
-        } catch (err) {
-          loggers.bot.error('Error during client destroy', { error: String(err) });
-        }
-        process.exit(0);
+    // ── Attach health server bot context ───────────────────────────────────────
+
+    healthServer.setBotContext({
+      getGuildCount:     () => client.guilds.cache.size,
+      getMemberCount:    () => client.guilds.cache.reduce((a, g) => a + g.memberCount, 0),
+      getShardCount:     () => client.totalShards,
+      getShardId:        () => client.shardId,
+      getGatewayLatency: () => client.ws.ping,
+      getCommandCount:   () => client.commands.size,
+      getEventCount:     () => (client as any)._eventsCount ?? 0,
+      getVoiceConnections: () => client.kazagumo?.shoukaku?.players?.size ?? 0,
+      getMusicPlayers:   () => client.kazagumo?.players?.size ?? 0,
+      isReady:           () => isBotReady,
+    });
+
+    // ── Register dependency health checks ──────────────────────────────────────
+
+    healthChecker.register('discord', async () => {
+      const ping = client.ws.ping;
+      if (!isBotReady) return { ok: false, message: 'Gateway not connected' };
+      return {
+        ok: ping >= 0 && ping < 2000,
+        latencyMs: ping,
+        message: ping >= 2000 ? 'High gateway latency' : undefined,
       };
-      process.once('SIGTERM', () => shutdown('SIGTERM'));
-      process.once('SIGINT', () => shutdown('SIGINT'));
+    });
+
+    healthChecker.register('database', async () => {
+      try {
+        const { getPrismaClient } = await import('../database/postgresql/client.js');
+        const prisma = getPrismaClient();
+        const t0 = Date.now();
+        await (prisma as any).$queryRaw`SELECT 1`;
+        return { ok: true, latencyMs: Date.now() - t0 };
+      } catch (err) {
+        return { ok: false, message: err instanceof Error ? err.message : String(err) };
+      }
+    });
+
+    healthChecker.register('redis', async () => {
+      if (!isRedisConnected()) return { ok: false, message: 'Not connected' };
+      try {
+        const { getRedisClient } = await import('../database/redis/client.js');
+        const t0 = Date.now();
+        await getRedisClient().ping();
+        return { ok: true, latencyMs: Date.now() - t0 };
+      } catch (err) {
+        return { ok: false, message: err instanceof Error ? err.message : String(err) };
+      }
+    });
+
+    healthChecker.register('mongodb', async () => {
+      if (!isMongoConnected()) return { ok: false, message: 'Not connected' };
+      try {
+        const { getMongoDb } = await import('../database/mongodb/client.js');
+        const t0 = Date.now();
+        await getMongoDb().command({ ping: 1 });
+        return { ok: true, latencyMs: Date.now() - t0 };
+      } catch (err) {
+        return { ok: false, message: err instanceof Error ? err.message : String(err) };
+      }
+    });
+
+    healthChecker.register('lavalink', async () => {
+      if (!client.kazagumo) return { ok: true, message: 'Disabled' };
+      const nodes = Array.from(client.kazagumo.shoukaku.nodes.values());
+      if (nodes.length === 0) return { ok: false, message: 'No nodes configured' };
+      const connected = nodes.filter((n) => n.state === 1 /* Connected */);
+      return {
+        ok: connected.length > 0,
+        message: `${connected.length}/${nodes.length} nodes connected`,
+      };
+    });
+
+    // ── Start health server ────────────────────────────────────────────────────
+
+    await runStep('health-server', () => healthServer.start(), 10_000);
+
+    // ── Start health checker ───────────────────────────────────────────────────
+
+    healthChecker.start();
+
+    // ── Register shutdown hooks (ordered by priority) ──────────────────────────
+
+    await runStep('shutdown-handlers', () => {
+      gracefulShutdown.register('health-checker', () => healthChecker.stop(), 10);
+      gracefulShutdown.register('health-server',  () => healthServer.stop(),  20);
+      gracefulShutdown.register('metrics',         () => metrics.destroy(),    25);
+
+      gracefulShutdown.register('music', async () => {
+        if (!client.kazagumo) return;
+        const players = Array.from(client.kazagumo.players.values());
+        for (const player of players) {
+          try { player.destroy(); } catch { /* silent */ }
+        }
+        loggers.music.info('All music players destroyed');
+      }, 30);
+
+      gracefulShutdown.register('discord', async () => {
+        await client.destroy();
+        loggers.bot.info('Discord client destroyed');
+      }, 40);
+
+      gracefulShutdown.register('redis', async () => {
+        const { disconnectRedis } = await import('../database/redis/client.js');
+        await disconnectRedis();
+      }, 50);
+
+      gracefulShutdown.register('mongodb', async () => {
+        const { disconnectMongoDB } = await import('../database/mongodb/client.js');
+        await disconnectMongoDB();
+      }, 60);
+
+      gracefulShutdown.register('postgresql', async () => {
+        const { disconnectPrisma } = await import('../database/postgresql/client.js');
+        await disconnectPrisma();
+      }, 70);
+
+      gracefulShutdown.attach();
       return Promise.resolve();
     }, 5_000);
 
+    // ── Connect databases ──────────────────────────────────────────────────────
+
     await runStep('databases', async () => {
       await client.initializeDatabases();
-      loggers.bot.info('All databases connected');
+      loggers.database.info('All databases connected');
     }, 60_000);
+
+    // ── Music system ────────────────────────────────────────────────────────────
 
     await runStep('music', async () => {
       await client.initializeMusic();
-      loggers.bot.info('Music system ready');
     }, 30_000);
+
+    // ── Load commands & events ─────────────────────────────────────────────────
 
     await runStep('commands', async () => {
       await loadCommands(client);
-      loggers.bot.info('Commands loaded', { count: client.commands.size });
+      loggers.loader.info('Commands loaded', { count: client.commands.size });
     }, 120_000);
 
     await runStep('events', async () => {
       await loadEvents(client);
-      loggers.bot.info('Events registered');
+      loggers.loader.info('Events registered');
     }, 30_000);
+
+    // ── Login ─────────────────────────────────────────────────────────────────
 
     await runStep('login', async () => {
       const token = process.env.DISCORD_TOKEN;
       if (!token) throw new Error('DISCORD_TOKEN is not set');
 
-      // Persist a clientReady listener so isBotReady is set on first connect
-      // AND on any subsequent reconnect (e.g. after a gateway rate-limit delay).
       client.on('clientReady', () => {
         if (!isBotReady) {
           loggers.bot.info('Bot is ready', {
             tag: client.user?.tag,
             guilds: client.guilds.cache.size,
+            shardId: client.shardId,
           });
         } else {
           loggers.bot.info('Bot reconnected', {
@@ -216,25 +309,26 @@ async function main(): Promise<void> {
           });
         }
         isBotReady = true;
+
+        // Update metrics gauges on (re)connect
+        metrics.setGauge('discord.guilds', client.guilds.cache.size);
+        metrics.setGauge('discord.shards', client.totalShards);
+        metrics.setGauge('discord.gateway_latency', client.ws.ping);
       });
 
-      // Await login() directly — rejects fast on an invalid/revoked token (fatal).
-      // A slow gateway that delays clientReady is handled by the non-fatal window below.
       loggers.bot.info('Login initiated — awaiting token validation…');
       await client.login(token);
       loggers.bot.info('Token accepted — awaiting clientReady…');
 
-      // Non-fatal wait: if Discord's gateway is slow (e.g. IDENTIFY rate-limit after
-      // rapid restarts), keep the process alive so Discord.js can reconnect on its own.
       if (!isBotReady) {
         await new Promise<void>((resolve) => {
           const READY_TIMEOUT_MS = 120_000;
           const timeout = setTimeout(() => {
             loggers.bot.warn(
-              'clientReady not received within window — running in degraded mode; Discord.js will reconnect automatically',
+              'clientReady not received within window — running in degraded mode; Discord.js will reconnect',
               { waitedMs: READY_TIMEOUT_MS },
             );
-            resolve(); // non-fatal: process stays alive
+            resolve();
           }, READY_TIMEOUT_MS);
 
           client.once('clientReady', () => {
@@ -245,26 +339,26 @@ async function main(): Promise<void> {
       }
     }, 125_000);
 
+    // ── Periodic health log ────────────────────────────────────────────────────
+
     await runStep('health-logger', () => {
       startHealthCheckLogger(() => ({
-        guilds: client.guilds.cache.size,
-        users: client.guilds.cache.reduce((acc, g) => acc + g.memberCount, 0),
-        shardId: client.shardId,
-        commands: client.commands.size,
+        guilds:    client.guilds.cache.size,
+        users:     client.guilds.cache.reduce((acc, g) => acc + g.memberCount, 0),
+        shardId:   client.shardId,
+        commands:  client.commands.size,
+        wsLatency: client.ws.ping,
       }));
       return Promise.resolve();
     }, 5_000);
 
-    if (startupTimeout) {
-      clearTimeout(startupTimeout);
-      startupTimeout = null;
-    }
+    // ── Done ──────────────────────────────────────────────────────────────────
 
+    if (startupTimeout) { clearTimeout(startupTimeout); startupTimeout = null; }
     isStartupComplete = true;
 
-    const elapsed = Date.now() - startupState.startTime;
-    loggers.bot.info('Startup complete', {
-      ms: elapsed,
+    loggers.bot.info('🚀 Startup complete', {
+      durationMs: Date.now() - BOOT_TIMESTAMP,
       steps: startupState.completedSteps.length,
       discordReady: isBotReady,
       tag: client.user?.tag ?? '(awaiting clientReady)',
@@ -275,7 +369,7 @@ async function main(): Promise<void> {
 
     loggers.bot.error('Startup failed', {
       step: startupState.step,
-      ms: Date.now() - startupState.startTime,
+      durationMs: Date.now() - BOOT_TIMESTAMP,
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
