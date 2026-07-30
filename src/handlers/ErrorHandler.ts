@@ -11,6 +11,7 @@ import {
   EmbedBuilder,
 } from 'discord.js';
 import { EmbedManager } from '../structures/EmbedManager.js';
+import { ComponentBuilder } from '../structures/ComponentBuilder.js';
 
 // ─── Error Options Interface ─────────────────────────────────────────────────────
 export interface ErrorOptions {
@@ -82,13 +83,16 @@ export class ErrorHandler {
       embed.setTimestamp(null);
     }
 
+    // Always attach a support button so users know where to get help
+    const components = [ComponentBuilder.errorActionRow()];
+
     if (source instanceof Message) {
-      await source.reply({ embeds: [embed] });
+      await source.reply({ embeds: [embed], components });
     } else {
       if (source.replied || source.deferred) {
-        await source.editReply({ embeds: [embed] });
+        await source.editReply({ embeds: [embed], components });
       } else {
-        await source.reply({ embeds: [embed], ephemeral });
+        await source.reply({ embeds: [embed], ephemeral, components });
       }
     }
   }

@@ -189,12 +189,19 @@ export class EconomyCommand extends BaseCommand {
       const bank = economy?.bank || 0;
       const total = wallet + bank;
 
-      const embed = EmbedManager.economy('Balance', `${user.tag}'s balance`, {
+      const isOwnBalance = user.id === i.user.id;
+      const description = isOwnBalance
+        ? `Here's your current balance, ${i.user.username}!`
+        : `Here's **${user.tag}**'s balance.`;
+
+      const embed = EmbedManager.economy('Balance', description, {
         fields: [
-          { name: '💰 Wallet', value: `${wallet.toLocaleString()} coins`, inline: true },
-          { name: '🏦 Bank', value: `${bank.toLocaleString()} coins`, inline: true },
-          { name: '💎 Total', value: `${total.toLocaleString()} coins`, inline: true },
+          { name: '💰 Wallet', value: `**₱${wallet.toLocaleString()}**`, inline: true },
+          { name: '🏦 Bank', value: `**₱${bank.toLocaleString()}**`, inline: true },
+          { name: '💎 Total', value: `**₱${total.toLocaleString()}**`, inline: true },
+          ...(isOwnBalance ? [{ name: '\u200b', value: '> 💡 *Keep your coins safe — use `/economy currency deposit` to move them to the bank!*', inline: false }] : []),
         ],
+        thumbnail: user.displayAvatarURL({ size: 256 }),
         timestamp: true,
       });
       await i.editReply({ embeds: [embed] });
@@ -361,8 +368,17 @@ export class EconomyCommand extends BaseCommand {
         const cooldown = 24 * 60 * 60 * 1000; // 24 hours
 
         if (Date.now() - lastDaily.getTime() < cooldown) {
-          const remaining = Math.ceil((cooldown - (Date.now() - lastDaily.getTime())) / 1000 / 60 / 60);
-          await ErrorHandler.generic(i, new Error(`You can claim daily again in ${remaining} hours`));
+          const resetTime = new Date(lastDaily.getTime() + cooldown);
+          const embed = EmbedManager.economy('Daily Reward on Cooldown',
+            `⏰ You already claimed your daily reward!\n\n**Available again:** <t:${Math.floor(resetTime.getTime() / 1000)}:R>`,
+            {
+              fields: [
+                { name: '📅 Resets at', value: `<t:${Math.floor(resetTime.getTime() / 1000)}:F>`, inline: false },
+                { name: '💡 Tip', value: 'Use `/economy income weekly` and `/economy income work` to earn more in the meantime!', inline: false },
+              ],
+            }
+          );
+          await i.editReply({ embeds: [embed] });
           return;
         }
 
@@ -397,8 +413,17 @@ export class EconomyCommand extends BaseCommand {
         const cooldown = 7 * 24 * 60 * 60 * 1000; // 7 days
 
         if (Date.now() - lastWeekly.getTime() < cooldown) {
-          const remaining = Math.ceil((cooldown - (Date.now() - lastWeekly.getTime())) / 1000 / 60 / 60 / 24);
-          await ErrorHandler.generic(i, new Error(`You can claim weekly again in ${remaining} days`));
+          const resetTime = new Date(lastWeekly.getTime() + cooldown);
+          const embed = EmbedManager.economy('Weekly Reward on Cooldown',
+            `⏰ You already claimed your weekly reward!\n\n**Available again:** <t:${Math.floor(resetTime.getTime() / 1000)}:R>`,
+            {
+              fields: [
+                { name: '📅 Resets at', value: `<t:${Math.floor(resetTime.getTime() / 1000)}:F>`, inline: false },
+                { name: '💡 Tip', value: 'Use `/economy income daily` and `/economy income work` to earn more in the meantime!', inline: false },
+              ],
+            }
+          );
+          await i.editReply({ embeds: [embed] });
           return;
         }
 
@@ -433,8 +458,17 @@ export class EconomyCommand extends BaseCommand {
         const cooldown = 30 * 24 * 60 * 60 * 1000; // 30 days
 
         if (Date.now() - lastMonthly.getTime() < cooldown) {
-          const remaining = Math.ceil((cooldown - (Date.now() - lastMonthly.getTime())) / 1000 / 60 / 60 / 24);
-          await ErrorHandler.generic(i, new Error(`You can claim monthly again in ${remaining} days`));
+          const resetTime = new Date(lastMonthly.getTime() + cooldown);
+          const embed = EmbedManager.economy('Monthly Reward on Cooldown',
+            `⏰ You already claimed your monthly reward!\n\n**Available again:** <t:${Math.floor(resetTime.getTime() / 1000)}:R>`,
+            {
+              fields: [
+                { name: '📅 Resets at', value: `<t:${Math.floor(resetTime.getTime() / 1000)}:F>`, inline: false },
+                { name: '💡 Tip', value: 'Use `/economy income daily` and `/economy income weekly` to earn more in the meantime!', inline: false },
+              ],
+            }
+          );
+          await i.editReply({ embeds: [embed] });
           return;
         }
 

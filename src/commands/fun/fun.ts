@@ -155,9 +155,13 @@ export class FunCommand extends BaseCommand {
         'Why don\'t eggs tell jokes? They\'d crack each other up!',
       ];
 
-      const joke = jokes[Math.floor(Math.random() * jokes.length)];
+      const jokeIndex = Math.floor(Math.random() * jokes.length);
+      const joke = jokes[jokeIndex];
 
-      const embed = EmbedManager.fun('Joke', joke, { timestamp: true });
+      const embed = EmbedManager.fun('😄 Random Joke', `> ${joke}`, {
+        fields: [{ name: '💡 Tip', value: 'Not funny enough? Try `/fun humor dadjoke` for dad-tier humor!', inline: false }],
+        timestamp: true,
+      });
       await i.editReply({ embeds: [embed] });
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
@@ -178,7 +182,7 @@ export class FunCommand extends BaseCommand {
 
       const joke = dadJokes[Math.floor(Math.random() * dadJokes.length)];
 
-      const embed = EmbedManager.fun('Dad Joke', joke, { timestamp: true });
+      const embed = EmbedManager.fun('👨 Dad Joke', `> ${joke}\n\n*Ba dum tss! 🥁*`, { timestamp: true });
       await i.editReply({ embeds: [embed] });
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
@@ -229,8 +233,14 @@ export class FunCommand extends BaseCommand {
       ];
 
       const response = responses[Math.floor(Math.random() * responses.length)];
+      const positiveResponses = ['It is certain.', 'It is decidedly so.', 'Without a doubt.', 'Yes, definitely.', 'You may rely on it.', 'As I see it, yes.', 'Most likely.', 'Outlook good.', 'Yes.', 'Signs point to yes.'];
+      const neutralResponses = ['Reply hazy, try again.', 'Ask again later.', 'Better not tell you now.', 'Cannot predict now.', 'Concentrate and ask again.'];
+      const responseEmoji = positiveResponses.includes(response) ? '🟢' : neutralResponses.includes(response) ? '🟡' : '🔴';
 
-      const embed = EmbedManager.fun('Magic 8-Ball', `**Question:** ${question}\n\n**Answer:** ${response}`, { timestamp: true });
+      const embed = EmbedManager.fun('🎱 Magic 8-Ball',
+        `> ${question}\n\n${responseEmoji} **${response}**`,
+        { timestamp: true }
+      );
       await i.editReply({ embeds: [embed] });
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
@@ -482,7 +492,13 @@ export class FunCommand extends BaseCommand {
 
       const quote = quotes[Math.floor(Math.random() * quotes.length)];
 
-      const embed = EmbedManager.fun('Quote', `"${quote.text}"\n— ${quote.author}`, { timestamp: true });
+      const embed = EmbedManager.fun('💬 Inspirational Quote',
+        `> *"${quote.text}"*\n\n**— ${quote.author}**`,
+        {
+          fields: [{ name: '💡 Need more?', value: 'Use `/fun utility fact` for random facts!', inline: false }],
+          timestamp: true,
+        }
+      );
       await i.editReply({ embeds: [embed] });
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);

@@ -17,6 +17,7 @@ import { getPrismaClient } from '../database/postgresql/client.js';
 import { getCollection } from '../database/mongodb/client.js';
 import { logger } from '../utils/Logger.js';
 import { COLORS } from '../constants/DesignSystem.js';
+import { EmbedManager } from '../structures/EmbedManager.js';
 
 export async function handleComponent(interaction: Interaction, client: PanindiganClient): Promise<void> {
   if (interaction.isButton()) {
@@ -98,17 +99,24 @@ async function handleMarriageButton(interaction: ButtonInteraction): Promise<voi
       return;
     }
     await coupleHistoryService.recordMarriage(proposerId, targetId, interaction.guildId!);
-    const embed = new EmbedBuilder()
-      .setTitle('💒 Sila na!')
-      .setDescription(`🎊 <@${proposerId}> at <@${targetId}> ay opisyal na isang couple!\n\n*Mahabang pagmamahal sa inyong dalawa!* 💕`)
-      .setColor(0xff69b4).setTimestamp();
-    await interaction.update({ embeds: [embed], components: [] });
+    const acceptEmbed = EmbedManager.success('💒 Sila na!',
+      `🎊 <@${proposerId}> at <@${targetId}> ay opisyal na isang couple!\n\n*Mahabang pagmamahal sa inyong dalawa!* 💕`,
+      {
+        fields: [
+          { name: '💍 Proposer', value: `<@${proposerId}>`, inline: true },
+          { name: '💖 Partner', value: `<@${targetId}>`, inline: true },
+          { name: '📅 Married', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: false },
+        ],
+        timestamp: true,
+      }
+    );
+    await interaction.update({ embeds: [acceptEmbed], components: [] });
   } else {
     await coupleConsentService.declineRequest(targetId, interaction.guildId!);
-    const embed = new EmbedBuilder()
-      .setDescription(`💔 <@${targetId}> ay tumanggi sa proposal ni <@${proposerId}>.`)
-      .setColor(COLORS.error);
-    await interaction.update({ embeds: [embed], components: [] });
+    const declineEmbed = EmbedManager.error('Proposal Declined',
+      `💔 <@${targetId}> ay tumanggi sa proposal ni <@${proposerId}>.\n\n*It's okay — there are plenty of fish in the sea!*`
+    );
+    await interaction.update({ embeds: [declineEmbed], components: [] });
   }
 }
 

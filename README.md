@@ -6,32 +6,32 @@ An all-in-one Discord bot built for Filipino communities. Written in TypeScript 
 [![Node.js](https://img.shields.io/badge/Node.js-24.x-green)](https://nodejs.org/)
 [![Discord.js](https://img.shields.io/badge/Discord.js-14.x-5865F2)](https://discord.js.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.1.3-orange)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.1.4-orange)](CHANGELOG.md)
 
 ---
 
 ## Features
 
-| Category | Commands | Notes |
-|---|---|---|
-| Help | ~15 | Command lookup, docs |
-| Moderation | ~50 | Warnings, bans, mutes, automod |
-| Admin / Setup | ~45 | Server configuration |
-| Music | ~60 | Lavalink-backed; supports YouTube, Spotify, SoundCloud, Apple Music, Deezer, Tidal |
-| Economy | ~80 | Currency (₱ Piso), shops, trading, bank |
-| Games | ~65 | Server activities and minigames |
-| Fun | ~68 | Memes, entertainment |
-| AI | ~65 | Multi-provider: OpenAI, Anthropic, Gemini, Groq |
-| Info | ~48 | Server and user info |
-| Utility | ~65 | General tools |
-| Social | ~80 | Social interaction commands |
-| Leveling | ~25 | XP, roles, voice XP |
-| Giveaway | ~22 | Giveaway management |
-| Image | ~30 | Image generation and manipulation |
-| Starboard | ~12 | Starboard tracking |
-| Applications | ~18 | Application management |
-| Premium | ~30 | Tier-gated commands |
-| Owner | ~122 | Bot owner utilities |
+| Category | Slash Command | Sub-command Groups / Sub-commands | Notes |
+|---|---|---|---|
+| Help | `/help` | `command`, `category`, `list`, `search` | Interactive menus with back-navigation |
+| Moderation | `/moderation` | `user` · `channel` · `role` · `message` · `info` · `advanced` | Warnings, bans, mutes, automod |
+| Admin / Setup | `/admin`, `/setup` | — | Server configuration |
+| Music | `/music` | `player` · `queue` · `filter` · `voice` · `playlist` · `search` | Lavalink; YouTube, Spotify, SoundCloud, Apple Music, Deezer, Tidal |
+| Economy | `/economy` | `currency` · `income` · `shop` · `gambling` · `business` | ₱ Piso currency, shops, trading, bank |
+| Games | `/games` | `2player` · `single` · `casino` · `trivia` · `rpg` | Server activities and minigames |
+| Fun | `/fun` | `humor` · `animals` · `fortune` · `social` · `utility` | Jokes, memes, magic 8-ball, animals |
+| AI | `/ai` | `chat` · `generate` · `analyze` · `utility` · `code` · `vision` · `security` | OpenAI, Anthropic, Gemini, Groq |
+| Info | `/info` | `user` · `server` · `role` · `channel` · `avatar` · `banner` | User & server info with link buttons |
+| Utility | `/utility` | — | General tools |
+| Social | `/social` | — | Social interaction commands |
+| Leveling | `/leveling` | — | XP, roles, voice XP |
+| Giveaway | `/giveaway` | — | Giveaway management |
+| Image | `/image` | — | Image generation and manipulation |
+| Starboard | `/starboard` | — | Starboard tracking |
+| Applications | `/applications` | — | Application management |
+| Premium | `/premium` | — | Tier-gated commands |
+| Owner | `/owner` | — | Bot owner utilities (owner only) |
 
 **Languages supported:** English (`en`), Filipino (`fil`)
 
@@ -100,7 +100,7 @@ Lavalink must be running separately for music features to work (`LAVALINK_HOST` 
 
 ---
 
-## Required secrets (set via your hosting provider's environment variables)
+## Required secrets
 
 | Secret | Description |
 |---|---|
@@ -206,7 +206,7 @@ src/
 ├── database/      # PostgreSQL (Prisma), MongoDB, and Redis clients
 ├── events/        # Discord.js event handlers
 ├── features/      # Feature modules (economy, leveling, etc.)
-├── handlers/      # Command and event loaders
+├── handlers/      # Command and event loaders, error/success handlers
 ├── health/        # Enterprise health monitoring system
 │   ├── HealthServer.ts      # HTTP server with all endpoints
 │   ├── HealthChecker.ts     # Dependency health checks
@@ -215,17 +215,27 @@ src/
 │   └── GracefulShutdown.ts  # SIGINT/SIGTERM/SIGHUP handlers
 ├── locales/       # i18n strings (en, fil)
 ├── services/      # Shared services (AI, music, lyrics)
-├── structures/    # Base classes (PanindiganClient, BaseCommand, etc.)
-└── utils/         # Logger, Banner, helpers
+├── structures/    # Base classes (PanindiganClient, BaseCommand, EmbedManager, ComponentBuilder)
+└── utils/         # Logger, Banner, EmojiManager, helpers
 ```
+
+---
+
+## Design system
+
+All user-facing responses use a shared design language:
+
+- **`EmbedManager`** (`src/structures/EmbedManager.ts`) — 30+ named embed builders (`success`, `error`, `music`, `economy`, `info`, `fun`, `nowPlaying`, etc.). Never create raw `new EmbedBuilder()` in command files; always use `EmbedManager`.
+- **`EmojiManager`** (`src/utils/EmojiManager.ts`) — animated emoji registry with automatic Unicode fallback.
+- **`ComponentBuilder`** (`src/structures/ComponentBuilder.ts`) — button rows, pagination, music controls, select menus, and the `errorActionRow()` support link included on every error.
+- **`ErrorHandler`** (`src/handlers/ErrorHandler.ts`) — structured error messages with What Happened / Why / How to Fix fields, plus a Support Server button on every reply.
+- **`DesignSystem`** (`src/constants/DesignSystem.ts`) — colors, tokens, progress bar helpers.
 
 ---
 
 ## Hosting / deployment
 
 The app auto-detects its hosting environment (Replit, Railway, Render, Koyeb, Fly.io, Docker, Kubernetes, AWS, Azure, GCP, and generic Linux/Windows VPS) and reports it at `/info`. No code changes needed across environments.
-
----
 
 ---
 

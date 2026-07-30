@@ -2,6 +2,7 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import {
   ChatInputCommandInteraction, Message, SlashCommandBuilder, PermissionFlagsBits, GuildMember,
+  ActionRowBuilder, ButtonBuilder, ButtonStyle,
 } from 'discord.js';
 import { EmbedManager } from '../../structures/EmbedManager.js';
 import { ErrorHandler } from '../../handlers/ErrorHandler.js';
@@ -136,20 +137,43 @@ export class InfoCommand extends BaseCommand {
     
     const fields = [
       { name: '👤 Username', value: user.tag, inline: true },
-      { name: '🆔 ID', value: user.id, inline: true },
+      { name: '🆔 ID', value: `\`${user.id}\``, inline: true },
       { name: '📅 Created', value: `<t:${Math.floor(user.createdTimestamp / 1000)}:R>`, inline: true },
     ];
     
     if (member) {
+      const topRoles = member.roles.cache
+        .filter(r => r.id !== i.guild!.id)
+        .sort((a, b) => b.position - a.position)
+        .first(5)
+        .map(r => r.toString())
+        .join(' ') || 'None';
       fields.push(
-        { name: '🎭 Joined', value: `<t:${Math.floor(member.joinedTimestamp / 1000)}:R>`, inline: true },
-        { name: '🎨 Roles', value: member.roles.cache.map(r => r.name).slice(0, 5).join(', ') || 'None', inline: false },
-        { name: '🔨 Highest Role', value: member.roles.highest.name, inline: true }
+        { name: '🎭 Joined Server', value: `<t:${Math.floor(member.joinedTimestamp / 1000)}:R>`, inline: true },
+        { name: '🔝 Highest Role', value: member.roles.highest.toString(), inline: true },
+        { name: '🎨 Top Roles', value: topRoles, inline: false },
       );
     }
+
+    const isBotUser = user.bot;
+    if (isBotUser) {
+      fields.push({ name: '🤖 Account Type', value: 'Bot', inline: true });
+    }
     
-    const embed = EmbedManager.info('User Information', `**${user.tag}**`).addFields(...fields);
-    await i.editReply({ embeds: [embed] });
+    const embed = EmbedManager.info('User Information', `**${user.tag}**`)
+      .setThumbnail(user.displayAvatarURL({ size: 512 }))
+      .addFields(...fields);
+
+    // Quick-action link buttons
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setLabel('View Avatar')
+        .setStyle(ButtonStyle.Link)
+        .setURL(user.displayAvatarURL({ size: 4096 }))
+        .setEmoji('🖼️'),
+    );
+
+    await i.editReply({ embeds: [embed], components: [row] });
   }
 
   private async handleAvatar(i: ChatInputCommandInteraction): Promise<void> {
@@ -163,17 +187,38 @@ export class InfoCommand extends BaseCommand {
 
   private async handleBanner(i: ChatInputCommandInteraction): Promise<void> {
     await i.deferReply();
-    const user = i.options.getUser('user') || i.user;
+    // Fetch the user with full profile data (needed for banner)
+    const user = await (i.options.getUser('user') || i.user).fetch();
     
     const bannerUrl = user.bannerURL({ size: 4096 });
     
     if (!bannerUrl) {
-      await i.editReply({ content: '❌ This user does not have a banner.' });
+      const embed = EmbedManager.info('No Banner', `**${user.tag}** doesn't have a profile banner.`)
+        .addFields({
+          name: '💡 Did you know?',
+          value: 'Users need **Discord Nitro** to set a custom animated profile banner.',
+          inline: false,
+        });
+      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setLabel('View Avatar Instead')
+          .setStyle(ButtonStyle.Link)
+          .setURL(user.displayAvatarURL({ size: 4096 }))
+          .setEmoji('🖼️'),
+      );
+      await i.editReply({ embeds: [embed], components: [row] });
       return;
     }
     
     const embed = EmbedManager.info('User Banner', `**${user.tag}**'s banner`).setImage(bannerUrl);
-    await i.editReply({ embeds: [embed] });
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setLabel('Open Full Size')
+        .setStyle(ButtonStyle.Link)
+        .setURL(bannerUrl)
+        .setEmoji('🔍'),
+    );
+    await i.editReply({ embeds: [embed], components: [row] });
   }
 
   private async handleServer(i: ChatInputCommandInteraction): Promise<void> {

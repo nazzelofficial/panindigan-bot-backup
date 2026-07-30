@@ -1,6 +1,9 @@
 // @ts-nocheck
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
-import { ChatInputCommandInteraction, Message } from 'discord.js';
+import {
+  ChatInputCommandInteraction, Message,
+  ActionRowBuilder, ButtonBuilder, ButtonStyle,
+} from 'discord.js';
 import { HelpUI } from '../../structures/HelpUI.js';
 import { PanindiganClient } from '../../structures/PanindiganClient.js';
 import { ErrorHandler } from '../../handlers/ErrorHandler.js';
@@ -82,10 +85,15 @@ export class HelpCommand extends BaseCommand {
       related: [],
     });
 
+    const backRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder().setCustomId('help_main').setLabel('🏠 Back to Help').setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId(`help_category_${command.category}`).setLabel(`📁 ${command.category[0].toUpperCase() + command.category.slice(1)} Commands`).setStyle(ButtonStyle.Primary),
+    );
+
     if (interaction instanceof ChatInputCommandInteraction) {
-      await interaction.reply({ embeds: [embed] });
+      await interaction.reply({ embeds: [embed], components: [backRow] });
     } else {
-      await interaction.reply({ embeds: [embed] });
+      await interaction.reply({ embeds: [embed], components: [backRow] });
     }
   }
 
@@ -108,10 +116,14 @@ export class HelpCommand extends BaseCommand {
       related: [],
     })));
 
+    const backRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder().setCustomId('help_main').setLabel('🏠 Back to Main Menu').setStyle(ButtonStyle.Secondary),
+    );
+
     if (interaction instanceof ChatInputCommandInteraction) {
-      await interaction.reply({ embeds: [embed] });
+      await interaction.reply({ embeds: [embed], components: [backRow] });
     } else {
-      await interaction.reply({ embeds: [embed] });
+      await interaction.reply({ embeds: [embed], components: [backRow] });
     }
   }
 }

@@ -7,6 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.4] - 2026-07-30
+
+### Added
+
+#### Error UX — Support Button on Every Error
+- **`src/handlers/ErrorHandler.ts`** — `send()` now always attaches `ComponentBuilder.errorActionRow()` (Support Server link button) to every error reply, both slash commands and prefix messages. Users always have a clear next action when something goes wrong.
+
+#### Music Command — Polished Embeds & Controls (`src/commands/music/music.ts`)
+- Replaced all bare `content: '❌ ...'` guard-clause replies (~50 occurrences) with structured `ErrorHandler` calls (`ErrorHandler.music()`, `ErrorHandler.send()`)
+- `handlePause` — replaced raw `EmbedBuilder` with `EmbedManager.music()`; adds `ComponentBuilder.musicControlRow()` to the reply
+- `handleStop` — `EmbedManager.music()` with track/queue stats; shows how many tracks were cleared
+- `handleSkip` — `EmbedManager.music()` with skipped/next-track fields; attaches music control buttons
+- `handleReplay` / `handleSeek` — `EmbedManager.music()` with progress bar via `createProgressBar()`; attaches controls
+- `handleShuffle` — `EmbedManager.music()` with queue size and tip; attaches controls
+- `handleLoop` — `EmbedManager.music()` with mode label (➡️ Off / 🔂 Track / 🔁 Queue); attaches controls
+- `handleVolume` — `EmbedManager.music()` with visual progress bar via `EmbedManager.progressBar()`; attaches volume row
+- `handleNowPlaying` — upgraded to `EmbedManager.nowPlaying()` with queue remaining, loop mode, volume fields; attaches music controls and volume row; empty-state embed when nothing is playing
+- `handleQueueShow` — empty-state replaced with polished `EmbedManager.music()` embeds with tips
+- Added `import { EmbedManager }` and `import { ComponentBuilder }` to music.ts
+
+#### Economy Command — Relative Timestamps on Cooldowns (`src/commands/economy/economy.ts`)
+- `daily` / `weekly` / `monthly` cooldown responses replaced with `EmbedManager.economy()` embeds showing `<t:timestamp:R>` Discord relative timestamps and `<t:timestamp:F>` full timestamps — users see exact reset times instead of vague "in X hours" text
+- `handleBalance` — improved embed description, `₱` prefix on values, self-vs-other context, deposit tip for own balance
+
+#### Info Command — Banner & User Info Upgrades (`src/commands/info/info.ts`)
+- `handleBanner` — no-banner state replaced with `EmbedManager.info()` embed explaining Nitro requirement; "View Avatar Instead" link button added; banner success state adds "Open Full Size" link button
+- `handleUser` — thumbnail added, role formatting improved (mention format, top-5 sorted by position), bot badge field, "View Avatar" link button
+
+#### Help Command — Back Navigation Buttons (`src/commands/help/help.ts`)
+- `showCommandHelp()` — adds a two-button row: **🏠 Back to Help** (`help_main`) and **📁 Category** (`help_category_<name>`) — both already handled by `ComponentHandler`
+- `showCategoryHelp()` — adds **🏠 Back to Main Menu** (`help_main`) button
+
+#### ComponentHandler — Marriage Embed Polish (`src/handlers/ComponentHandler.ts`)
+- `handleMarriageButton` accept path — replaced raw `EmbedBuilder` with `EmbedManager.success()` including proposer/partner fields and marriage timestamp
+- `handleMarriageButton` decline path — replaced raw `EmbedBuilder` with `EmbedManager.error()` with a friendly message
+- Added `import { EmbedManager }` to ComponentHandler
+
+#### Fun Command — Richer Embeds (`src/commands/fun/fun.ts`)
+- `handleJoke` — joke text formatted as block-quote; tip field directing to `/fun humor dadjoke`
+- `handleDadJoke` — block-quote format with drum-roll footer text
+- `handle8Ball` — color-coded response emoji (🟢 positive / 🟡 neutral / 🔴 negative)
+- `handleQuote` — block-quote italics format, author bolded, tip field
+- `handleFact` — (already using `EmbedManager.fun()`)
+
+### Changed
+
+- **`README.md`** — Command table rewritten with correct slash command names and sub-command group columns; Design System section added documenting `EmbedManager`, `EmojiManager`, `ComponentBuilder`, `ErrorHandler`, and `DesignSystem`; version badge bumped to `0.1.4`
+
+---
+
 ## [0.1.3] - 2026-07-30
 
 ### Added

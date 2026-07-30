@@ -7,6 +7,8 @@ import {
 } from 'discord.js';
 import { ErrorHandler } from '../../handlers/ErrorHandler.js';
 import { SuccessHandler } from '../../handlers/SuccessHandler.js';
+import { EmbedManager } from '../../structures/EmbedManager.js';
+import { ComponentBuilder } from '../../structures/ComponentBuilder.js';
 import { getPrismaClient } from '../../database/postgresql/client.js';
 import { COLORS } from '../../constants/DesignSystem.js';
 import { MusicUI, Track } from '../../structures/MusicUI.js';
@@ -190,7 +192,7 @@ export class MusicCommand extends BaseCommand {
       let player = client.kazagumo.players.get(guild.id);
 
       if (player && player.voiceId && player.voiceId !== voiceChannel.id) {
-        await i.editReply({ content: '❌ I\'m already playing in another voice channel.' });
+        await i.editReply({ embeds: [EmbedManager.error('Already in a Channel', 'I\'m already playing music in another voice channel.\n\n> 💡 Join that channel or wait until I finish there.')] });
         return;
       }
 
@@ -250,7 +252,7 @@ export class MusicCommand extends BaseCommand {
 
     const voiceChannel = (i.member as GuildMember).voice.channel;
     if (!voiceChannel) {
-      await i.reply({ content: '❌ You need to be in a voice channel to pause music.' });
+      await ErrorHandler.music(i, 'not_in_voice');
       return;
     }
 
@@ -258,55 +260,46 @@ export class MusicCommand extends BaseCommand {
       const client = i.client as PanindiganClient;
 
       if (!client.kazagumo) {
-        await i.reply({ content: '❌ Music system is not available.' });
+        await ErrorHandler.send(i, { title: 'Music Unavailable', description: 'The music system is currently offline. Please try again later.', howToFix: 'Contact server admins if the issue persists.' });
         return;
       }
 
       const player = client.kazagumo.players.get(i.guild.id);
 
       if (!player) {
-        await i.reply({ content: '❌ Nothing is currently playing.' });
+        await ErrorHandler.music(i, 'no_track');
         return;
       }
 
       if (player.voiceId !== voiceChannel.id) {
-        await i.reply({ content: '❌ You need to be in the same voice channel as the bot.' });
+        await ErrorHandler.send(i, { title: 'Wrong Voice Channel', description: 'You must be in the **same voice channel** as me to control playback.', howToFix: `Join <#${player.voiceId}> and try again.` });
         return;
       }
 
       if (player.paused) {
-        await i.reply({ content: '❌ The music is already paused.' });
+        await ErrorHandler.send(i, { title: 'Already Paused', description: 'The music is already paused.\n\n> Use `/music player resume` to continue playback.' });
         return;
       }
 
       await player.pause(true);
 
       const currentTrack = player.queue.current;
-      const trackData: Track = {
-        title: currentTrack.title,
-        artist: currentTrack.author || 'Unknown',
-        duration: currentTrack.length || 0,
-        position: player.position || 0,
-        thumbnail: currentTrack.thumbnail,
-        url: currentTrack.uri,
-        requester: currentTrack.requester || i.user.id,
-        source: currentTrack.sourceName || 'unknown',
-      };
+      const pos = player.position || 0;
+      const dur = currentTrack.length || 0;
 
-      const embed = new EmbedBuilder()
-        .setTitle('⏸️ Paused')
-        .setColor(COLORS.warning)
-        .setDescription(`Paused **${trackData.title}** by ${trackData.artist}`)
-        .addFields(
-          { name: '🎵 Track', value: trackData.title, inline: true },
-          { name: '👤 Artist', value: trackData.artist, inline: true },
-          { name: '⏱️ Position', value: this.formatDuration(trackData.position), inline: true },
-          { name: '⏱️ Duration', value: this.formatDuration(trackData.duration), inline: true },
-          { name: '👤 Paused by', value: i.user.tag, inline: true },
-        )
-        .setThumbnail(trackData.thumbnail)
-        .setTimestamp();
-      await i.reply({ embeds: [embed] });
+      const embed = EmbedManager.music('Paused',
+        `⏸️ **${currentTrack.title}** has been paused.`,
+        {
+          fields: [
+            { name: '🎤 Artist', value: currentTrack.author || 'Unknown', inline: true },
+            { name: '⏱️ Position', value: `${this.formatDuration(pos)} / ${this.formatDuration(dur)}`, inline: true },
+            { name: '👤 Paused by', value: `<@${i.user.id}>`, inline: true },
+          ],
+          thumbnail: currentTrack.thumbnail ?? undefined,
+        }
+      );
+      const controls = ComponentBuilder.musicControlRow(i.guild.id, true);
+      await i.reply({ embeds: [embed], components: [controls] });
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
     }
@@ -317,7 +310,7 @@ export class MusicCommand extends BaseCommand {
 
     const voiceChannel = (i.member as GuildMember).voice.channel;
     if (!voiceChannel) {
-      await i.reply({ content: '❌ You need to be in a voice channel to stop music.' });
+      await ErrorHandler.music(i, 'not_in_voice');
       return;
     }
 
@@ -325,37 +318,39 @@ export class MusicCommand extends BaseCommand {
       const client = i.client as PanindiganClient;
 
       if (!client.kazagumo) {
-        await i.reply({ content: '❌ Music system is not available.' });
+        await ErrorHandler.send(i, { title: 'Music Unavailable', description: 'The music system is currently offline. Please try again later.' });
         return;
       }
 
       const player = client.kazagumo.players.get(i.guild.id);
 
       if (!player) {
-        await i.reply({ content: '❌ Nothing is currently playing.' });
+        await ErrorHandler.music(i, 'no_track');
         return;
       }
 
       if (player.voiceId !== voiceChannel.id) {
-        await i.reply({ content: '❌ You need to be in the same voice channel as the bot.' });
+        await ErrorHandler.send(i, { title: 'Wrong Voice Channel', description: `You must be in <#${player.voiceId}> to control playback.` });
         return;
       }
 
       const currentTrack = player.queue.current;
       const trackTitle = currentTrack ? currentTrack.title : 'Unknown';
+      const queueSize = player.queue.size;
       
       player.destroy();
 
-      const embed = new EmbedBuilder()
-        .setTitle('⏹️ Stopped')
-        .setColor(COLORS.error)
-        .setDescription(`Stopped **${trackTitle}** and cleared the queue`)
-        .addFields(
-          { name: '🎵 Stopped Track', value: trackTitle, inline: true },
-          { name: '👤 Stopped by', value: i.user.tag, inline: true },
-          { name: '🖥️ Server', value: i.guild.name, inline: true },
-        )
-        .setTimestamp();
+      const embed = EmbedManager.music('Playback Stopped',
+        `⏹️ Stopped **${trackTitle}** and cleared the queue.`,
+        {
+          fields: [
+            { name: '🎵 Last Track', value: trackTitle, inline: true },
+            { name: '📋 Tracks Removed', value: `${queueSize}`, inline: true },
+            { name: '👤 Stopped by', value: `<@${i.user.id}>`, inline: true },
+            { name: '💡 Tip', value: 'Use `/music player play` to start a new session anytime!', inline: false },
+          ],
+        }
+      );
       await i.reply({ embeds: [embed] });
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
@@ -366,13 +361,13 @@ export class MusicCommand extends BaseCommand {
     await i.deferReply();
     
     if (!i.guild || !i.member) {
-      await i.editReply({ content: '❌ This command can only be used in a server.' });
+      await ErrorHandler.send(i, { title: 'Server Only', description: 'This command can only be used in a **server**. DMs are not supported.' });
       return;
     }
 
     const voiceChannel = (i.member as GuildMember).voice.channel;
     if (!voiceChannel) {
-      await i.editReply({ content: '❌ You need to be in a voice channel to skip music.' });
+      await ErrorHandler.music(i, 'not_in_voice');
       return;
     }
 
@@ -380,24 +375,24 @@ export class MusicCommand extends BaseCommand {
       const client = i.client as PanindiganClient;
 
       if (!client.kazagumo) {
-        await i.editReply({ content: '❌ Music system is not available.' });
+        await ErrorHandler.send(i, { title: 'Music Unavailable', description: 'The music system is currently offline. Please try again later.' });
         return;
       }
 
       const player = client.kazagumo.players.get(i.guild.id);
 
       if (!player) {
-        await i.editReply({ content: '❌ Nothing is currently playing.' });
+        await ErrorHandler.music(i, 'no_track');
         return;
       }
 
       if (player.voiceId !== voiceChannel.id) {
-        await i.editReply({ content: '❌ You need to be in the same voice channel as the bot.' });
+        await ErrorHandler.send(i, { title: 'Wrong Voice Channel', description: 'You must be in the **same voice channel** as the bot to control playback.' });
         return;
       }
 
       if (player.queue.size === 0) {
-        await i.editReply({ content: '❌ No tracks in queue to skip to.' });
+        await ErrorHandler.music(i, 'queue_empty');
         return;
       }
 
@@ -405,18 +400,19 @@ export class MusicCommand extends BaseCommand {
       await player.skip();
 
       const nextTrack = player.queue.current;
-      const embed = new EmbedBuilder()
-        .setTitle('⏭️ Skipped')
-        .setColor(COLORS.info)
-        .setDescription(`Skipped **${skippedTrack.title}**`)
-        .addFields(
-          { name: '🎵 Skipped', value: skippedTrack.title, inline: true },
-          { name: '🎵 Next', value: nextTrack ? nextTrack.title : 'None', inline: true },
-          { name: '👤 Skipped by', value: i.user.tag, inline: true },
-        )
-        .setThumbnail(skippedTrack.thumbnail)
-        .setTimestamp();
-      await i.editReply({ embeds: [embed] });
+      const embed = EmbedManager.music('Track Skipped',
+        `⏭️ Skipped **${skippedTrack.title}**`,
+        {
+          fields: [
+            { name: '⏭️ Skipped', value: skippedTrack.title, inline: true },
+            { name: '🎵 Up Next', value: nextTrack ? nextTrack.title : '*(end of queue)*', inline: true },
+            { name: '👤 Skipped by', value: `<@${i.user.id}>`, inline: true },
+          ],
+          thumbnail: skippedTrack.thumbnail ?? undefined,
+        }
+      );
+      const controls = ComponentBuilder.musicControlRow(i.guild!.id, false);
+      await i.editReply({ embeds: [embed], components: [controls] });
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
     }
@@ -426,13 +422,13 @@ export class MusicCommand extends BaseCommand {
     await i.deferReply();
     
     if (!i.guild || !i.member) {
-      await i.editReply({ content: '❌ This command can only be used in a server.' });
+      await ErrorHandler.send(i, { title: 'Server Only', description: 'This command can only be used in a **server**. DMs are not supported.' });
       return;
     }
 
     const voiceChannel = (i.member as GuildMember).voice.channel;
     if (!voiceChannel) {
-      await i.editReply({ content: '❌ You need to be in a voice channel to go to previous track.' });
+      await ErrorHandler.music(i, 'not_in_voice');
       return;
     }
 
@@ -440,19 +436,19 @@ export class MusicCommand extends BaseCommand {
       const client = i.client as PanindiganClient;
 
       if (!client.kazagumo) {
-        await i.editReply({ content: '❌ Music system is not available.' });
+        await ErrorHandler.send(i, { title: 'Music Unavailable', description: 'The music system is currently offline. Please try again later.' });
         return;
       }
 
       const player = client.kazagumo.players.get(i.guild.id);
 
       if (!player) {
-        await i.editReply({ content: '❌ Nothing is currently playing.' });
+        await ErrorHandler.music(i, 'no_track');
         return;
       }
 
       if (player.voiceId !== voiceChannel.id) {
-        await i.editReply({ content: '❌ You need to be in the same voice channel as the bot.' });
+        await ErrorHandler.send(i, { title: 'Wrong Voice Channel', description: 'You must be in the **same voice channel** as the bot to control playback.' });
         return;
       }
 
@@ -460,23 +456,25 @@ export class MusicCommand extends BaseCommand {
       // For now, we'll replay the current track from the beginning
       const currentTrack = player.queue.current;
       if (!currentTrack) {
-        await i.editReply({ content: '❌ No track is currently playing.' });
+        await ErrorHandler.music(i, 'no_track');
         return;
       }
 
       await player.seek(0);
 
-      const embed = new EmbedBuilder()
-        .setTitle('⏮️ Replayed from Start')
-        .setColor(COLORS.info)
-        .setDescription(`Replaying **${currentTrack.title}** from the beginning`)
-        .addFields(
-          { name: '🎵 Track', value: currentTrack.title, inline: true },
-          { name: '👤 Requested by', value: i.user.tag, inline: true },
-        )
-        .setThumbnail(currentTrack.thumbnail)
-        .setTimestamp();
-      await i.editReply({ embeds: [embed] });
+      const embed = EmbedManager.music('Replaying from Start',
+        `⏮️ Replaying **${currentTrack.title}** from the beginning`,
+        {
+          fields: [
+            { name: '🎵 Track', value: currentTrack.title, inline: true },
+            { name: '🎤 Artist', value: currentTrack.author || 'Unknown', inline: true },
+            { name: '👤 Requested by', value: `<@${i.user.id}>`, inline: true },
+          ],
+          thumbnail: currentTrack.thumbnail ?? undefined,
+        }
+      );
+      const controls = ComponentBuilder.musicControlRow(i.guild!.id, false);
+      await i.editReply({ embeds: [embed], components: [controls] });
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
     }
@@ -487,18 +485,18 @@ export class MusicCommand extends BaseCommand {
     const seconds = i.options.getInteger('seconds', true);
     
     if (!i.guild || !i.member) {
-      await i.editReply({ content: '❌ This command can only be used in a server.' });
+      await ErrorHandler.send(i, { title: 'Server Only', description: 'This command can only be used in a **server**. DMs are not supported.' });
       return;
     }
 
     const voiceChannel = (i.member as GuildMember).voice.channel;
     if (!voiceChannel) {
-      await i.editReply({ content: '❌ You need to be in a voice channel to seek.' });
+      await ErrorHandler.music(i, 'not_in_voice');
       return;
     }
 
     if (seconds < 0) {
-      await i.editReply({ content: '❌ Seek time cannot be negative.' });
+      await ErrorHandler.send(i, { title: 'Invalid Seek Time', description: 'Seek time cannot be **negative**. Please provide a position between `0` and the track duration.' });
       return;
     }
 
@@ -506,49 +504,51 @@ export class MusicCommand extends BaseCommand {
       const client = i.client as PanindiganClient;
 
       if (!client.kazagumo) {
-        await i.editReply({ content: '❌ Music system is not available.' });
+        await ErrorHandler.send(i, { title: 'Music Unavailable', description: 'The music system is currently offline. Please try again later.' });
         return;
       }
 
       const player = client.kazagumo.players.get(i.guild.id);
 
       if (!player) {
-        await i.editReply({ content: '❌ Nothing is currently playing.' });
+        await ErrorHandler.music(i, 'no_track');
         return;
       }
 
       if (player.voiceId !== voiceChannel.id) {
-        await i.editReply({ content: '❌ You need to be in the same voice channel as the bot.' });
+        await ErrorHandler.send(i, { title: 'Wrong Voice Channel', description: 'You must be in the **same voice channel** as the bot to control playback.' });
         return;
       }
 
       const currentTrack = player.queue.current;
       if (!currentTrack) {
-        await i.editReply({ content: '❌ No track is currently playing.' });
+        await ErrorHandler.music(i, 'no_track');
         return;
       }
 
       const trackDuration = currentTrack.length || 0;
       if (seconds > trackDuration) {
-        await i.editReply({ content: `❌ Seek time cannot exceed track duration (${this.formatDuration(trackDuration)}).` });
+        await ErrorHandler.send(i, { title: 'Seek Out of Range', description: `Seek time cannot exceed the track duration (**${this.formatDuration(trackDuration)}**). Please provide a valid position.` });
         return;
       }
 
       await player.seek(seconds * 1000); // Kazagumo uses milliseconds
 
-      const embed = new EmbedBuilder()
-        .setTitle('⏩ Seeked')
-        .setColor(COLORS.info)
-        .setDescription(`Seeked to ${this.formatDuration(seconds)}`)
-        .addFields(
-          { name: '🎵 Track', value: currentTrack.title, inline: true },
-          { name: '⏱️ New Position', value: this.formatDuration(seconds), inline: true },
-          { name: '⏱️ Duration', value: this.formatDuration(trackDuration), inline: true },
-          { name: '👤 Seeked by', value: i.user.tag, inline: true },
-        )
-        .setThumbnail(currentTrack.thumbnail)
-        .setTimestamp();
-      await i.editReply({ embeds: [embed] });
+      const progressBar = this.createProgressBar(seconds * 1000, trackDuration);
+      const embed = EmbedManager.music('Seeked',
+        `⏩ Jumped to **${this.formatDuration(seconds)}** in the track`,
+        {
+          fields: [
+            { name: '🎵 Track', value: currentTrack.title, inline: true },
+            { name: '⏱️ Position', value: `${this.formatDuration(seconds)} / ${this.formatDuration(trackDuration)}`, inline: true },
+            { name: '👤 Seeked by', value: `<@${i.user.id}>`, inline: true },
+            { name: '📊 Progress', value: progressBar, inline: false },
+          ],
+          thumbnail: currentTrack.thumbnail ?? undefined,
+        }
+      );
+      const controls = ComponentBuilder.musicControlRow(i.guild!.id, false);
+      await i.editReply({ embeds: [embed], components: [controls] });
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
     }
@@ -558,13 +558,13 @@ export class MusicCommand extends BaseCommand {
     await i.deferReply();
     
     if (!i.guild || !i.member) {
-      await i.editReply({ content: '❌ This command can only be used in a server.' });
+      await ErrorHandler.send(i, { title: 'Server Only', description: 'This command can only be used in a **server**. DMs are not supported.' });
       return;
     }
 
     const voiceChannel = (i.member as GuildMember).voice.channel;
     if (!voiceChannel) {
-      await i.editReply({ content: '❌ You need to be in a voice channel to replay.' });
+      await ErrorHandler.music(i, 'not_in_voice');
       return;
     }
 
@@ -572,42 +572,43 @@ export class MusicCommand extends BaseCommand {
       const client = i.client as PanindiganClient;
 
       if (!client.kazagumo) {
-        await i.editReply({ content: '❌ Music system is not available.' });
+        await ErrorHandler.send(i, { title: 'Music Unavailable', description: 'The music system is currently offline. Please try again later.' });
         return;
       }
 
       const player = client.kazagumo.players.get(i.guild.id);
 
       if (!player) {
-        await i.editReply({ content: '❌ Nothing is currently playing.' });
+        await ErrorHandler.music(i, 'no_track');
         return;
       }
 
       if (player.voiceId !== voiceChannel.id) {
-        await i.editReply({ content: '❌ You need to be in the same voice channel as the bot.' });
+        await ErrorHandler.send(i, { title: 'Wrong Voice Channel', description: 'You must be in the **same voice channel** as the bot to control playback.' });
         return;
       }
 
       const currentTrack = player.queue.current;
       if (!currentTrack) {
-        await i.editReply({ content: '❌ No track is currently playing.' });
+        await ErrorHandler.music(i, 'no_track');
         return;
       }
 
       await player.seek(0);
 
-      const embed = new EmbedBuilder()
-        .setTitle('🔄 Replayed')
-        .setColor(COLORS.info)
-        .setDescription(`Replaying **${currentTrack.title}** from the beginning`)
-        .addFields(
-          { name: '🎵 Track', value: currentTrack.title, inline: true },
-          { name: '👤 Artist', value: currentTrack.author || 'Unknown', inline: true },
-          { name: '👤 Requested by', value: i.user.tag, inline: true },
-        )
-        .setThumbnail(currentTrack.thumbnail)
-        .setTimestamp();
-      await i.editReply({ embeds: [embed] });
+      const embed = EmbedManager.music('Replaying Track',
+        `🔄 Replaying **${currentTrack.title}** from the beginning`,
+        {
+          fields: [
+            { name: '🎵 Track', value: currentTrack.title, inline: true },
+            { name: '🎤 Artist', value: currentTrack.author || 'Unknown', inline: true },
+            { name: '👤 Requested by', value: `<@${i.user.id}>`, inline: true },
+          ],
+          thumbnail: currentTrack.thumbnail ?? undefined,
+        }
+      );
+      const controls = ComponentBuilder.musicControlRow(i.guild!.id, false);
+      await i.editReply({ embeds: [embed], components: [controls] });
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
     }
@@ -617,13 +618,13 @@ export class MusicCommand extends BaseCommand {
     await i.deferReply();
     
     if (!i.guild || !i.member) {
-      await i.editReply({ content: '❌ This command can only be used in a server.' });
+      await ErrorHandler.send(i, { title: 'Server Only', description: 'This command can only be used in a **server**. DMs are not supported.' });
       return;
     }
 
     const voiceChannel = (i.member as GuildMember).voice.channel;
     if (!voiceChannel) {
-      await i.editReply({ content: '❌ You need to be in a voice channel to shuffle the queue.' });
+      await ErrorHandler.music(i, 'not_in_voice');
       return;
     }
 
@@ -631,39 +632,41 @@ export class MusicCommand extends BaseCommand {
       const client = i.client as PanindiganClient;
 
       if (!client.kazagumo) {
-        await i.editReply({ content: '❌ Music system is not available.' });
+        await ErrorHandler.send(i, { title: 'Music Unavailable', description: 'The music system is currently offline. Please try again later.' });
         return;
       }
 
       const player = client.kazagumo.players.get(i.guild.id);
 
       if (!player) {
-        await i.editReply({ content: '❌ No active player found.' });
+        await ErrorHandler.music(i, 'no_track');
         return;
       }
 
       if (player.voiceId !== voiceChannel.id) {
-        await i.editReply({ content: '❌ You need to be in the same voice channel as the bot.' });
+        await ErrorHandler.send(i, { title: 'Wrong Voice Channel', description: 'You must be in the **same voice channel** as the bot to control playback.' });
         return;
       }
 
       if (player.queue.size < 2) {
-        await i.editReply({ content: '❌ Need at least 2 tracks in the queue to shuffle.' });
+        await ErrorHandler.send(i, { title: 'Not Enough Tracks', description: 'You need **at least 2 tracks** in the queue to shuffle.\n\n> Use `/music player play` to add more songs!' });
         return;
       }
 
       player.queue.shuffle();
 
-      const embed = new EmbedBuilder()
-        .setTitle('🔀 Shuffled')
-        .setColor(COLORS.info)
-        .setDescription(`Queue has been shuffled (${player.queue.size} tracks)`)
-        .addFields(
-          { name: '🎵 Queue Size', value: player.queue.size.toString(), inline: true },
-          { name: '👤 Shuffled by', value: i.user.tag, inline: true },
-        )
-        .setTimestamp();
-      await i.editReply({ embeds: [embed] });
+      const embed = EmbedManager.music('Queue Shuffled',
+        `🔀 Shuffled **${player.queue.size}** tracks in the queue`,
+        {
+          fields: [
+            { name: '📋 Queue Size', value: `${player.queue.size} tracks`, inline: true },
+            { name: '👤 Shuffled by', value: `<@${i.user.id}>`, inline: true },
+            { name: '💡 Tip', value: 'Use `/music queue show` to see the new track order.', inline: false },
+          ],
+        }
+      );
+      const controls = ComponentBuilder.musicControlRow(i.guild!.id, false);
+      await i.editReply({ embeds: [embed], components: [controls] });
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
     }
@@ -674,13 +677,13 @@ export class MusicCommand extends BaseCommand {
     const mode = i.options.getString('mode', true);
     
     if (!i.guild || !i.member) {
-      await i.editReply({ content: '❌ This command can only be used in a server.' });
+      await ErrorHandler.send(i, { title: 'Server Only', description: 'This command can only be used in a **server**. DMs are not supported.' });
       return;
     }
 
     const voiceChannel = (i.member as GuildMember).voice.channel;
     if (!voiceChannel) {
-      await i.editReply({ content: '❌ You need to be in a voice channel to set loop mode.' });
+      await ErrorHandler.music(i, 'not_in_voice');
       return;
     }
 
@@ -688,19 +691,19 @@ export class MusicCommand extends BaseCommand {
       const client = i.client as PanindiganClient;
 
       if (!client.kazagumo) {
-        await i.editReply({ content: '❌ Music system is not available.' });
+        await ErrorHandler.send(i, { title: 'Music Unavailable', description: 'The music system is currently offline. Please try again later.' });
         return;
       }
 
       const player = client.kazagumo.players.get(i.guild.id);
 
       if (!player) {
-        await i.editReply({ content: '❌ No active player found.' });
+        await ErrorHandler.music(i, 'no_track');
         return;
       }
 
       if (player.voiceId !== voiceChannel.id) {
-        await i.editReply({ content: '❌ You need to be in the same voice channel as the bot.' });
+        await ErrorHandler.send(i, { title: 'Wrong Voice Channel', description: 'You must be in the **same voice channel** as the bot to control playback.' });
         return;
       }
 
@@ -719,17 +722,19 @@ export class MusicCommand extends BaseCommand {
 
       player.setLoop(loopMode);
 
-      const modeEmoji = loopMode === 'none' ? '❌' : loopMode === 'track' ? '🔂' : '🔁';
-      const embed = new EmbedBuilder()
-        .setTitle(`${modeEmoji} Loop Mode`) 
-        .setColor(COLORS.info)
-        .setDescription(`Loop mode set to: **${mode}**`)
-        .addFields(
-          { name: '🎵 Mode', value: mode, inline: true },
-          { name: '👤 Set by', value: i.user.tag, inline: true },
-        )
-        .setTimestamp();
-      await i.editReply({ embeds: [embed] });
+      const modeEmoji = loopMode === 'none' ? '➡️' : loopMode === 'track' ? '🔂' : '🔁';
+      const modeDesc = loopMode === 'none' ? 'Loop **disabled** — playing through queue normally.'
+        : loopMode === 'track' ? '🔂 **Track loop** — current track will repeat indefinitely.'
+        : '🔁 **Queue loop** — entire queue will loop after finishing.';
+
+      const embed = EmbedManager.music('Loop Mode Updated', `${modeEmoji} ${modeDesc}`, {
+        fields: [
+          { name: '🔁 Mode', value: `\`${mode}\``, inline: true },
+          { name: '👤 Set by', value: `<@${i.user.id}>`, inline: true },
+        ],
+      });
+      const controls = ComponentBuilder.musicControlRow(i.guild!.id, false, loopMode);
+      await i.editReply({ embeds: [embed], components: [controls] });
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
     }
@@ -740,13 +745,13 @@ export class MusicCommand extends BaseCommand {
     const level = i.options.getInteger('level', true);
     
     if (!i.guild || !i.member) {
-      await i.editReply({ content: '❌ This command can only be used in a server.' });
+      await ErrorHandler.send(i, { title: 'Server Only', description: 'This command can only be used in a **server**. DMs are not supported.' });
       return;
     }
 
     const voiceChannel = (i.member as GuildMember).voice.channel;
     if (!voiceChannel) {
-      await i.editReply({ content: '❌ You need to be in a voice channel to set volume.' });
+      await ErrorHandler.music(i, 'not_in_voice');
       return;
     }
 
@@ -754,34 +759,39 @@ export class MusicCommand extends BaseCommand {
       const client = i.client as PanindiganClient;
 
       if (!client.kazagumo) {
-        await i.editReply({ content: '❌ Music system is not available.' });
+        await ErrorHandler.send(i, { title: 'Music Unavailable', description: 'The music system is currently offline. Please try again later.' });
         return;
       }
 
       const player = client.kazagumo.players.get(i.guild.id);
 
       if (!player) {
-        await i.editReply({ content: '❌ No active player found.' });
+        await ErrorHandler.music(i, 'no_track');
         return;
       }
 
       if (player.voiceId !== voiceChannel.id) {
-        await i.editReply({ content: '❌ You need to be in the same voice channel as the bot.' });
+        await ErrorHandler.send(i, { title: 'Wrong Voice Channel', description: 'You must be in the **same voice channel** as the bot to control playback.' });
         return;
       }
 
       await player.setVolume(level);
 
-      const embed = new EmbedBuilder()
-        .setTitle('🔊 Volume')
-        .setColor(COLORS.info)
-        .setDescription(`Volume set to ${level}%`)
-        .addFields(
-          { name: '🎵 Volume', value: `${level}%`, inline: true },
-          { name: '👤 Set by', value: i.user.tag, inline: true },
-        )
-        .setTimestamp();
-      await i.editReply({ embeds: [embed] });
+      const volEmoji = level === 0 ? '🔇' : level < 33 ? '🔈' : level < 66 ? '🔉' : '🔊';
+      const volBar = EmbedManager.progressBar(level, 100, 10);
+      const embed = EmbedManager.music('Volume Changed',
+        `${volEmoji} Volume set to **${level}%**`,
+        {
+          fields: [
+            { name: `${volEmoji} Level`, value: `${level}%`, inline: true },
+            { name: '👤 Set by', value: `<@${i.user.id}>`, inline: true },
+            { name: '📊 Volume', value: volBar, inline: false },
+          ],
+        }
+      );
+      const controls = ComponentBuilder.musicControlRow(i.guild!.id, false);
+      const volRow = ComponentBuilder.musicVolumeRow(i.guild!.id);
+      await i.editReply({ embeds: [embed], components: [controls, volRow] });
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
     }
@@ -791,7 +801,7 @@ export class MusicCommand extends BaseCommand {
     await i.deferReply();
     
     if (!i.guild) {
-      await i.editReply({ content: '❌ This command can only be used in a server.' });
+      await ErrorHandler.send(i, { title: 'Server Only', description: 'This command can only be used in a **server**. DMs are not supported.' });
       return;
     }
 
@@ -799,21 +809,22 @@ export class MusicCommand extends BaseCommand {
       const client = i.client as PanindiganClient;
 
       if (!client.kazagumo) {
-        await i.editReply({ content: '❌ Music system is not available.' });
+        await ErrorHandler.send(i, { title: 'Music Unavailable', description: 'The music system is currently offline. Please try again later.' });
         return;
       }
 
       const player = client.kazagumo.players.get(i.guild.id);
 
       if (!player || !player.queue.current) {
-        const embed = new EmbedBuilder()
-          .setTitle('🎵 Now Playing')
-          .setColor(COLORS.info)
-          .setDescription('No track is currently playing')
-          .addFields(
-            { name: '🎵 Status', value: 'Idle', inline: true },
-          )
-          .setTimestamp();
+        const embed = EmbedManager.music('Nothing Playing',
+          '🎵 No track is currently playing.\n\n> Use `/music player play` to start listening!',
+          {
+            fields: [
+              { name: '📋 Queue', value: 'Empty', inline: true },
+              { name: '💡 Tip', value: 'Try `/music search` to find songs to add!', inline: false },
+            ],
+          }
+        );
         await i.editReply({ embeds: [embed] });
         return;
       }
@@ -823,23 +834,31 @@ export class MusicCommand extends BaseCommand {
       const duration = currentTrack.length || 0;
       const progressBar = this.createProgressBar(position, duration);
       const requesterId = currentTrack.requester || i.user.id;
+      const loopLabel = player.loop === 'none' ? '➡️ Off' : player.loop === 'track' ? '🔂 Track' : '🔁 Queue';
+      const volEmoji = player.volume === 0 ? '🔇' : player.volume < 33 ? '🔈' : player.volume < 66 ? '🔉' : '🔊';
       
-      const embed = new EmbedBuilder()
-        .setTitle('🎵 Now Playing')
-        .setColor(COLORS.music)
-        .setDescription(`**${currentTrack.title}** by ${currentTrack.author || 'Unknown'}`)
-        .addFields(
-          { name: '👤 Artist', value: currentTrack.author || 'Unknown', inline: true },
-          { name: '⏱️ Duration', value: this.formatDuration(duration), inline: true },
-          { name: '🔊 Volume', value: `${player.volume}%`, inline: true },
-          { name: '🔁 Loop', value: player.loop === 'none' ? 'Off' : player.loop === 'track' ? 'Track' : 'Queue', inline: true },
-          { name: '📊 Queue', value: `${player.queue.size} tracks`, inline: true },
-          { name: '👤 Requester', value: `<@${requesterId}>`, inline: true },
-          { name: '⏱️ Progress', value: progressBar, inline: false },
-        )
-        .setThumbnail(currentTrack.thumbnail)
-        .setTimestamp();
-      await i.editReply({ embeds: [embed] });
+      const embed = EmbedManager.nowPlaying({
+        title: currentTrack.title,
+        author: currentTrack.author || 'Unknown',
+        uri: currentTrack.uri,
+        thumbnail: currentTrack.thumbnail,
+        duration,
+        position,
+        requester: requesterId,
+        loop: player.loop,
+        volume: player.volume,
+      });
+
+      // Add extra context fields
+      embed.addFields(
+        { name: '📋 Queue', value: `${player.queue.size} track${player.queue.size !== 1 ? 's' : ''} remaining`, inline: true },
+        { name: `${volEmoji} Volume`, value: `${player.volume}%`, inline: true },
+        { name: '🔁 Loop', value: loopLabel, inline: true },
+      );
+
+      const controls = ComponentBuilder.musicControlRow(i.guild!.id, player.paused, player.loop as any);
+      const volRow = ComponentBuilder.musicVolumeRow(i.guild!.id);
+      await i.editReply({ embeds: [embed], components: [controls, volRow] });
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
     }
@@ -850,7 +869,7 @@ export class MusicCommand extends BaseCommand {
     await i.deferReply();
     
     if (!i.guild) {
-      await i.editReply({ content: '❌ This command can only be used in a server.' });
+      await ErrorHandler.send(i, { title: 'Server Only', description: 'This command can only be used in a **server**. DMs are not supported.' });
       return;
     }
 
@@ -858,21 +877,17 @@ export class MusicCommand extends BaseCommand {
       const client = i.client as PanindiganClient;
 
       if (!client.kazagumo) {
-        await i.editReply({ content: '❌ Music system is not available.' });
+        await ErrorHandler.send(i, { title: 'Music Unavailable', description: 'The music system is currently offline. Please try again later.' });
         return;
       }
 
       const player = client.kazagumo.players.get(i.guild.id);
 
       if (!player) {
-        const embed = new EmbedBuilder()
-          .setTitle('📜 Music Queue')
-          .setColor(COLORS.info)
-          .setDescription('No active player found')
-          .addFields(
-            { name: '🎵 Status', value: 'Idle', inline: true },
-          )
-          .setTimestamp();
+        const embed = EmbedManager.music('Queue Empty',
+          '📋 No active music session found.\n\n> Use `/music player play` to start listening!',
+          { fields: [{ name: '💡 Tip', value: 'Try `/music search` to browse songs.', inline: false }] }
+        );
         await i.editReply({ embeds: [embed] });
         return;
       }
@@ -882,14 +897,15 @@ export class MusicCommand extends BaseCommand {
       const queueSize = queue.size;
 
       if (queueSize === 0 && !currentTrack) {
-        const embed = new EmbedBuilder()
-          .setTitle('📜 Music Queue')
-          .setColor(COLORS.info)
-          .setDescription('The queue is empty')
-          .addFields(
-            { name: '🎵 Tracks', value: '0', inline: true },
-          )
-          .setTimestamp();
+        const embed = EmbedManager.music('Queue is Empty',
+          '📋 The music queue is currently empty.\n\n> Add songs with `/music player play`!',
+          {
+            fields: [
+              { name: '🎵 Tracks', value: '0', inline: true },
+              { name: '💡 Tip', value: 'Try `/music search` to find songs to add.', inline: false },
+            ],
+          }
+        );
         await i.editReply({ embeds: [embed] });
         return;
       }
@@ -1037,13 +1053,13 @@ export class MusicCommand extends BaseCommand {
     await i.deferReply();
     
     if (!i.guild || !i.member) {
-      await i.editReply({ content: '❌ This command can only be used in a server.' });
+      await ErrorHandler.send(i, { title: 'Server Only', description: 'This command can only be used in a **server**. DMs are not supported.' });
       return;
     }
 
     const voiceChannel = (i.member as GuildMember).voice.channel;
     if (!voiceChannel) {
-      await i.editReply({ content: '❌ You need to be in a voice channel to clear the queue.' });
+      await ErrorHandler.music(i, 'not_in_voice');
       return;
     }
 
@@ -1051,24 +1067,24 @@ export class MusicCommand extends BaseCommand {
       const client = i.client as PanindiganClient;
 
       if (!client.kazagumo) {
-        await i.editReply({ content: '❌ Music system is not available.' });
+        await ErrorHandler.send(i, { title: 'Music Unavailable', description: 'The music system is currently offline. Please try again later.' });
         return;
       }
 
       const player = client.kazagumo.players.get(i.guild.id);
 
       if (!player) {
-        await i.editReply({ content: '❌ No active player found.' });
+        await ErrorHandler.music(i, 'no_track');
         return;
       }
 
       if (player.voiceId !== voiceChannel.id) {
-        await i.editReply({ content: '❌ You need to be in the same voice channel as the bot.' });
+        await ErrorHandler.send(i, { title: 'Wrong Voice Channel', description: 'You must be in the **same voice channel** as the bot to control playback.' });
         return;
       }
 
       if (player.queue.size === 0) {
-        await i.editReply({ content: '❌ The queue is already empty.' });
+        await ErrorHandler.music(i, 'queue_empty');
         return;
       }
 
@@ -1114,7 +1130,7 @@ export class MusicCommand extends BaseCommand {
             await ErrorHandler.generic(interaction, error as Error);
           }
         } else {
-          await interaction.update({ content: '❌ Cancelled.', components: [] });
+          await interaction.update({ embeds: [EmbedManager.info('Cancelled', 'Action cancelled.')], components: [] });
         }
         collector.stop();
       });
@@ -1136,18 +1152,18 @@ export class MusicCommand extends BaseCommand {
     const position = i.options.getInteger('position', true);
     
     if (!i.guild || !i.member) {
-      await i.editReply({ content: '❌ This command can only be used in a server.' });
+      await ErrorHandler.send(i, { title: 'Server Only', description: 'This command can only be used in a **server**. DMs are not supported.' });
       return;
     }
 
     const voiceChannel = (i.member as GuildMember).voice.channel;
     if (!voiceChannel) {
-      await i.editReply({ content: '❌ You need to be in a voice channel to remove tracks.' });
+      await ErrorHandler.music(i, 'not_in_voice');
       return;
     }
 
     if (position < 1) {
-      await i.editReply({ content: '❌ Position must be at least 1.' });
+      await ErrorHandler.send(i, { title: 'Invalid Position', description: 'Track position must be **at least 1**. Please provide a valid queue position.' });
       return;
     }
 
@@ -1155,24 +1171,24 @@ export class MusicCommand extends BaseCommand {
       const client = i.client as PanindiganClient;
 
       if (!client.kazagumo) {
-        await i.editReply({ content: '❌ Music system is not available.' });
+        await ErrorHandler.send(i, { title: 'Music Unavailable', description: 'The music system is currently offline. Please try again later.' });
         return;
       }
 
       const player = client.kazagumo.players.get(i.guild.id);
 
       if (!player) {
-        await i.editReply({ content: '❌ No active player found.' });
+        await ErrorHandler.music(i, 'no_track');
         return;
       }
 
       if (player.voiceId !== voiceChannel.id) {
-        await i.editReply({ content: '❌ You need to be in the same voice channel as the bot.' });
+        await ErrorHandler.send(i, { title: 'Wrong Voice Channel', description: 'You must be in the **same voice channel** as the bot to control playback.' });
         return;
       }
 
       if (player.queue.size === 0) {
-        await i.editReply({ content: '❌ The queue is empty.' });
+        await ErrorHandler.music(i, 'queue_empty');
         return;
       }
 
@@ -1185,7 +1201,7 @@ export class MusicCommand extends BaseCommand {
       const removedTrack = player.queue.remove(position - 1);
 
       if (!removedTrack) {
-        await i.editReply({ content: '❌ Failed to remove track.' });
+        await ErrorHandler.send(i, { title: 'Remove Failed', description: 'Failed to remove the track. The position may be out of range.', howToFix: 'Use `/music queue show` to check the current queue positions.' });
         return;
       }
 
@@ -1213,23 +1229,23 @@ export class MusicCommand extends BaseCommand {
     const to = i.options.getInteger('to', true);
     
     if (!i.guild || !i.member) {
-      await i.editReply({ content: '❌ This command can only be used in a server.' });
+      await ErrorHandler.send(i, { title: 'Server Only', description: 'This command can only be used in a **server**. DMs are not supported.' });
       return;
     }
 
     const voiceChannel = (i.member as GuildMember).voice.channel;
     if (!voiceChannel) {
-      await i.editReply({ content: '❌ You need to be in a voice channel to move tracks.' });
+      await ErrorHandler.music(i, 'not_in_voice');
       return;
     }
 
     if (from < 1 || to < 1) {
-      await i.editReply({ content: '❌ Positions must be at least 1.' });
+      await ErrorHandler.send(i, { title: 'Invalid Positions', description: 'Queue positions must be **at least 1**.' });
       return;
     }
 
     if (from === to) {
-      await i.editReply({ content: '❌ Source and destination positions cannot be the same.' });
+      await ErrorHandler.send(i, { title: 'Same Position', description: 'Source and destination positions cannot be the **same**. Choose different positions to move a track.' });
       return;
     }
 
@@ -1237,24 +1253,24 @@ export class MusicCommand extends BaseCommand {
       const client = i.client as PanindiganClient;
 
       if (!client.kazagumo) {
-        await i.editReply({ content: '❌ Music system is not available.' });
+        await ErrorHandler.send(i, { title: 'Music Unavailable', description: 'The music system is currently offline. Please try again later.' });
         return;
       }
 
       const player = client.kazagumo.players.get(i.guild.id);
 
       if (!player) {
-        await i.editReply({ content: '❌ No active player found.' });
+        await ErrorHandler.music(i, 'no_track');
         return;
       }
 
       if (player.voiceId !== voiceChannel.id) {
-        await i.editReply({ content: '❌ You need to be in the same voice channel as the bot.' });
+        await ErrorHandler.send(i, { title: 'Wrong Voice Channel', description: 'You must be in the **same voice channel** as the bot to control playback.' });
         return;
       }
 
       if (player.queue.size === 0) {
-        await i.editReply({ content: '❌ The queue is empty.' });
+        await ErrorHandler.music(i, 'queue_empty');
         return;
       }
 
@@ -1270,7 +1286,7 @@ export class MusicCommand extends BaseCommand {
       // Get the track to move
       const trackToMove = player.queue[fromIndex];
       if (!trackToMove) {
-        await i.editReply({ content: '❌ Failed to get track at source position.' });
+        await ErrorHandler.send(i, { title: 'Track Not Found', description: 'No track found at that position. Use `/music queue show` to check available positions.' });
         return;
       }
 
@@ -1334,7 +1350,7 @@ export class MusicCommand extends BaseCommand {
     
     // Validate name
     if (name.length < 2 || name.length > 50) {
-      await modalSubmit.reply({ content: '❌ Playlist name must be between 2-50 characters.', ephemeral: true });
+      await modalSubmit.reply({ embeds: [EmbedManager.error('Invalid Name', 'Playlist name must be between **2-50 characters** long.')], ephemeral: true });
       return;
     }
     
@@ -1347,7 +1363,7 @@ export class MusicCommand extends BaseCommand {
       });
       
       if (existing) {
-        await modalSubmit.reply({ content: '❌ You already have a playlist with this name.', ephemeral: true });
+        await modalSubmit.reply({ embeds: [EmbedManager.error('Name Taken', 'You already have a playlist with this name. Choose a different name.')], ephemeral: true });
         return;
       }
 
@@ -1375,7 +1391,7 @@ export class MusicCommand extends BaseCommand {
         .setTimestamp();
       await modalSubmit.reply({ embeds: [embed], ephemeral: true });
     } catch (error) {
-      await modalSubmit.reply({ content: '❌ Error creating playlist. The name might already be taken.', ephemeral: true });
+      await modalSubmit.reply({ embeds: [EmbedManager.error('Create Failed', 'Failed to create the playlist. The name might already be taken — try a different name.')], ephemeral: true });
     }
   }
 
@@ -1471,7 +1487,7 @@ export class MusicCommand extends BaseCommand {
     const name = i.options.getString('name', true);
     
     if (!i.guild) {
-      await i.editReply({ content: '❌ This command can only be used in a server.' });
+      await ErrorHandler.send(i, { title: 'Server Only', description: 'This command can only be used in a **server**. DMs are not supported.' });
       return;
     }
 
@@ -1479,14 +1495,14 @@ export class MusicCommand extends BaseCommand {
       const client = i.client as PanindiganClient;
 
       if (!client.kazagumo) {
-        await i.editReply({ content: '❌ Music system is not available.' });
+        await ErrorHandler.send(i, { title: 'Music Unavailable', description: 'The music system is currently offline. Please try again later.' });
         return;
       }
 
       const player = client.kazagumo.players.get(i.guild.id);
 
       if (!player || !player.queue.current) {
-        await i.editReply({ content: '❌ No track is currently playing.' });
+        await ErrorHandler.music(i, 'no_track');
         return;
       }
 
@@ -1507,7 +1523,7 @@ export class MusicCommand extends BaseCommand {
       // Check if track already exists
       const exists = tracks.some((t: any) => t.url === currentTrack.uri);
       if (exists) {
-        await i.editReply({ content: '❌ This track is already in the playlist.' });
+        await ErrorHandler.send(i, { title: 'Already in Playlist', description: 'This track is **already** in that playlist.' });
         return;
       }
 
@@ -1555,7 +1571,7 @@ export class MusicCommand extends BaseCommand {
     const position = i.options.getInteger('position', true);
     
     if (position < 1) {
-      await i.editReply({ content: '❌ Position must be at least 1.' });
+      await ErrorHandler.send(i, { title: 'Invalid Position', description: 'Track position must be **at least 1**. Please provide a valid queue position.' });
       return;
     }
 
@@ -1669,7 +1685,7 @@ export class MusicCommand extends BaseCommand {
           await ErrorHandler.generic(interaction, error as Error);
         }
       } else {
-        await interaction.update({ content: '❌ Cancelled.', components: [] });
+        await interaction.update({ embeds: [EmbedManager.info('Cancelled', 'Action cancelled.')], components: [] });
       }
       collector.stop();
     });
@@ -1688,13 +1704,13 @@ export class MusicCommand extends BaseCommand {
     await i.deferReply();
     
     if (!i.guild || !i.member) {
-      await i.editReply({ content: '❌ This command can only be used in a server.' });
+      await ErrorHandler.send(i, { title: 'Server Only', description: 'This command can only be used in a **server**. DMs are not supported.' });
       return;
     }
 
     const voiceChannel = (i.member as GuildMember).voice.channel;
     if (!voiceChannel) {
-      await i.editReply({ content: '❌ You need to be in a voice channel to use filters.' });
+      await ErrorHandler.music(i, 'not_in_voice');
       return;
     }
 
@@ -1702,19 +1718,19 @@ export class MusicCommand extends BaseCommand {
       const client = i.client as PanindiganClient;
 
       if (!client.kazagumo) {
-        await i.editReply({ content: '❌ Music system is not available.' });
+        await ErrorHandler.send(i, { title: 'Music Unavailable', description: 'The music system is currently offline. Please try again later.' });
         return;
       }
 
       const player = client.kazagumo.players.get(i.guild.id);
 
       if (!player) {
-        await i.editReply({ content: '❌ No active player found.' });
+        await ErrorHandler.music(i, 'no_track');
         return;
       }
 
       if (player.voiceId !== voiceChannel.id) {
-        await i.editReply({ content: '❌ You need to be in the same voice channel as the bot.' });
+        await ErrorHandler.send(i, { title: 'Wrong Voice Channel', description: 'You must be in the **same voice channel** as the bot to control playback.' });
         return;
       }
 
@@ -1766,13 +1782,13 @@ export class MusicCommand extends BaseCommand {
     await i.deferReply();
     
     if (!i.guild || !i.member) {
-      await i.editReply({ content: '❌ This command can only be used in a server.' });
+      await ErrorHandler.send(i, { title: 'Server Only', description: 'This command can only be used in a **server**. DMs are not supported.' });
       return;
     }
 
     const voiceChannel = (i.member as GuildMember).voice.channel;
     if (!voiceChannel) {
-      await i.editReply({ content: '❌ You need to be in a voice channel to use filters.' });
+      await ErrorHandler.music(i, 'not_in_voice');
       return;
     }
 
@@ -1780,19 +1796,19 @@ export class MusicCommand extends BaseCommand {
       const client = i.client as PanindiganClient;
 
       if (!client.kazagumo) {
-        await i.editReply({ content: '❌ Music system is not available.' });
+        await ErrorHandler.send(i, { title: 'Music Unavailable', description: 'The music system is currently offline. Please try again later.' });
         return;
       }
 
       const player = client.kazagumo.players.get(i.guild.id);
 
       if (!player) {
-        await i.editReply({ content: '❌ No active player found.' });
+        await ErrorHandler.music(i, 'no_track');
         return;
       }
 
       if (player.voiceId !== voiceChannel.id) {
-        await i.editReply({ content: '❌ You need to be in the same voice channel as the bot.' });
+        await ErrorHandler.send(i, { title: 'Wrong Voice Channel', description: 'You must be in the **same voice channel** as the bot to control playback.' });
         return;
       }
 
@@ -1844,13 +1860,13 @@ export class MusicCommand extends BaseCommand {
     await i.deferReply();
     
     if (!i.guild || !i.member) {
-      await i.editReply({ content: '❌ This command can only be used in a server.' });
+      await ErrorHandler.send(i, { title: 'Server Only', description: 'This command can only be used in a **server**. DMs are not supported.' });
       return;
     }
 
     const voiceChannel = (i.member as GuildMember).voice.channel;
     if (!voiceChannel) {
-      await i.editReply({ content: '❌ You need to be in a voice channel to use filters.' });
+      await ErrorHandler.music(i, 'not_in_voice');
       return;
     }
 
@@ -1858,19 +1874,19 @@ export class MusicCommand extends BaseCommand {
       const client = i.client as PanindiganClient;
 
       if (!client.kazagumo) {
-        await i.editReply({ content: '❌ Music system is not available.' });
+        await ErrorHandler.send(i, { title: 'Music Unavailable', description: 'The music system is currently offline. Please try again later.' });
         return;
       }
 
       const player = client.kazagumo.players.get(i.guild.id);
 
       if (!player) {
-        await i.editReply({ content: '❌ No active player found.' });
+        await ErrorHandler.music(i, 'no_track');
         return;
       }
 
       if (player.voiceId !== voiceChannel.id) {
-        await i.editReply({ content: '❌ You need to be in the same voice channel as the bot.' });
+        await ErrorHandler.send(i, { title: 'Wrong Voice Channel', description: 'You must be in the **same voice channel** as the bot to control playback.' });
         return;
       }
 
@@ -1927,13 +1943,13 @@ export class MusicCommand extends BaseCommand {
     await i.deferReply();
     
     if (!i.guild || !i.member) {
-      await i.editReply({ content: '❌ This command can only be used in a server.' });
+      await ErrorHandler.send(i, { title: 'Server Only', description: 'This command can only be used in a **server**. DMs are not supported.' });
       return;
     }
 
     const voiceChannel = (i.member as GuildMember).voice.channel;
     if (!voiceChannel) {
-      await i.editReply({ content: '❌ You need to be in a voice channel to use filters.' });
+      await ErrorHandler.music(i, 'not_in_voice');
       return;
     }
 
@@ -1941,19 +1957,19 @@ export class MusicCommand extends BaseCommand {
       const client = i.client as PanindiganClient;
 
       if (!client.kazagumo) {
-        await i.editReply({ content: '❌ Music system is not available.' });
+        await ErrorHandler.send(i, { title: 'Music Unavailable', description: 'The music system is currently offline. Please try again later.' });
         return;
       }
 
       const player = client.kazagumo.players.get(i.guild.id);
 
       if (!player) {
-        await i.editReply({ content: '❌ No active player found.' });
+        await ErrorHandler.music(i, 'no_track');
         return;
       }
 
       if (player.voiceId !== voiceChannel.id) {
-        await i.editReply({ content: '❌ You need to be in the same voice channel as the bot.' });
+        await ErrorHandler.send(i, { title: 'Wrong Voice Channel', description: 'You must be in the **same voice channel** as the bot to control playback.' });
         return;
       }
 
@@ -2003,13 +2019,13 @@ export class MusicCommand extends BaseCommand {
     await i.deferReply();
     
     if (!i.guild || !i.member) {
-      await i.editReply({ content: '❌ This command can only be used in a server.' });
+      await ErrorHandler.send(i, { title: 'Server Only', description: 'This command can only be used in a **server**. DMs are not supported.' });
       return;
     }
 
     const voiceChannel = (i.member as GuildMember).voice.channel;
     if (!voiceChannel) {
-      await i.editReply({ content: '❌ You need to be in a voice channel to reset filters.' });
+      await ErrorHandler.music(i, 'not_in_voice');
       return;
     }
 
@@ -2017,19 +2033,19 @@ export class MusicCommand extends BaseCommand {
       const client = i.client as PanindiganClient;
 
       if (!client.kazagumo) {
-        await i.editReply({ content: '❌ Music system is not available.' });
+        await ErrorHandler.send(i, { title: 'Music Unavailable', description: 'The music system is currently offline. Please try again later.' });
         return;
       }
 
       const player = client.kazagumo.players.get(i.guild.id);
 
       if (!player) {
-        await i.editReply({ content: '❌ No active player found.' });
+        await ErrorHandler.music(i, 'no_track');
         return;
       }
 
       if (player.voiceId !== voiceChannel.id) {
-        await i.editReply({ content: '❌ You need to be in the same voice channel as the bot.' });
+        await ErrorHandler.send(i, { title: 'Wrong Voice Channel', description: 'You must be in the **same voice channel** as the bot to control playback.' });
         return;
       }
 
@@ -2056,13 +2072,13 @@ export class MusicCommand extends BaseCommand {
     await i.deferReply();
     
     if (!i.guild || !i.member) {
-      await i.editReply({ content: '❌ This command can only be used in a server.' });
+      await ErrorHandler.send(i, { title: 'Server Only', description: 'This command can only be used in a **server**. DMs are not supported.' });
       return;
     }
 
     const voiceChannel = (i.member as GuildMember).voice.channel;
     if (!voiceChannel) {
-      await i.editReply({ content: '❌ You need to be in a voice channel for me to join.' });
+      await ErrorHandler.music(i, 'not_in_voice');
       return;
     }
 
@@ -2070,18 +2086,18 @@ export class MusicCommand extends BaseCommand {
       const client = i.client as PanindiganClient;
 
       if (!client.kazagumo) {
-        await i.editReply({ content: '❌ Music system is not available.' });
+        await ErrorHandler.send(i, { title: 'Music Unavailable', description: 'The music system is currently offline. Please try again later.' });
         return;
       }
 
       const existingPlayer = client.kazagumo.players.get(i.guild.id);
       if (existingPlayer && existingPlayer.voiceId === voiceChannel.id) {
-        await i.editReply({ content: '❌ I am already in your voice channel.' });
+        await ErrorHandler.send(i, { title: 'Already Here', description: 'I\'m already in your voice channel!' });
         return;
       }
 
       if (existingPlayer && existingPlayer.voiceId !== voiceChannel.id) {
-        await i.editReply({ content: '❌ I am already in another voice channel.' });
+        await ErrorHandler.send(i, { title: 'Already in Channel', description: "I'm already playing in another voice channel.\n\n> Join that channel or use `/music voice disconnect` to move me." });
         return;
       }
 
@@ -2114,13 +2130,13 @@ export class MusicCommand extends BaseCommand {
     await i.deferReply();
     
     if (!i.guild || !i.member) {
-      await i.editReply({ content: '❌ This command can only be used in a server.' });
+      await ErrorHandler.send(i, { title: 'Server Only', description: 'This command can only be used in a **server**. DMs are not supported.' });
       return;
     }
 
     const voiceChannel = (i.member as GuildMember).voice.channel;
     if (!voiceChannel) {
-      await i.editReply({ content: '❌ You need to be in a voice channel.' });
+      await ErrorHandler.music(i, 'not_in_voice');
       return;
     }
 
@@ -2128,19 +2144,19 @@ export class MusicCommand extends BaseCommand {
       const client = i.client as PanindiganClient;
 
       if (!client.kazagumo) {
-        await i.editReply({ content: '❌ Music system is not available.' });
+        await ErrorHandler.send(i, { title: 'Music Unavailable', description: 'The music system is currently offline. Please try again later.' });
         return;
       }
 
       const player = client.kazagumo.players.get(i.guild.id);
 
       if (!player) {
-        await i.editReply({ content: '❌ I am not in any voice channel.' });
+        await ErrorHandler.send(i, { title: 'Not Connected', description: "I'm not currently in any voice channel.\n\n> Use `/music player play` to start a session." });
         return;
       }
 
       if (player.voiceId !== voiceChannel.id) {
-        await i.editReply({ content: '❌ You need to be in the same voice channel as the bot.' });
+        await ErrorHandler.send(i, { title: 'Wrong Voice Channel', description: 'You must be in the **same voice channel** as the bot to control playback.' });
         return;
       }
 
@@ -2166,7 +2182,7 @@ export class MusicCommand extends BaseCommand {
     await i.deferReply();
     
     if (!i.guild || !i.member) {
-      await i.editReply({ content: '❌ This command can only be used in a server.' });
+      await ErrorHandler.send(i, { title: 'Server Only', description: 'This command can only be used in a **server**. DMs are not supported.' });
       return;
     }
 
@@ -2174,14 +2190,14 @@ export class MusicCommand extends BaseCommand {
       const client = i.client as PanindiganClient;
 
       if (!client.kazagumo) {
-        await i.editReply({ content: '❌ Music system is not available.' });
+        await ErrorHandler.send(i, { title: 'Music Unavailable', description: 'The music system is currently offline. Please try again later.' });
         return;
       }
 
       const player = client.kazagumo.players.get(i.guild.id);
 
       if (!player) {
-        await i.editReply({ content: '❌ I am not in any voice channel.' });
+        await ErrorHandler.send(i, { title: 'Not Connected', description: "I'm not currently in any voice channel.\n\n> Use `/music player play` to start a session." });
         return;
       }
 
@@ -2211,13 +2227,13 @@ export class MusicCommand extends BaseCommand {
     const query = i.options.getString('query', true);
     
     if (!i.guild || !i.member) {
-      await i.editReply({ content: '❌ This command can only be used in a server.' });
+      await ErrorHandler.send(i, { title: 'Server Only', description: 'This command can only be used in a **server**. DMs are not supported.' });
       return;
     }
 
     const voiceChannel = (i.member as GuildMember).voice.channel;
     if (!voiceChannel) {
-      await i.editReply({ content: '❌ You need to be in a voice channel to search and play music.' });
+      await ErrorHandler.music(i, 'not_in_voice');
       return;
     }
 
@@ -2225,13 +2241,13 @@ export class MusicCommand extends BaseCommand {
       const client = i.client as PanindiganClient;
 
       if (!client.kazagumo) {
-        await i.editReply({ content: '❌ Music system is not available.' });
+        await ErrorHandler.send(i, { title: 'Music Unavailable', description: 'The music system is currently offline. Please try again later.' });
         return;
       }
 
       const existingPlayer = client.kazagumo.players.get(i.guild.id);
       if (existingPlayer && existingPlayer.voiceId && existingPlayer.voiceId !== voiceChannel.id) {
-        await i.editReply({ content: '❌ I\'m already playing in another voice channel.' });
+        await i.editReply({ embeds: [EmbedManager.error('Already in a Channel', `I'm already playing in <#${existingPlayer.voiceId}>.\n\n> Join that channel, or wait until the session ends.`)] });
         return;
       }
 
@@ -2320,7 +2336,7 @@ export class MusicCommand extends BaseCommand {
           const selectedTrack = tracks[selectedIndex];
 
           if (!selectedTrack) {
-            await interaction.update({ content: '❌ Failed to get selected track.', components: [] });
+            await interaction.update({ embeds: [EmbedManager.error('Track Error', 'Failed to get the selected track. Please try searching again.')], components: [] });
             return;
           }
 
@@ -2383,7 +2399,7 @@ export class MusicCommand extends BaseCommand {
     await i.deferReply();
     
     if (!i.guild) {
-      await i.editReply({ content: '❌ This command can only be used in a server.' });
+      await ErrorHandler.send(i, { title: 'Server Only', description: 'This command can only be used in a **server**. DMs are not supported.' });
       return;
     }
 
@@ -2555,7 +2571,7 @@ export class MusicCommand extends BaseCommand {
     await i.deferReply();
     
     if (!i.guild) {
-      await i.editReply({ content: '❌ This command can only be used in a server.' });
+      await ErrorHandler.send(i, { title: 'Server Only', description: 'This command can only be used in a **server**. DMs are not supported.' });
       return;
     }
 
@@ -2563,7 +2579,7 @@ export class MusicCommand extends BaseCommand {
       const client = i.client as PanindiganClient;
 
       if (!client.kazagumo) {
-        await i.editReply({ content: '❌ Music system is not available.' });
+        await ErrorHandler.send(i, { title: 'Music Unavailable', description: 'The music system is currently offline. Please try again later.' });
         return;
       }
 
