@@ -6,7 +6,7 @@ An all-in-one Discord bot built for Filipino communities. Written in TypeScript 
 [![Node.js](https://img.shields.io/badge/Node.js-24.x-green)](https://nodejs.org/)
 [![Discord.js](https://img.shields.io/badge/Discord.js-14.x-5865F2)](https://discord.js.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.1.1-orange)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.1.3-orange)](CHANGELOG.md)
 
 ---
 
