@@ -1,8 +1,8 @@
 /**
  * ═══════════════════════════════════════════════════
- *  Panindigan Premium Embed Manager
+ *  Panindigan Premium Embed Manager  v2
  *  Unified, professional, modern embed system
- *  Integrated with centralized EmojiManager
+ *  Fixed icons · Default footer & timestamp · Rich builders
  * ═══════════════════════════════════════════════════
  */
 
@@ -17,95 +17,102 @@ import { emojiManager } from '../utils/EmojiManager.js';
 
 // ─── Premium Color Palette ───────────────────────────────────────────────────────
 export const EMBED_COLORS = {
-  primary: 0x5865F2,    // Discord blurple
-  success: 0x57F287,    // Green
-  error: 0xED4245,      // Red
-  warning: 0xFEE75C,    // Yellow
-  info: 0x5865F2,       // Blurple
-  music: 0xEB459E,      // Pink
-  economy: 0xF1C40F,    // Gold
-  leveling: 0x3498DB,   // Blue
-  moderation: 0xE74C3C, // Dark Red
-  admin: 0x9B59B6,      // Purple
-  premium: 0xFFD700,    // Gold
-  ai: 0x00ADB5,         // Teal
-  fun: 0xFF6B6B,        // Coral
-  games: 0x2ECC71,      // Emerald
-  social: 0x1ABC9C,     // Turquoise
-  utility: 0x95A5A6,    // Gray
-  logging: 0x7289DA,    // Discord log
-  configuration: 0x9B59B6, // Purple
-  dashboard: 0x5865F2,  // Blurple
-  ticket: 0x3498DB,     // Blue
-  giveaway: 0xF1C40F,   // Gold
-  poll: 0x3498DB,       // Blue
-  reminder: 0x9B59B6,   // Purple
-  statistics: 0x2ECC71, // Emerald
-  analytics: 0x3498DB, // Blue
-  search: 0x5865F2,     // Blurple
-  help: 0x5865F2,       // Blurple
-  role: 0x9B59B6,       // Purple
-  channel: 0x3498DB,    // Blue
+  primary:       0x5865F2,  // Discord blurple
+  success:       0x57F287,  // Green
+  error:         0xED4245,  // Red
+  warning:       0xFEE75C,  // Yellow
+  info:          0x5865F2,  // Blurple
+  music:         0xEB459E,  // Pink
+  economy:       0xF1C40F,  // Gold
+  leveling:      0x3498DB,  // Blue
+  moderation:    0xE74C3C,  // Dark Red
+  admin:         0x9B59B6,  // Purple
+  premium:       0xFFD700,  // Gold
+  ai:            0x00ADB5,  // Teal
+  fun:           0xFF6B6B,  // Coral
+  games:         0x2ECC71,  // Emerald
+  social:        0x1ABC9C,  // Turquoise
+  utility:       0x95A5A6,  // Gray
+  logging:       0x7289DA,  // Discord log
+  configuration: 0x9B59B6,  // Purple
+  dashboard:     0x5865F2,  // Blurple
+  ticket:        0x3498DB,  // Blue
+  giveaway:      0xF1C40F,  // Gold
+  poll:          0x3498DB,  // Blue
+  reminder:      0x9B59B6,  // Purple
+  statistics:    0x2ECC71,  // Emerald
+  analytics:     0x3498DB,  // Blue
+  search:        0x5865F2,  // Blurple
+  help:          0x5865F2,  // Blurple
+  role:          0x9B59B6,  // Purple
+  channel:       0x3498DB,  // Blue
 } as const;
 
-// ─── Emoji Icons (using centralized EmojiManager) ─────────────────────────────────────
+// ─── Embed Icons — each correctly mapped to its category/key ─────────────────────
 export const EMBED_ICONS = {
-  success: emojiManager.get('utility', 'search'),
-  error: emojiManager.get('utility', 'search'),
-  warning: emojiManager.get('utility', 'search'),
-  info: emojiManager.get('utility', 'search'),
-  loading: emojiManager.get('utility', 'search'),
-  music: emojiManager.get('music', 'play'),
-  economy: emojiManager.get('economy', 'coins'),
-  leveling: emojiManager.get('leveling', 'level'),
-  moderation: emojiManager.get('moderation', 'warn'),
-  admin: emojiManager.get('owner', 'stats'),
-  premium: emojiManager.get('premium', 'star'),
-  ai: emojiManager.get('ai', 'chat'),
-  fun: emojiManager.get('fun', 'dice'),
-  games: emojiManager.get('games', 'tic_tac_toe'),
-  social: emojiManager.get('social', 'profile'),
-  utility: emojiManager.get('utility', 'search'),
-  logging: emojiManager.get('help', 'info'),
-  configuration: emojiManager.get('admin', 'config'),
-  dashboard: emojiManager.get('owner', 'stats'),
-  ticket: emojiManager.get('applications', 'create'),
-  giveaway: emojiManager.get('giveaway', 'gift'),
-  poll: emojiManager.get('utility', 'poll'),
-  reminder: emojiManager.get('utility', 'reminder'),
-  statistics: emojiManager.get('owner', 'stats'),
-  analytics: emojiManager.get('owner', 'stats'),
-  search: emojiManager.get('utility', 'search'),
-  help: emojiManager.get('help', 'info'),
-  role: emojiManager.get('info', 'role'),
-  channel: emojiManager.get('info', 'channel'),
-  user: emojiManager.get('info', 'user'),
-  server: emojiManager.get('info', 'server'),
-  queue: emojiManager.get('music', 'queue'),
-  confirm: emojiManager.get('applications', 'approve'),
-  cancel: emojiManager.get('applications', 'reject'),
-  home: emojiManager.get('info', 'server'),
-  settings: emojiManager.get('admin', 'settings'),
-  save: emojiManager.get('admin', 'settings'),
-  edit: emojiManager.get('image', 'edit'),
-  add: emojiManager.get('admin', 'settings'),
-  remove: emojiManager.get('admin', 'settings'),
-  favorite: emojiManager.get('social', 'rep'),
-  pin: emojiManager.get('starboard', 'star'),
-  export: emojiManager.get('admin', 'settings'),
-  import: emojiManager.get('admin', 'settings'),
-  refresh: emojiManager.get('owner', 'reload'),
-  delete: emojiManager.get('admin', 'purge'),
-  stop: emojiManager.get('music', 'stop'),
-  close: emojiManager.get('applications', 'reject'),
-  previous: emojiManager.get('music', 'previous'),
-  next: emojiManager.get('music', 'skip'),
-  details: emojiManager.get('help', 'info'),
-  star: emojiManager.get('premium', 'star'),
-  crown: emojiManager.get('premium', 'crown'),
-  gem: emojiManager.get('premium', 'gem'),
-  fire: emojiManager.get('premium', 'star'),
-  sparkle: emojiManager.get('premium', 'star'),
+  // Status
+  success:       emojiManager.get('applications', 'approve'),   // ✅
+  error:         emojiManager.get('applications', 'reject'),    // ❌
+  warning:       emojiManager.get('moderation', 'warn'),        // ⚠️
+  info:          emojiManager.get('help', 'info'),              // ℹ️
+  loading:       emojiManager.get('utility', 'timer'),          // ⏱️
+  confirm:       emojiManager.get('applications', 'approve'),   // ✅
+  cancel:        emojiManager.get('applications', 'reject'),    // ❌
+  // Categories
+  music:         emojiManager.get('music', 'play'),             // ▶️
+  economy:       emojiManager.get('economy', 'coins'),          // 💰
+  leveling:      emojiManager.get('leveling', 'level'),         // 📈
+  moderation:    emojiManager.get('moderation', 'warn'),        // ⚠️
+  admin:         emojiManager.get('admin', 'settings'),         // 🛠️
+  premium:       emojiManager.get('premium', 'star'),           // ⭐
+  ai:            emojiManager.get('ai', 'chat'),                // 🤖
+  fun:           emojiManager.get('fun', 'dice'),               // 🎲
+  games:         emojiManager.get('games', 'tic_tac_toe'),      // ⭕
+  social:        emojiManager.get('social', 'profile'),         // 👤
+  utility:       emojiManager.get('utility', 'search'),         // 🔍
+  logging:       emojiManager.get('help', 'info'),              // ℹ️
+  configuration: emojiManager.get('admin', 'config'),           // ⚙️
+  dashboard:     emojiManager.get('owner', 'stats'),            // 📊
+  ticket:        emojiManager.get('applications', 'create'),    // 📝
+  giveaway:      emojiManager.get('giveaway', 'gift'),          // 🎁
+  poll:          emojiManager.get('utility', 'poll'),           // 📊
+  reminder:      emojiManager.get('utility', 'reminder'),       // ⏰
+  statistics:    emojiManager.get('owner', 'stats'),            // 📊
+  analytics:     emojiManager.get('owner', 'stats'),            // 📊
+  search:        emojiManager.get('utility', 'search'),         // 🔍
+  help:          emojiManager.get('help', 'info'),              // ℹ️
+  // Info
+  role:          emojiManager.get('info', 'role'),              // 🎭
+  channel:       emojiManager.get('info', 'channel'),           // #️⃣
+  user:          emojiManager.get('info', 'user'),              // 👤
+  server:        emojiManager.get('info', 'server'),            // 🏠
+  // Music controls
+  queue:         emojiManager.get('music', 'queue'),            // 📜
+  stop:          emojiManager.get('music', 'stop'),             // ⏹️
+  previous:      emojiManager.get('music', 'previous'),         // ⏮️
+  next:          emojiManager.get('music', 'skip'),             // ⏭️
+  // Navigation
+  home:          emojiManager.get('info', 'server'),            // 🏠
+  details:       emojiManager.get('help', 'info'),              // ℹ️
+  // Actions
+  settings:      emojiManager.get('admin', 'settings'),         // 🛠️
+  save:          emojiManager.get('admin', 'settings'),         // 🛠️
+  edit:          emojiManager.get('image', 'edit'),             // ✏️
+  add:           emojiManager.get('admin', 'settings'),         // 🛠️
+  remove:        emojiManager.get('admin', 'purge'),            // 🧹
+  delete:        emojiManager.get('admin', 'purge'),            // 🧹
+  refresh:       emojiManager.get('owner', 'reload'),           // 🔄
+  close:         emojiManager.get('applications', 'reject'),    // ❌
+  // Decorative
+  favorite:      emojiManager.get('social', 'rep'),             // 👍
+  pin:           emojiManager.get('starboard', 'star'),         // ⭐
+  export:        emojiManager.get('admin', 'settings'),         // 🛠️
+  import:        emojiManager.get('admin', 'settings'),         // 🛠️
+  star:          emojiManager.get('premium', 'star'),           // ⭐
+  crown:         emojiManager.get('premium', 'crown'),          // 👑
+  gem:           emojiManager.get('premium', 'gem'),            // 💎
+  fire:          emojiManager.get('premium', 'star'),           // ⭐
+  sparkle:       emojiManager.get('premium', 'star'),           // ⭐
 } as const;
 
 // ─── Embed Options Interface ─────────────────────────────────────────────────────
@@ -114,30 +121,59 @@ export interface EmbedOptions {
   description?: string;
   fields?: { name: string; value: string; inline?: boolean }[];
   author?: EmbedAuthorOptions;
-  footer?: EmbedFooterOptions;
+  footer?: EmbedFooterOptions | null;  // null = suppress default footer
   thumbnail?: string;
   image?: string;
   url?: string;
-  timestamp?: boolean | Date;
+  timestamp?: boolean | Date;          // false = suppress; default = always show
 }
 
 // ─── Base Embed Builder ───────────────────────────────────────────────────────────
 function baseEmbed(color: number, options: EmbedOptions = {}): EmbedBuilder {
   const embed = new EmbedBuilder().setColor(color);
-  
-  if (options.title) embed.setTitle(options.title);
-  if (options.description) embed.setDescription(options.description);
-  if (options.fields?.length) embed.addFields(options.fields);
-  if (options.author) embed.setAuthor(options.author);
-  if (options.footer) embed.setFooter(options.footer);
-  if (options.thumbnail) embed.setThumbnail(options.thumbnail);
-  if (options.image) embed.setImage(options.image);
-  if (options.url) embed.setURL(options.url);
-  if (options.timestamp === true || options.timestamp instanceof Date) {
+
+  if (options.title)              embed.setTitle(options.title);
+  if (options.description)        embed.setDescription(options.description);
+  if (options.fields?.length)     embed.addFields(options.fields);
+  if (options.author)             embed.setAuthor(options.author);
+  if (options.thumbnail)          embed.setThumbnail(options.thumbnail);
+  if (options.image)              embed.setImage(options.image);
+  if (options.url)                embed.setURL(options.url);
+
+  // Standard footer — default '✨ Panindigan'; pass null to suppress
+  if (options.footer !== null) {
+    embed.setFooter(options.footer ?? { text: '✨ Panindigan' });
+  }
+
+  // Standard timestamp — always on unless explicitly false
+  if (options.timestamp !== false) {
     embed.setTimestamp(options.timestamp instanceof Date ? options.timestamp : undefined);
   }
-  
+
   return embed;
+}
+
+// ─── Progress Bar helper ─────────────────────────────────────────────────────────
+/**
+ * Build a visual progress bar string for use in embed fields.
+ * @param value  current value
+ * @param max    maximum value
+ * @param length number of segments (default 12)
+ */
+export function buildProgressBar(value: number, max: number, length = 12): string {
+  const pct    = Math.min(1, Math.max(0, value / max));
+  const filled = Math.round(pct * length);
+  const empty  = length - filled;
+  const bar    = '█'.repeat(filled) + '░'.repeat(empty);
+  const pctStr = `${Math.round(pct * 100)}%`;
+  return `\`${bar}\` **${pctStr}**`;
+}
+
+// ─── Relative Discord timestamp helper ───────────────────────────────────────────
+/** Returns a Discord relative timestamp string, e.g. `<t:1234567890:R>` */
+export function discordTimestamp(date: Date | number, style: 't' | 'T' | 'd' | 'D' | 'f' | 'F' | 'R' = 'R'): string {
+  const ts = typeof date === 'number' ? Math.floor(date / 1000) : Math.floor(date.getTime() / 1000);
+  return `<t:${ts}:${style}>`;
 }
 
 // ─── Success Embed ────────────────────────────────────────────────────────────────
@@ -200,7 +236,7 @@ export function loadingEmbed(
 ): EmbedBuilder {
   return baseEmbed(EMBED_COLORS.info, {
     title: `${EMBED_ICONS.loading} ${action}`,
-    description: description || 'Please wait...',
+    description: description ?? 'Please wait…',
     ...options,
   });
 }
@@ -213,7 +249,7 @@ export function confirmationEmbed(
 ): EmbedBuilder {
   return baseEmbed(EMBED_COLORS.warning, {
     title: `${EMBED_ICONS.warning} ${title}`,
-    description: `${description}\n\n*This action cannot be undone.*`,
+    description: `${description}\n\n> ⚠️ *This action cannot be undone.*`,
     ...options,
   });
 }
@@ -265,24 +301,16 @@ export function premiumEmbed(
   options: Omit<EmbedOptions, 'title' | 'description'> = {}
 ): EmbedBuilder {
   const tierEmojis: Record<string, string> = {
-    free: '🆓',
-    bronze: '🥉',
-    silver: '⭐',
-    gold: '💎',
-    diamond: '👑',
+    free: '🆓', bronze: '🥉', silver: '⭐', gold: '💎', diamond: '👑',
   };
-  
   const tierColors: Record<string, number> = {
-    free: EMBED_COLORS.premium,
-    bronze: 0xCD7F32,
-    silver: 0xC0C0C0,
-    gold: EMBED_COLORS.premium,
-    diamond: 0xB9F2FF,
+    free: EMBED_COLORS.premium, bronze: 0xCD7F32,
+    silver: 0xC0C0C0, gold: EMBED_COLORS.premium, diamond: 0xB9F2FF,
   };
-  
-  const icon = tier ? tierEmojis[tier] : EMBED_ICONS.premium;
-  const color = tier ? tierColors[tier] : EMBED_COLORS.premium;
-  
+
+  const icon  = tier ? tierEmojis[tier]   : EMBED_ICONS.premium;
+  const color = tier ? tierColors[tier]   : EMBED_COLORS.premium;
+
   return baseEmbed(color, {
     title: `${icon} ${title}`,
     description,
@@ -393,7 +421,7 @@ export function serverEmbed(
   return baseEmbed(EMBED_COLORS.primary, {
     title: `${EMBED_ICONS.server} ${title}`,
     description,
-    thumbnail: guild?.iconURL({ size: 512 }),
+    thumbnail: guild?.iconURL({ size: 512 }) ?? undefined,
     ...options,
   });
 }
@@ -567,7 +595,7 @@ export function funEmbed(
   });
 }
 
-// ─── Games Embed ────────────────────────────────────────────────────────────────
+// ─── Games Embed ─────────────────────────────────────────────────────────────────
 export function gamesEmbed(
   title: string,
   description?: string,
@@ -600,11 +628,7 @@ export function customEmbed(
   description?: string,
   options: Omit<EmbedOptions, 'title' | 'description'> = {}
 ): EmbedBuilder {
-  return baseEmbed(color, {
-    title,
-    description,
-    ...options,
-  });
+  return baseEmbed(color, { title, description, ...options });
 }
 
 // ─── Moderation Action Embed ──────────────────────────────────────────────────────
@@ -613,72 +637,107 @@ export function moderationActionEmbed(
   target: { tag: string; id: string },
   moderator: { tag: string; id: string },
   reason: string,
-  caseId?: number
+  caseId?: number,
+  duration?: string
 ): EmbedBuilder {
   const actionEmojis: Record<string, string> = {
-    ban: '🔨',
-    kick: '👢',
-    mute: '🔇',
-    warn: '⚠️',
-    unban: '🔓',
-    unmute: '🔊',
-    softban: '⚡',
-    tempban: '⏱️',
-    note: '📝',
-    timeout: '⏰',
+    ban: '🔨', kick: '👢', mute: '🔇', warn: '⚠️',
+    unban: '🔓', unmute: '🔊', softban: '⚡', tempban: '⏱️',
+    note: '📝', timeout: '⏰', lock: '🔒', unlock: '🔓',
   };
 
-  const emoji = actionEmojis[action.toLowerCase()] || '🛡️';
+  const emoji       = actionEmojis[action.toLowerCase()] ?? '🛡️';
   const actionTitle = action.charAt(0).toUpperCase() + action.slice(1);
 
   return baseEmbed(EMBED_COLORS.moderation, {
     title: `${emoji} ${actionTitle}`,
     fields: [
-      { name: '👤 User', value: `${target.tag} (${target.id})`, inline: true },
-      { name: '🛡️ Moderator', value: `${moderator.tag} (${moderator.id})`, inline: true },
-      { name: '📝 Reason', value: reason, inline: false },
-      ...(caseId !== undefined ? [{ name: '📋 Case #', value: `${caseId}`, inline: true }] : []),
+      { name: '👤 User',        value: `<@${target.id}> — \`${target.tag}\` (${target.id})`, inline: true },
+      { name: '🛡️ Moderator',  value: `<@${moderator.id}> — \`${moderator.tag}\``,          inline: true },
+      ...(duration ? [{ name: '⏱️ Duration', value: duration, inline: true }] : []),
+      { name: '📝 Reason',      value: reason,                                               inline: false },
+      ...(caseId !== undefined ? [{ name: '📋 Case', value: `#${caseId}`, inline: true }] : []),
     ],
+  });
+}
+
+// ─── Now Playing Embed ────────────────────────────────────────────────────────────
+export function nowPlayingEmbed(opts: {
+  title: string;
+  author?: string;
+  uri?: string;
+  thumbnail?: string;
+  duration?: number;
+  position?: number;
+  requester?: string;
+  loop?: 'none' | 'track' | 'queue';
+  volume?: number;
+}): EmbedBuilder {
+  const { title, author, uri, thumbnail, duration, position, requester, loop, volume } = opts;
+
+  const loopEmoji = loop === 'track' ? '🔂' : loop === 'queue' ? '🔁' : '➡️';
+  const volEmoji  = (volume ?? 100) > 66 ? '🔊' : (volume ?? 100) > 33 ? '🔉' : '🔈';
+
+  const fields: { name: string; value: string; inline?: boolean }[] = [];
+
+  if (duration && position !== undefined) {
+    const bar = buildProgressBar(position, duration, 14);
+    fields.push({ name: '⏱️ Progress', value: bar, inline: false });
+  }
+
+  if (author)    fields.push({ name: '🎤 Artist',    value: author,                          inline: true });
+  if (requester) fields.push({ name: '👤 Requested', value: `<@${requester}>`,               inline: true });
+  if (volume !== undefined) fields.push({ name: `${volEmoji} Volume`, value: `${volume}%`,   inline: true });
+  if (loop !== undefined)   fields.push({ name: `${loopEmoji} Loop`,  value: loop ?? 'none', inline: true });
+
+  return baseEmbed(EMBED_COLORS.music, {
+    title: `🎵 ${title}`,
+    url: uri,
+    thumbnail,
+    fields,
   });
 }
 
 // ─── Export all embed builders ─────────────────────────────────────────────────────
 export const EmbedManager = {
-  success: successEmbed,
-  error: errorEmbed,
-  warning: warningEmbed,
-  info: infoEmbed,
-  loading: loadingEmbed,
-  confirmation: confirmationEmbed,
-  ai: aiEmbed,
-  music: musicEmbed,
-  queue: queueEmbed,
-  premium: premiumEmbed,
-  utility: utilityEmbed,
-  moderation: moderationEmbed,
-  economy: economyEmbed,
-  logging: loggingEmbed,
-  configuration: configurationEmbed,
-  dashboard: dashboardEmbed,
-  user: userEmbed,
-  server: serverEmbed,
-  role: roleEmbed,
-  channel: channelEmbed,
-  ticket: ticketEmbed,
-  giveaway: giveawayEmbed,
-  poll: pollEmbed,
-  reminder: reminderEmbed,
-  statistics: statisticsEmbed,
-  analytics: analyticsEmbed,
-  searchResult: searchResultEmbed,
-  help: helpEmbed,
-  leveling: levelingEmbed,
-  admin: adminEmbed,
-  fun: funEmbed,
-  games: gamesEmbed,
-  social: socialEmbed,
-  custom: customEmbed,
+  success:          successEmbed,
+  error:            errorEmbed,
+  warning:          warningEmbed,
+  info:             infoEmbed,
+  loading:          loadingEmbed,
+  confirmation:     confirmationEmbed,
+  ai:               aiEmbed,
+  music:            musicEmbed,
+  queue:            queueEmbed,
+  premium:          premiumEmbed,
+  utility:          utilityEmbed,
+  moderation:       moderationEmbed,
+  economy:          economyEmbed,
+  logging:          loggingEmbed,
+  configuration:    configurationEmbed,
+  dashboard:        dashboardEmbed,
+  user:             userEmbed,
+  server:           serverEmbed,
+  role:             roleEmbed,
+  channel:          channelEmbed,
+  ticket:           ticketEmbed,
+  giveaway:         giveawayEmbed,
+  poll:             pollEmbed,
+  reminder:         reminderEmbed,
+  statistics:       statisticsEmbed,
+  analytics:        analyticsEmbed,
+  searchResult:     searchResultEmbed,
+  help:             helpEmbed,
+  leveling:         levelingEmbed,
+  admin:            adminEmbed,
+  fun:              funEmbed,
+  games:            gamesEmbed,
+  social:           socialEmbed,
+  custom:           customEmbed,
   moderationAction: moderationActionEmbed,
-  colors: EMBED_COLORS,
-  icons: EMBED_ICONS,
+  nowPlaying:       nowPlayingEmbed,
+  progressBar:      buildProgressBar,
+  timestamp:        discordTimestamp,
+  colors:           EMBED_COLORS,
+  icons:            EMBED_ICONS,
 } as const;

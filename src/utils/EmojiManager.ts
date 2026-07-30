@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { Client, Emoji } from 'discord.js';
+import { Client } from 'discord.js';
 
 export interface EmojiConfig {
   id?: string;
@@ -46,188 +46,230 @@ class EmojiManager {
 
   private initializeRegistry(): CategoryEmojis {
     return {
+      // ── Admin ──────────────────────────────────────────────────────────────
       admin: {
-        config: { name: 'admin_config', fallback: '⚙️' },
-        ban: { name: 'admin_ban', fallback: '🔨' },
-        kick: { name: 'admin_kick', fallback: '👢' },
-        mute: { name: 'admin_mute', fallback: '🔇' },
-        lock: { name: 'admin_lock', fallback: '🔒' },
-        unlock: { name: 'admin_unlock', fallback: '🔓' },
-        purge: { name: 'admin_purge', fallback: '🧹' },
-        settings: { name: 'admin_settings', fallback: '🛠️' },
+        config:   { name: 'admin_config',   fallback: '⚙️' },
+        ban:      { name: 'admin_ban',       fallback: '🔨' },
+        kick:     { name: 'admin_kick',      fallback: '👢' },
+        mute:     { name: 'admin_mute',      fallback: '🔇' },
+        lock:     { name: 'admin_lock',      fallback: '🔒' },
+        unlock:   { name: 'admin_unlock',    fallback: '🔓' },
+        purge:    { name: 'admin_purge',     fallback: '🧹' },
+        settings: { name: 'admin_settings',  fallback: '🛠️' },
       },
+      // ── AI ─────────────────────────────────────────────────────────────────
       ai: {
-        chat: { name: 'ai_chat', fallback: '🤖' },
-        image: { name: 'ai_image', fallback: '🎨' },
-        code: { name: 'ai_code', fallback: '💻' },
+        chat:      { name: 'ai_chat',      animated: true,  fallback: '🤖' },
+        image:     { name: 'ai_image',     fallback: '🎨' },
+        code:      { name: 'ai_code',      fallback: '💻' },
         translate: { name: 'ai_translate', fallback: '🌐' },
         summarize: { name: 'ai_summarize', fallback: '📝' },
-        analyze: { name: 'ai_analyze', fallback: '🔍' },
+        analyze:   { name: 'ai_analyze',   animated: true,  fallback: '🔍' },
+        thinking:  { name: 'ai_thinking',  animated: true,  fallback: '💭' },
       },
+      // ── Applications ───────────────────────────────────────────────────────
       applications: {
-        create: { name: 'app_create', fallback: '📝' },
-        submit: { name: 'app_submit', fallback: '✅' },
-        review: { name: 'app_review', fallback: '👀' },
+        create:  { name: 'app_create',  fallback: '📝' },
+        submit:  { name: 'app_submit',  fallback: '✅' },
+        review:  { name: 'app_review',  fallback: '👀' },
         approve: { name: 'app_approve', fallback: '✅' },
-        reject: { name: 'app_reject', fallback: '❌' },
+        reject:  { name: 'app_reject',  fallback: '❌' },
       },
+      // ── Context ────────────────────────────────────────────────────────────
       context: {
-        user: { name: 'ctx_user', fallback: '👤' },
+        user:    { name: 'ctx_user',    fallback: '👤' },
         message: { name: 'ctx_message', fallback: '💬' },
         channel: { name: 'ctx_channel', fallback: '#️⃣' },
-        server: { name: 'ctx_server', fallback: '🏠' },
+        server:  { name: 'ctx_server',  fallback: '🏠' },
+        loading: { name: 'ctx_loading', animated: true, fallback: '⏳' },
       },
+      // ── Economy ────────────────────────────────────────────────────────────
       economy: {
-        coins: { name: 'eco_coins', fallback: '💰' },
-        wallet: { name: 'eco_wallet', fallback: '👛' },
-        bank: { name: 'eco_bank', fallback: '🏦' },
-        shop: { name: 'eco_shop', fallback: '🛒' },
+        coins:     { name: 'eco_coins',     fallback: '💰' },
+        wallet:    { name: 'eco_wallet',    fallback: '👛' },
+        bank:      { name: 'eco_bank',      fallback: '🏦' },
+        shop:      { name: 'eco_shop',      fallback: '🛒' },
         inventory: { name: 'eco_inventory', fallback: '🎒' },
-        daily: { name: 'eco_daily', fallback: '📅' },
-        transfer: { name: 'eco_transfer', fallback: '💸' },
+        daily:     { name: 'eco_daily',     fallback: '📅' },
+        transfer:  { name: 'eco_transfer',  fallback: '💸' },
+        work:      { name: 'eco_work',      fallback: '⚒️' },
+        crime:     { name: 'eco_crime',     fallback: '🕵️' },
       },
+      // ── Fun ────────────────────────────────────────────────────────────────
       fun: {
-        dice: { name: 'fun_dice', fallback: '🎲' },
-        coinflip: { name: 'fun_coinflip', fallback: '🪙' },
-        meme: { name: 'fun_meme', fallback: '😂' },
-        joke: { name: 'fun_joke', fallback: '😄' },
-        trivia: { name: 'fun_trivia', fallback: '❓' },
-        rate: { name: 'fun_rate', fallback: '⭐' },
+        dice:     { name: 'fun_dice',     animated: true,  fallback: '🎲' },
+        coinflip: { name: 'fun_coinflip', animated: true,  fallback: '🪙' },
+        meme:     { name: 'fun_meme',     fallback: '😂' },
+        joke:     { name: 'fun_joke',     fallback: '😄' },
+        trivia:   { name: 'fun_trivia',   fallback: '❓' },
+        rate:     { name: 'fun_rate',     fallback: '⭐' },
       },
+      // ── Games ──────────────────────────────────────────────────────────────
       games: {
-        tic_tac_toe: { name: 'game_ttt', fallback: '⭕' },
-        hangman: { name: 'game_hangman', fallback: '🎯' },
-        snake: { name: 'game_snake', fallback: '🐍' },
-        memory: { name: 'game_memory', fallback: '🧠' },
-        quiz: { name: 'game_quiz', fallback: '📚' },
+        tic_tac_toe: { name: 'game_ttt',     fallback: '⭕' },
+        hangman:     { name: 'game_hangman', fallback: '🎯' },
+        snake:       { name: 'game_snake',   fallback: '🐍' },
+        memory:      { name: 'game_memory',  fallback: '🧠' },
+        quiz:        { name: 'game_quiz',    fallback: '📚' },
       },
+      // ── Giveaway ───────────────────────────────────────────────────────────
       giveaway: {
-        gift: { name: 'ga_gift', fallback: '🎁' },
-        ticket: { name: 'ga_ticket', fallback: '🎟️' },
-        winner: { name: 'ga_winner', fallback: '🏆' },
-        end: { name: 'ga_end', fallback: '⏰' },
-        reroll: { name: 'ga_reroll', fallback: '🔄' },
+        gift:    { name: 'ga_gift',   animated: true,  fallback: '🎁' },
+        ticket:  { name: 'ga_ticket', fallback: '🎟️' },
+        winner:  { name: 'ga_winner', animated: true,  fallback: '🏆' },
+        end:     { name: 'ga_end',    fallback: '⏰' },
+        reroll:  { name: 'ga_reroll', animated: true,  fallback: '🔄' },
       },
+      // ── Help ───────────────────────────────────────────────────────────────
       help: {
-        info: { name: 'help_info', fallback: 'ℹ️' },
-        command: { name: 'help_command', fallback: '📋' },
+        info:     { name: 'help_info',     fallback: 'ℹ️' },
+        command:  { name: 'help_command',  fallback: '📋' },
         category: { name: 'help_category', fallback: '📁' },
-        search: { name: 'help_search', fallback: '🔍' },
+        search:   { name: 'help_search',   fallback: '🔍' },
+        tip:      { name: 'help_tip',      fallback: '💡' },
       },
+      // ── Image ──────────────────────────────────────────────────────────────
       image: {
-        generate: { name: 'img_generate', fallback: '🖼️' },
-        edit: { name: 'img_edit', fallback: '✏️' },
-        filter: { name: 'img_filter', fallback: '🎨' },
-        meme: { name: 'img_meme', fallback: '😂' },
-        caption: { name: 'img_caption', fallback: '💬' },
+        generate: { name: 'img_generate', animated: true, fallback: '🖼️' },
+        edit:     { name: 'img_edit',     fallback: '✏️' },
+        filter:   { name: 'img_filter',   fallback: '🎨' },
+        meme:     { name: 'img_meme',     fallback: '😂' },
+        caption:  { name: 'img_caption',  fallback: '💬' },
       },
+      // ── Info ───────────────────────────────────────────────────────────────
       info: {
-        server: { name: 'info_server', fallback: '🏠' },
-        user: { name: 'info_user', fallback: '👤' },
-        role: { name: 'info_role', fallback: '🎭' },
+        server:  { name: 'info_server',  fallback: '🏠' },
+        user:    { name: 'info_user',    fallback: '👤' },
+        role:    { name: 'info_role',    fallback: '🎭' },
         channel: { name: 'info_channel', fallback: '#️⃣' },
-        avatar: { name: 'info_avatar', fallback: '🖼️' },
-        banner: { name: 'info_banner', fallback: '🎨' },
+        avatar:  { name: 'info_avatar',  fallback: '🖼️' },
+        banner:  { name: 'info_banner',  fallback: '🎨' },
+        bot:     { name: 'info_bot',     fallback: '🤖' },
       },
+      // ── Leveling ───────────────────────────────────────────────────────────
       leveling: {
-        level: { name: 'lvl_level', fallback: '📈' },
-        xp: { name: 'lvl_xp', fallback: '⭐' },
-        rank: { name: 'lvl_rank', fallback: '🏅' },
-        leaderboard: { name: 'lvl_leaderboard', fallback: '🏆' },
-        card: { name: 'lvl_card', fallback: '🃏' },
+        level:       { name: 'lvl_level',       animated: true, fallback: '📈' },
+        xp:          { name: 'lvl_xp',           fallback: '⭐' },
+        rank:        { name: 'lvl_rank',         fallback: '🏅' },
+        leaderboard: { name: 'lvl_leaderboard',  fallback: '🏆' },
+        card:        { name: 'lvl_card',         fallback: '🃏' },
+        levelup:     { name: 'lvl_levelup',      animated: true, fallback: '🎉' },
       },
+      // ── Moderation ─────────────────────────────────────────────────────────
       moderation: {
-        warn: { name: 'mod_warn', fallback: '⚠️' },
-        mute: { name: 'mod_mute', fallback: '🔇' },
-        kick: { name: 'mod_kick', fallback: '👢' },
-        ban: { name: 'mod_ban', fallback: '🔨' },
-        unban: { name: 'mod_unban', fallback: '🔓' },
+        warn:    { name: 'mod_warn',    fallback: '⚠️' },
+        mute:    { name: 'mod_mute',    fallback: '🔇' },
+        kick:    { name: 'mod_kick',    fallback: '👢' },
+        ban:     { name: 'mod_ban',     fallback: '🔨' },
+        unban:   { name: 'mod_unban',   fallback: '🔓' },
         timeout: { name: 'mod_timeout', fallback: '⏱️' },
-        purge: { name: 'mod_purge', fallback: '🧹' },
-        lock: { name: 'mod_lock', fallback: '🔒' },
-        unlock: { name: 'mod_unlock', fallback: '🔓' },
+        purge:   { name: 'mod_purge',   fallback: '🧹' },
+        lock:    { name: 'mod_lock',    fallback: '🔒' },
+        unlock:  { name: 'mod_unlock',  fallback: '🔓' },
+        case:    { name: 'mod_case',    fallback: '📋' },
       },
+      // ── Music ──────────────────────────────────────────────────────────────
       music: {
-        play: { name: 'music_play', fallback: '▶️' },
-        pause: { name: 'music_pause', fallback: '⏸️' },
-        stop: { name: 'music_stop', fallback: '⏹️' },
-        skip: { name: 'music_skip', fallback: '⏭️' },
-        previous: { name: 'music_previous', fallback: '⏮️' },
-        shuffle: { name: 'music_shuffle', fallback: '🔀' },
-        loop: { name: 'music_loop', fallback: '🔁' },
-        queue: { name: 'music_queue', fallback: '📜' },
-        volume: { name: 'music_volume', fallback: '🔊' },
-        lyrics: { name: 'music_lyrics', fallback: '🎵' },
-        nowplaying: { name: 'music_np', fallback: '🎶' },
-        search: { name: 'music_search', fallback: '🔍' },
-        playlist: { name: 'music_playlist', fallback: '📁' },
-        filter: { name: 'music_filter', fallback: '🎚️' },
-        radio: { name: 'music_radio', fallback: '📻' },
+        play:       { name: 'music_play',       animated: true,  fallback: '▶️' },
+        pause:      { name: 'music_pause',       fallback: '⏸️' },
+        stop:       { name: 'music_stop',        fallback: '⏹️' },
+        skip:       { name: 'music_skip',        animated: true,  fallback: '⏭️' },
+        previous:   { name: 'music_previous',    fallback: '⏮️' },
+        shuffle:    { name: 'music_shuffle',     animated: true,  fallback: '🔀' },
+        loop:       { name: 'music_loop',        fallback: '🔁' },
+        queue:      { name: 'music_queue',       fallback: '📜' },
+        volume:     { name: 'music_volume',      fallback: '🔊' },
+        lyrics:     { name: 'music_lyrics',      fallback: '🎵' },
+        nowplaying: { name: 'music_np',          animated: true,  fallback: '🎶' },
+        search:     { name: 'music_search',      animated: true,  fallback: '🔍' },
+        playlist:   { name: 'music_playlist',    fallback: '📁' },
+        filter:     { name: 'music_filter',      fallback: '🎚️' },
+        radio:      { name: 'music_radio',       fallback: '📻' },
+        loading:    { name: 'music_loading',     animated: true,  fallback: '⏳' },
       },
+      // ── Owner ──────────────────────────────────────────────────────────────
       owner: {
-        reload: { name: 'owner_reload', fallback: '🔄' },
-        restart: { name: 'owner_restart', fallback: '🔁' },
+        reload:   { name: 'owner_reload',   animated: true,  fallback: '🔄' },
+        restart:  { name: 'owner_restart',  animated: true,  fallback: '🔁' },
         shutdown: { name: 'owner_shutdown', fallback: '🛑' },
-        eval: { name: 'owner_eval', fallback: '💻' },
-        shell: { name: 'owner_shell', fallback: '⌨️' },
-        database: { name: 'owner_db', fallback: '🗄️' },
-        redis: { name: 'owner_redis', fallback: '🔴' },
-        stats: { name: 'owner_stats', fallback: '📊' },
+        eval:     { name: 'owner_eval',     fallback: '💻' },
+        shell:    { name: 'owner_shell',    fallback: '⌨️' },
+        database: { name: 'owner_db',       fallback: '🗄️' },
+        redis:    { name: 'owner_redis',    fallback: '🔴' },
+        stats:    { name: 'owner_stats',    fallback: '📊' },
       },
+      // ── Premium ────────────────────────────────────────────────────────────
       premium: {
-        star: { name: 'prem_star', fallback: '⭐' },
-        crown: { name: 'prem_crown', fallback: '👑' },
-        gem: { name: 'prem_gem', fallback: '💎' },
-        key: { name: 'prem_key', fallback: '🔑' },
-        activate: { name: 'prem_activate', fallback: '✅' },
-        status: { name: 'prem_status', fallback: '📊' },
-        tier: { name: 'prem_tier', fallback: '🏆' },
+        star:     { name: 'prem_star',     animated: true,  fallback: '⭐' },
+        crown:    { name: 'prem_crown',    fallback: '👑' },
+        gem:      { name: 'prem_gem',      fallback: '💎' },
+        key:      { name: 'prem_key',      fallback: '🔑' },
+        activate: { name: 'prem_activate', animated: true,  fallback: '✅' },
+        status:   { name: 'prem_status',   fallback: '📊' },
+        tier:     { name: 'prem_tier',     fallback: '🏆' },
+        bronze:   { name: 'prem_bronze',   fallback: '🥉' },
+        silver:   { name: 'prem_silver',   fallback: '🥈' },
+        gold:     { name: 'prem_gold',     fallback: '🥇' },
+        diamond:  { name: 'prem_diamond',  animated: true,  fallback: '💎' },
       },
+      // ── Social ─────────────────────────────────────────────────────────────
       social: {
-        profile: { name: 'soc_profile', fallback: '👤' },
-        marry: { name: 'soc_marry', fallback: '💕' },
-        divorce: { name: 'soc_divorce', fallback: '💔' },
-        hug: { name: 'soc_hug', fallback: '🤗' },
-        kiss: { name: 'soc_kiss', fallback: '😘' },
-        slap: { name: 'soc_slap', fallback: '👋' },
-        highfive: { name: 'soc_highfive', fallback: '✋' },
-        rep: { name: 'soc_rep', fallback: '👍' },
+        profile:   { name: 'soc_profile',   fallback: '👤' },
+        marry:     { name: 'soc_marry',     animated: true,  fallback: '💕' },
+        divorce:   { name: 'soc_divorce',   fallback: '💔' },
+        hug:       { name: 'soc_hug',       animated: true,  fallback: '🤗' },
+        kiss:      { name: 'soc_kiss',      fallback: '😘' },
+        slap:      { name: 'soc_slap',      animated: true,  fallback: '👋' },
+        highfive:  { name: 'soc_highfive',  animated: true,  fallback: '✋' },
+        rep:       { name: 'soc_rep',       fallback: '👍' },
+        cuddle:    { name: 'soc_cuddle',    animated: true,  fallback: '🫂' },
+        pat:       { name: 'soc_pat',       animated: true,  fallback: '🤚' },
       },
+      // ── Starboard ──────────────────────────────────────────────────────────
       starboard: {
-        star: { name: 'sb_star', fallback: '⭐' },
-        message: { name: 'sb_message', fallback: '💬' },
+        star:        { name: 'sb_star',        animated: true,  fallback: '⭐' },
+        message:     { name: 'sb_message',     fallback: '💬' },
         leaderboard: { name: 'sb_leaderboard', fallback: '🏆' },
-        stats: { name: 'sb_stats', fallback: '📊' },
-        random: { name: 'sb_random', fallback: '🎲' },
+        stats:       { name: 'sb_stats',       fallback: '📊' },
+        random:      { name: 'sb_random',      fallback: '🎲' },
       },
+      // ── Utility ────────────────────────────────────────────────────────────
       utility: {
-        avatar: { name: 'util_avatar', fallback: '🖼️' },
-        userinfo: { name: 'util_userinfo', fallback: '👤' },
-        serverinfo: { name: 'util_serverinfo', fallback: '🏠' },
-        roleinfo: { name: 'util_roleinfo', fallback: '🎭' },
-        channelinfo: { name: 'util_channelinfo', fallback: '#️⃣' },
-        emoji: { name: 'util_emoji', fallback: '😀' },
-        poll: { name: 'util_poll', fallback: '📊' },
-        reminder: { name: 'util_reminder', fallback: '⏰' },
-        timer: { name: 'util_timer', fallback: '⏱️' },
-        calculator: { name: 'util_calc', fallback: '🧮' },
-        search: { name: 'util_search', fallback: '🔍' },
-        translate: { name: 'util_translate', fallback: '🌐' },
+        avatar:      { name: 'util_avatar',      fallback: '🖼️' },
+        userinfo:    { name: 'util_userinfo',     fallback: '👤' },
+        serverinfo:  { name: 'util_serverinfo',   fallback: '🏠' },
+        roleinfo:    { name: 'util_roleinfo',     fallback: '🎭' },
+        channelinfo: { name: 'util_channelinfo',  fallback: '#️⃣' },
+        emoji:       { name: 'util_emoji',        fallback: '😀' },
+        poll:        { name: 'util_poll',         fallback: '📊' },
+        reminder:    { name: 'util_reminder',     fallback: '⏰' },
+        timer:       { name: 'util_timer',        fallback: '⏱️' },
+        calculator:  { name: 'util_calc',         fallback: '🧮' },
+        search:      { name: 'util_search',       fallback: '🔍' },
+        translate:   { name: 'util_translate',    fallback: '🌐' },
+        // Status emojis (animated variants for richer UX)
+        loading:     { name: 'util_loading',      animated: true,  fallback: '⏳' },
+        success:     { name: 'util_success',      animated: true,  fallback: '✅' },
+        error:       { name: 'util_error',        fallback: '❌' },
+        warning:     { name: 'util_warning',      fallback: '⚠️' },
+        processing:  { name: 'util_processing',   animated: true,  fallback: '⚙️' },
+        searching:   { name: 'util_searching',    animated: true,  fallback: '🔍' },
+        downloading: { name: 'util_downloading',  animated: true,  fallback: '⬇️' },
+        uploading:   { name: 'util_uploading',    animated: true,  fallback: '⬆️' },
+        cooldown:    { name: 'util_cooldown',     animated: true,  fallback: '⌛' },
+        notification: { name: 'util_notification', animated: true, fallback: '🔔' },
       },
     };
   }
 
+  /** Get the emoji string for a category/key. Falls back to Unicode if no custom emoji is set. */
   public get(category: keyof CategoryEmojis, key: string): string {
     const cacheKey = `${category}:${key}`;
-    
-    if (this.cache.has(cacheKey)) {
-      return this.cache.get(cacheKey)!;
-    }
+
+    if (this.cache.has(cacheKey)) return this.cache.get(cacheKey)!;
 
     const config = this.registry[category]?.[key];
-    if (!config) {
-      return this.registry.utility.search?.fallback || '❓';
-    }
+    if (!config) return this.registry.utility.search?.fallback ?? '❓';
 
     if (!this.client || !config.id) {
       this.cache.set(cacheKey, config.fallback);
@@ -237,29 +279,26 @@ class EmojiManager {
     try {
       const emoji = this.client.emojis.cache.get(config.id);
       if (emoji) {
-        const emojiString = emoji.toString();
-        this.cache.set(cacheKey, emojiString);
-        return emojiString;
+        const str = emoji.toString();
+        this.cache.set(cacheKey, str);
+        return str;
       }
-    } catch (error) {
-      // Silent fallback to Unicode
+    } catch {
+      // silent fallback
     }
 
     this.cache.set(cacheKey, config.fallback);
     return config.fallback;
   }
 
+  /** Get the animated emoji string, or Unicode fallback if not animated/not found. */
   public getAnimated(category: keyof CategoryEmojis, key: string): string {
     const cacheKey = `${category}:${key}:animated`;
-    
-    if (this.cache.has(cacheKey)) {
-      return this.cache.get(cacheKey)!;
-    }
+
+    if (this.cache.has(cacheKey)) return this.cache.get(cacheKey)!;
 
     const config = this.registry[category]?.[key];
-    if (!config) {
-      return this.registry.utility.search?.fallback || '❓';
-    }
+    if (!config) return this.registry.utility.search?.fallback ?? '❓';
 
     if (!this.client || !config.id || !config.animated) {
       this.cache.set(cacheKey, config.fallback);
@@ -269,29 +308,26 @@ class EmojiManager {
     try {
       const emoji = this.client.emojis.cache.get(config.id);
       if (emoji && emoji.animated) {
-        const emojiString = emoji.toString();
-        this.cache.set(cacheKey, emojiString);
-        return emojiString;
+        const str = emoji.toString();
+        this.cache.set(cacheKey, str);
+        return str;
       }
-    } catch (error) {
-      // Silent fallback to Unicode
+    } catch {
+      // silent fallback
     }
 
     this.cache.set(cacheKey, config.fallback);
     return config.fallback;
   }
 
+  /** Get a static (non-animated) emoji, falling back to Unicode. */
   public getStatic(category: keyof CategoryEmojis, key: string): string {
     const cacheKey = `${category}:${key}:static`;
-    
-    if (this.cache.has(cacheKey)) {
-      return this.cache.get(cacheKey)!;
-    }
+
+    if (this.cache.has(cacheKey)) return this.cache.get(cacheKey)!;
 
     const config = this.registry[category]?.[key];
-    if (!config) {
-      return this.registry.utility.search?.fallback || '❓';
-    }
+    if (!config) return this.registry.utility.search?.fallback ?? '❓';
 
     if (!this.client || !config.id || config.animated) {
       this.cache.set(cacheKey, config.fallback);
@@ -301,46 +337,38 @@ class EmojiManager {
     try {
       const emoji = this.client.emojis.cache.get(config.id);
       if (emoji && !emoji.animated) {
-        const emojiString = emoji.toString();
-        this.cache.set(cacheKey, emojiString);
-        return emojiString;
+        const str = emoji.toString();
+        this.cache.set(cacheKey, str);
+        return str;
       }
-    } catch (error) {
-      // Silent fallback to Unicode
+    } catch {
+      // silent fallback
     }
 
     this.cache.set(cacheKey, config.fallback);
     return config.fallback;
   }
 
+  /** Get all resolved emoji strings for a category. */
   public getAll(category: keyof CategoryEmojis): Record<string, string> {
     const result: Record<string, string> = {};
-    const categoryConfig = this.registry[category];
-    
-    if (!categoryConfig) return result;
-
-    for (const [key] of Object.entries(categoryConfig)) {
+    const cat = this.registry[category];
+    if (!cat) return result;
+    for (const key of Object.keys(cat)) {
       result[key] = this.get(category, key);
     }
-
     return result;
   }
 
-  public clearCache(): void {
-    this.cache.clear();
-  }
+  public clearCache(): void { this.cache.clear(); }
 
   public registerCustomEmoji(category: keyof CategoryEmojis, key: string, config: EmojiConfig): void {
-    if (!this.registry[category]) {
-      this.registry[category] = {} as any;
-    }
+    if (!this.registry[category]) (this.registry as any)[category] = {};
     this.registry[category][key] = config;
     this.cache.delete(`${category}:${key}`);
   }
 
-  public getRegistry(): CategoryEmojis {
-    return this.registry;
-  }
+  public getRegistry(): CategoryEmojis { return this.registry; }
 }
 
 export const emojiManager = new EmojiManager();
