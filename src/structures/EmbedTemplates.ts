@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { EmbedBuilder, ColorResolvable } from 'discord.js';
-import { COLORS } from '../utils/Constants.js';
+import { COLORS } from '../constants/DesignSystem.js';
 
 export class EmbedTemplates {
   public static success(title: string, description?: string): EmbedBuilder {

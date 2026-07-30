@@ -2,7 +2,7 @@
 import { Event } from '../structures/BaseCommand.js';
 import { GuildChannel, EmbedBuilder, TextChannel } from 'discord.js';
 import { PanindiganClient } from '../structures/PanindiganClient.js';
-import { COLORS } from '../utils/Constants.js';
+import { COLORS } from '../constants/DesignSystem.js';
 
 export const event: Event = {
   name: 'channelDelete',

@@ -4,7 +4,7 @@ import { GuildMember } from 'discord.js';
 import { PanindiganClient } from '../structures/PanindiganClient.js';
 import { getPrismaClient } from '../database/postgresql/client.js';
 import { logger } from '../utils/Logger.js';
-import { Formatter } from '../utils/Formatter.js';
+import { Formatter } from '../utils/Formatters.js';
 
 export const event: Event = {
   name: 'guildMemberAdd',

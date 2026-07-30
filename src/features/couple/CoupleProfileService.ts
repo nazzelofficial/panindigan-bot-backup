@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { getPrismaClient } from '../../database/postgresql/client.js';
 import { EmbedBuilder } from 'discord.js';
-import { COLORS } from '../../utils/Constants.js';
+import { COLORS } from '../../constants/DesignSystem.js';
 
 export interface CoupleProfile {
   userId1: string;

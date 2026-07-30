@@ -1,11 +1,15 @@
 // @ts-nocheck
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import {
-  ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder,
+  ChatInputCommandInteraction, Message, SlashCommandBuilder,
   PermissionFlagsBits, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder,
   ComponentType, ButtonBuilder, ButtonStyle,
 } from 'discord.js';
-import { COLORS } from '../../utils/Constants.js';
+import { EmbedManager } from '../../structures/EmbedManager.js';
+import { ModalManager } from '../../structures/ModalManager.js';
+import { ButtonManager } from '../../structures/ButtonManager.js';
+import { ErrorHandler } from '../../handlers/ErrorHandler.js';
+import { SuccessHandler } from '../../handlers/SuccessHandler.js';
 import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class ApplicationCommand extends BaseCommand {
@@ -31,7 +35,7 @@ export class ApplicationCommand extends BaseCommand {
 
     if (sub === 'create') {
       if (!i.memberPermissions?.has(PermissionFlagsBits.ManageGuild)) {
-        await i.reply({ content: '❌ You need Manage Server permission to create forms.', ephemeral: true }); return;
+        await ErrorHandler.permissions(i, 'Manage Server'); return;
       }
       const name = i.options.getString('name', true);
       const description = i.options.getString('description') || 'No description provided.';
@@ -41,30 +45,30 @@ export class ApplicationCommand extends BaseCommand {
         create: { guildId: i.guildId!, name, description, questions: [], createdBy: i.user.id },
         update: { description, updatedAt: new Date() },
       });
-      await i.reply({ content: `✅ Application form **${name}** created!`, ephemeral: true });
+      await SuccessHandler.configuration(i, 'Application Form', name);
 
     } else if (sub === 'list') {
       const forms = await (prisma as any).applicationForm.findMany({ where: { guildId: i.guildId!, active: true } });
-      if (!forms.length) { await i.reply({ content: '❌ No application forms found.', ephemeral: true }); return; }
-      const embed = new EmbedBuilder().setTitle('📋 Application Forms').setColor(COLORS.default)
-        .setDescription(forms.map((f: any) => `**${f.name}** — ${f.description}\n${(f.questions || []).length} question(s)`).join('\n\n'));
+      if (!forms.length) { await ErrorHandler.notFound(i, 'Application Forms', 'active forms'); return; }
+      const embed = EmbedManager.info('📋 Application Forms', forms.map((f: any) => `**${f.name}** — ${f.description}\n${(f.questions || []).length} question(s)`).join('\n\n'));
       await i.reply({ embeds: [embed] });
 
     } else if (sub === 'apply') {
       const formName = i.options.getString('form', true);
       const form = await (prisma as any).applicationForm.findFirst({ where: { guildId: i.guildId!, name: formName, active: true } });
-      if (!form) { await i.reply({ content: `❌ Form **${formName}** not found.`, ephemeral: true }); return; }
+      if (!form) { await ErrorHandler.notFound(i, 'Form', formName); return; }
 
       const questions = form.questions as any[] || [];
-      if (!questions.length) { await i.reply({ content: '❌ This form has no questions set up yet.', ephemeral: true }); return; }
+      if (!questions.length) { await ErrorHandler.generic(i, new Error('This form has no questions set up yet.')); return; }
 
       // Build modal with first 5 questions
-      const modal = new ModalBuilder().setCustomId(`app_modal:${form.id}`).setTitle(`Apply: ${form.name}`);
-      questions.slice(0, 5).forEach((q: any, idx: number) => {
-        modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(
-          new TextInputBuilder().setCustomId(`q_${idx}`).setLabel(q.question).setStyle(TextInputStyle.Paragraph).setRequired(q.required ?? true).setMaxLength(1000)
-        ));
-      });
+      const modal = ModalManager.custom(`app_modal:${form.id}`, form.name, questions.slice(0, 5).map((q: any, idx: number) => ({
+        customId: `q_${idx}`,
+        label: q.question,
+        placeholder: 'Your answer...',
+        required: q.required ?? true,
+        maxLength: 1000,
+      })));
 
       await i.showModal(modal);
       const submitted = await i.awaitModalSubmit({ time: 300000, filter: (mi) => mi.customId === `app_modal:${form.id}` }).catch(() => null);
@@ -82,27 +86,24 @@ export class ApplicationCommand extends BaseCommand {
       if (form.reviewChannelId) {
         const reviewCh = i.guild!.channels.cache.get(form.reviewChannelId);
         if (reviewCh?.isTextBased()) {
-          const reviewEmbed = new EmbedBuilder().setTitle(`📋 New Application: ${form.name}`).setColor(COLORS.warning)
+          const reviewEmbed = EmbedManager.info(`📋 New Application: ${form.name}`)
             .addFields(
               { name: 'Applicant', value: `${i.user.tag} (${i.user.id})`, inline: true },
               { name: 'Application ID', value: application.id, inline: true },
               ...answers.map((a: any) => ({ name: a.question, value: a.answer, inline: false })),
             ).setTimestamp();
-          const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-            new ButtonBuilder().setCustomId(`app_accept:${application.id}`).setLabel('✅ Accept').setStyle(ButtonStyle.Success),
-            new ButtonBuilder().setCustomId(`app_deny:${application.id}`).setLabel('❌ Deny').setStyle(ButtonStyle.Danger),
-          );
+          const row = ButtonManager.confirmRow(`app_accept:${application.id}`, `app_deny:${application.id}`, 'Accept', 'Deny');
           await (reviewCh as any).send({ embeds: [reviewEmbed], components: [row] });
         }
       }
 
-      await submitted.reply({ content: `✅ Your application for **${form.name}** has been submitted! (ID: \`${application.id}\`)`, ephemeral: true });
+      await SuccessHandler.generic(submitted, 'Application Submitted', `Your application for **${form.name}** has been submitted! (ID: \`${application.id}\`)`);
 
     } else if (sub === 'view') {
       const id = i.options.getString('id', true);
       const app = await (prisma as any).application.findUnique({ where: { id }, include: { form: true } });
-      if (!app || app.guildId !== i.guildId) { await i.reply({ content: '❌ Application not found.', ephemeral: true }); return; }
-      const embed = new EmbedBuilder().setTitle(`📋 Application ${id.slice(0, 8)}...`).setColor(COLORS.default)
+      if (!app || app.guildId !== i.guildId) { await ErrorHandler.notFound(i, 'Application', id); return; }
+      const embed = EmbedManager.info(`📋 Application ${id.slice(0, 8)}...`)
         .addFields(
           { name: 'Form', value: app.form.name, inline: true },
           { name: 'Status', value: app.status, inline: true },
@@ -113,26 +114,26 @@ export class ApplicationCommand extends BaseCommand {
 
     } else if (sub === 'accept' || sub === 'deny') {
       if (!i.memberPermissions?.has(PermissionFlagsBits.ManageGuild)) {
-        await i.reply({ content: '❌ You need Manage Server to review applications.', ephemeral: true }); return;
+        await ErrorHandler.permissions(i, 'Manage Server'); return;
       }
       const id = i.options.getString('id', true);
       const reason = i.options.getString('reason') || 'No reason provided.';
       const newStatus = sub === 'accept' ? 'accepted' : 'denied';
       await (prisma as any).application.update({ where: { id }, data: { status: newStatus, reviewerId: i.user.id, reviewedAt: new Date(), reviewNotes: reason } });
-      await i.reply({ content: `✅ Application \`${id.slice(0, 8)}...\` has been **${newStatus}**.`, ephemeral: true });
+      await SuccessHandler.moderation(i, newStatus.charAt(0).toUpperCase() + newStatus.slice(1), `Application \`${id.slice(0, 8)}...\``, reason);
 
     } else if (sub === 'delete') {
       if (!i.memberPermissions?.has(PermissionFlagsBits.ManageGuild)) {
-        await i.reply({ content: '❌ Manage Server required.', ephemeral: true }); return;
+        await ErrorHandler.permissions(i, 'Manage Server'); return;
       }
       const name = i.options.getString('name', true);
       await (prisma as any).applicationForm.updateMany({ where: { guildId: i.guildId!, name }, data: { active: false } });
-      await i.reply({ content: `✅ Form **${name}** deactivated.`, ephemeral: true });
+      await SuccessHandler.configuration(i, 'Form Deactivation', name);
     }
   }
 
   public async executePrefix(m: Message, _args: string[]): Promise<void> {
-    await m.reply('❌ Please use `/application` slash commands for applications.');
+    await ErrorHandler.generic(m, new Error('Please use `/application` slash commands for applications.'));
   }
 }
 export default ApplicationCommand;

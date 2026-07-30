@@ -4,7 +4,10 @@ import {
   ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder,
   PermissionFlagsBits, ButtonBuilder, ButtonStyle, ActionRowBuilder, ComponentType, TextChannel,
 } from 'discord.js';
-import { COLORS } from '../../utils/Constants.js';
+import { EmbedManager } from '../../structures/EmbedManager.js';
+import { ErrorHandler } from '../../handlers/ErrorHandler.js';
+import { SuccessHandler } from '../../handlers/SuccessHandler.js';
+import { ButtonManager } from '../../structures/ButtonManager.js';
 import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class GiveawayCommand extends BaseCommand {
@@ -45,25 +48,19 @@ export class GiveawayCommand extends BaseCommand {
     return parseInt(match[1]) * (units[match[2].toLowerCase()] || 0);
   }
 
-  private async startGiveaway(guildId: string, channelId: string, prize: string, duration: string, winners: number, hostId: string, client: any): Promise<string> {
+  private async startGiveaway(guildId: string, channelId: string, prize: string, duration: string, winners: number, hostId: string, client: any): Promise<{ success: boolean; message: string }> {
     const ms = this.parseDuration(duration);
-    if (!ms || ms < 10000) return '❌ Invalid duration. Use format like `1h`, `30m`, `2d`. Minimum 10 seconds.';
-    if (ms > 30 * 86400000) return '❌ Maximum giveaway duration is 30 days.';
+    if (!ms || ms < 10000) return { success: false, message: 'Invalid duration. Use format like `1h`, `30m`, `2d`. Minimum 10 seconds.' };
+    if (ms > 30 * 86400000) return { success: false, message: 'Maximum giveaway duration is 30 days.' };
 
     const endsAt = new Date(Date.now() + ms);
     const channel = client.channels.cache.get(channelId) as TextChannel;
-    if (!channel?.isTextBased()) return '❌ Invalid channel.';
+    if (!channel?.isTextBased()) return { success: false, message: 'Invalid channel.' };
 
-    const embed = new EmbedBuilder()
-      .setTitle('🎉 GIVEAWAY!')
-      .setDescription(`**Prize:** ${prize}\n\n**Hosted by:** <@${hostId}>\n**Ends:** <t:${Math.floor(endsAt.getTime() / 1000)}:R>\n**Winners:** ${winners}\n\nClick the button below to enter!`)
-      .setColor(COLORS.gold)
-      .setFooter({ text: `Ends at` })
-      .setTimestamp(endsAt);
+    const description = `**Prize:** ${prize}\n\n**Hosted by:** <@${hostId}>\n**Ends:** <t:${Math.floor(endsAt.getTime() / 1000)}:R>\n**Winners:** ${winners}\n\nClick the button below to enter!`;
+    const embed = EmbedManager.premium('🎉 GIVEAWAY!', description).setTimestamp(endsAt);
 
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId('giveaway_enter').setLabel('🎉 Enter').setStyle(ButtonStyle.Primary),
-    );
+    const row = ButtonManager.primaryRow([{ label: '🎉 Enter', customId: 'giveaway_enter' }]);
 
     const msg = await channel.send({ embeds: [embed], components: [row] });
 
@@ -81,16 +78,16 @@ export class GiveawayCommand extends BaseCommand {
       await this.endGiveaway(msg.id, guildId, client, false);
     }, ms);
 
-    return `✅ Giveaway started in <#${channelId}>! Ends <t:${Math.floor(endsAt.getTime() / 1000)}:R>`;
+    return { success: true, message: `Giveaway started in <#${channelId}>! Ends <t:${Math.floor(endsAt.getTime() / 1000)}:R>` };
   }
 
-  private async endGiveaway(messageId: string, guildId: string, client: any, forced: boolean): Promise<string> {
+  private async endGiveaway(messageId: string, guildId: string, client: any, forced: boolean): Promise<{ success: boolean; message: string; winners?: string[] }> {
     const prisma = getPrismaClient();
     const giveaway = await (prisma as any).giveaway.findFirst({
       where: { messageId, guildId, active: true },
     });
 
-    if (!giveaway) return '❌ Giveaway not found or already ended.';
+    if (!giveaway) return { success: false, message: 'Giveaway not found or already ended.' };
 
     const participants = giveaway.participants as string[] || [];
     await (prisma as any).giveaway.update({ where: { id: giveaway.id }, data: { active: false, endedAt: new Date() } });
@@ -105,21 +102,20 @@ export class GiveawayCommand extends BaseCommand {
 
     try {
       const msg = await channel?.messages.fetch(messageId);
-      const embed = new EmbedBuilder()
-        .setTitle('🎉 GIVEAWAY ENDED!')
-        .setDescription(`**Prize:** ${giveaway.prize}\n\n**Winners:** ${winners.length ? winners.map((w: string) => `<@${w}>`).join(', ') : 'No valid participants!'}\n\n**Hosted by:** <@${giveaway.hostId}>`)
-        .setColor(COLORS.error)
-        .setTimestamp();
+      const description = `**Prize:** ${giveaway.prize}\n\n**Winners:** ${winners.length ? winners.map((w: string) => `<@${w}>`).join(', ') : 'No valid participants!'}\n\n**Hosted by:** <@${giveaway.hostId}>`;
+      const embed = EmbedManager.giveaway('🎉 GIVEAWAY ENDED!', description);
       await msg?.edit({ embeds: [embed], components: [] });
 
       if (winners.length) {
-        await channel?.send({ content: `🎉 Congratulations ${winners.map((w: string) => `<@${w}>`).join(', ')}! You won **${giveaway.prize}**!` });
+        const embed2 = EmbedManager.giveaway('🎉 Congratulations!', `You won **${giveaway.prize}**!`);
+        await channel?.send({ content: `🎉 Congratulations ${winners.map((w: string) => `<@${w}>`).join(', ')}!`, embeds: [embed2] });
       } else {
-        await channel?.send({ content: `😔 No valid entries for **${giveaway.prize}**.` });
+        const embed2 = EmbedManager.info('😔 No Entries', `No valid entries for **${giveaway.prize}**.`);
+        await channel?.send({ embeds: [embed2] });
       }
     } catch { /* Channel/message may be gone */ }
 
-    return `✅ Giveaway ended! Winners: ${winners.length ? winners.map((w: string) => `<@${w}>`).join(', ') : 'None'}`;
+    return { success: true, message: `Giveaway ended! Winners: ${winners.length ? winners.map((w: string) => `<@${w}>`).join(', ') : 'None'}`, winners };
   }
 
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> {
@@ -132,21 +128,24 @@ export class GiveawayCommand extends BaseCommand {
       const winners = i.options.getInteger('winners') || 1;
       const channel = (i.options.getChannel('channel') || i.channel)!;
       const result = await this.startGiveaway(i.guildId!, channel.id, prize, duration, winners, i.user.id, i.client);
-      await i.editReply({ content: result });
+      if (!result.success) { await ErrorHandler.generic(i, result.message); return; }
+      await SuccessHandler.configuration(i, 'Giveaway Started', result.message);
     } else if (sub === 'end') {
       const id = i.options.getString('id', true);
       const result = await this.endGiveaway(id, i.guildId!, i.client, true);
-      await i.editReply({ content: result });
+      if (!result.success) { await ErrorHandler.generic(i, result.message); return; }
+      await SuccessHandler.configuration(i, 'Giveaway Ended', result.message);
     } else if (sub === 'reroll') {
       const id = i.options.getString('id', true);
       const result = await this.endGiveaway(id, i.guildId!, i.client, true);
-      await i.editReply({ content: `🔄 Rerolled: ${result}` });
+      if (!result.success) { await ErrorHandler.generic(i, result.message); return; }
+      await SuccessHandler.configuration(i, 'Giveaway Rerolled', result.message);
     } else if (sub === 'list') {
       const prisma = getPrismaClient();
       const giveaways = await (prisma as any).giveaway.findMany({ where: { guildId: i.guildId!, active: true } });
-      if (!giveaways.length) { await i.editReply({ content: '❌ No active giveaways.' }); return; }
-      const embed = new EmbedBuilder().setTitle('🎉 Active Giveaways').setColor(COLORS.gold)
-        .setDescription(giveaways.map((g: any) => `**${g.prize}** — <#${g.channelId}> ends <t:${Math.floor(new Date(g.endsAt).getTime() / 1000)}:R>`).join('\n'));
+      if (!giveaways.length) { await ErrorHandler.generic(i, 'No active giveaways.'); return; }
+      const description = giveaways.map((g: any) => `**${g.prize}** — <#${g.channelId}> ends <t:${Math.floor(new Date(g.endsAt).getTime() / 1000)}:R>`).join('\n');
+      const embed = EmbedManager.premium('🎉 Active Giveaways', description);
       await i.editReply({ embeds: [embed] });
     }
   }
@@ -160,11 +159,13 @@ export class GiveawayCommand extends BaseCommand {
       const winnersStr = rest.find(a => a.startsWith('w:'));
       const winners = winnersStr ? parseInt(winnersStr.split(':')[1]) : 1;
       const prize = rest.filter(a => !a.match(/^\d+[smhd]$/) && !a.match(/^w:\d+/) && !a.match(/^<#/)).join(' ');
-      if (!prize) { await m.reply('❌ Please provide a prize.'); return; }
+      if (!prize) { await ErrorHandler.invalidArgument(m, 'prize', 'Prize name'); return; }
       const result = await this.startGiveaway(m.guildId!, channelId, prize, durationStr, winners, m.author.id, m.client);
-      await m.reply(result);
+      if (!result.success) { await ErrorHandler.generic(m, result.message); return; }
+      const embed = EmbedManager.success('✅ Giveaway Started', result.message);
+      await m.reply({ embeds: [embed] });
     } else {
-      await m.reply('❌ Use `/giveaway start` for full options, or `p!giveaway start <duration> <prize>`');
+      await ErrorHandler.invalidArgument(m, 'subcommand', 'Use `/giveaway start` for full options, or `p!giveaway start <duration> <prize>`');
     }
   }
 }

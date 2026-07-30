@@ -2,7 +2,7 @@
 import { Event } from '../structures/BaseCommand.js';
 import { MessageReaction, User, PartialMessageReaction, PartialUser, EmbedBuilder, TextChannel } from 'discord.js';
 import { PanindiganClient } from '../structures/PanindiganClient.js';
-import { COLORS } from '../utils/Constants.js';
+import { COLORS } from '../constants/DesignSystem.js';
 import { getCollection } from '../database/mongodb/client.js';
 
 export const event: Event = {

@@ -2,7 +2,7 @@
 import { Event } from '../structures/BaseCommand.js';
 import { Message, EmbedBuilder, PartialMessage, TextChannel } from 'discord.js';
 import { PanindiganClient } from '../structures/PanindiganClient.js';
-import { COLORS } from '../utils/Constants.js';
+import { COLORS } from '../constants/DesignSystem.js';
 import { getRedisClient } from '../database/redis/client.js';
 import config from '../../config.json' with { type: 'json' };
 

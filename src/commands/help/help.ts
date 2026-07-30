@@ -1,30 +1,9 @@
 // @ts-nocheck
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
-import { ChatInputCommandInteraction, Message, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, Message } from 'discord.js';
+import { HelpUI } from '../../structures/HelpUI.js';
 import { PanindiganClient } from '../../structures/PanindiganClient.js';
-import { EMOJIS, COLORS, COMMAND_CATEGORIES } from '../../utils/Constants.js';
-import { Formatter } from '../../utils/Formatter.js';
-
-const categoryEmojis: Record<string, string> = {
-  moderation: EMOJIS.moderation,
-  admin: EMOJIS.admin,
-  music: EMOJIS.music,
-  economy: EMOJIS.economy,
-  games: EMOJIS.games,
-  fun: EMOJIS.fun,
-  ai: EMOJIS.ai,
-  info: EMOJIS.info,
-  utility: EMOJIS.utility,
-  social: EMOJIS.social,
-  leveling: EMOJIS.leveling,
-  giveaway: EMOJIS.giveaway,
-  image: EMOJIS.image,
-  starboard: EMOJIS.starboard,
-  applications: EMOJIS.applications,
-  premium: EMOJIS.premium,
-  owner: EMOJIS.owner,
-  help: EMOJIS.info,
-};
+import { ErrorHandler } from '../../handlers/ErrorHandler.js';
 
 export class HelpCommand extends BaseCommand {
   constructor() {
@@ -63,109 +42,13 @@ export class HelpCommand extends BaseCommand {
 
   private async showMainHelp(interaction: ChatInputCommandInteraction | Message): Promise<void> {
     const client = interaction.client as PanindiganClient;
-    const embed = new EmbedBuilder()
-      .setTitle(`🤖 ${client.config.bot.name} v0.1 • All-in-One Discord Bot`)
-      .setDescription(`Prefix: \`${client.config.bot.prefix}\` • ${client.commands.size} Commands • 18 Categories`)
-      .setColor(COLORS.default)
-      .addFields([
-        { name: '🆓 Free', value: 'Essential commands — always available', inline: true },
-        { name: '💎 Premium', value: 'Bronze→Diamond — feature-based tiers', inline: true },
-        { name: '🔑 Owner', value: 'System-level control', inline: true },
-      ])
-      .setFooter({ text: 'Use the buttons below to browse command categories' });
-
-    const row = new ActionRowBuilder<ButtonBuilder>()
-      .addComponents(
-        new ButtonBuilder()
-          .setCustomId('help_moderation')
-          .setLabel('🛡️ Mod')
-          .setStyle(ButtonStyle.Primary),
-        new ButtonBuilder()
-          .setCustomId('help_admin')
-          .setLabel('👑 Admin')
-          .setStyle(ButtonStyle.Primary),
-        new ButtonBuilder()
-          .setCustomId('help_music')
-          .setLabel('🎵 Music')
-          .setStyle(ButtonStyle.Primary),
-        new ButtonBuilder()
-          .setCustomId('help_economy')
-          .setLabel('💰 Economy')
-          .setStyle(ButtonStyle.Primary),
-        new ButtonBuilder()
-          .setCustomId('help_games')
-          .setLabel('🎮 Games')
-          .setStyle(ButtonStyle.Primary)
-      );
-
-    const row2 = new ActionRowBuilder<ButtonBuilder>()
-      .addComponents(
-        new ButtonBuilder()
-          .setCustomId('help_fun')
-          .setLabel('🎉 Fun')
-          .setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder()
-          .setCustomId('help_ai')
-          .setLabel('🤖 AI')
-          .setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder()
-          .setCustomId('help_info')
-          .setLabel('ℹ️ Info')
-          .setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder()
-          .setCustomId('help_utility')
-          .setLabel('🔧 Utility')
-          .setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder()
-          .setCustomId('help_social')
-          .setLabel('🌐 Social')
-          .setStyle(ButtonStyle.Secondary)
-      );
-
-    const row3 = new ActionRowBuilder<ButtonBuilder>()
-      .addComponents(
-        new ButtonBuilder()
-          .setCustomId('help_leveling')
-          .setLabel('📈 Level')
-          .setStyle(ButtonStyle.Success),
-        new ButtonBuilder()
-          .setCustomId('help_giveaway')
-          .setLabel('🎁 Giveaway')
-          .setStyle(ButtonStyle.Success),
-        new ButtonBuilder()
-          .setCustomId('help_image')
-          .setLabel('🖼️ Image')
-          .setStyle(ButtonStyle.Success),
-        new ButtonBuilder()
-          .setCustomId('help_starboard')
-          .setLabel('⭐ Starboard')
-          .setStyle(ButtonStyle.Success),
-        new ButtonBuilder()
-          .setCustomId('help_applications')
-          .setLabel('📝 Apply')
-          .setStyle(ButtonStyle.Success)
-      );
-
-    const row4 = new ActionRowBuilder<ButtonBuilder>()
-      .addComponents(
-        new ButtonBuilder()
-          .setCustomId('help_premium')
-          .setLabel('💎 Premium')
-          .setStyle(ButtonStyle.Danger),
-        new ButtonBuilder()
-          .setCustomId('help_owner')
-          .setLabel('🔑 Owner')
-          .setStyle(ButtonStyle.Danger),
-        new ButtonBuilder()
-          .setCustomId('help_main')
-          .setLabel('🏠 Home')
-          .setStyle(ButtonStyle.Secondary)
-      );
+    const embed = HelpUI.createDashboardEmbed(client.config.bot.name || 'Panindigan', client.commands.size, client.config.bot.prefix || 'p!');
+    const components = HelpUI.createDashboardComponents();
 
     if (interaction instanceof ChatInputCommandInteraction) {
-      await interaction.reply({ embeds: [embed], components: [row, row2, row3, row4] });
+      await interaction.reply({ embeds: [embed], components });
     } else {
-      await interaction.reply({ embeds: [embed], components: [row, row2, row3, row4] });
+      await interaction.reply({ embeds: [embed], components });
     }
   }
 
@@ -179,35 +62,25 @@ export class HelpCommand extends BaseCommand {
       if (categoryCommands.size > 0) {
         await this.showCategoryHelp(interaction, target.toLowerCase());
       } else {
-        if (interaction instanceof ChatInputCommandInteraction) {
-          await interaction.reply({ content: `❌ Command or category "${target}" not found.`, ephemeral: true });
-        } else {
-          await interaction.reply(`❌ Command or category "${target}" not found.`);
-        }
+        await ErrorHandler.notFound(interaction, 'Command or Category', target);
       }
       return;
     }
 
-    const embed = new EmbedBuilder()
-      .setTitle(`${categoryEmojis[command.category] || '📌'} ${command.name}`)
-      .setDescription(command.description)
-      .setColor(COLORS[command.category as keyof typeof COLORS] || COLORS.default)
-      .addFields([
-        { name: 'Category', value: Formatter.capitalizeFirst(command.category), inline: true },
-        { name: 'Premium Tier', value: command.premiumTier.toUpperCase(), inline: true },
-        { name: 'Cooldown', value: `${command.cooldown}s`, inline: true },
-        { name: 'Slash Command', value: command.slashCommand ? '✅' : '❌', inline: true },
-        { name: 'Prefix Command', value: command.prefixCommand ? '✅' : '❌', inline: true },
-        { name: 'Guild Only', value: command.guildOnly ? '✅' : '❌', inline: true },
-      ]);
-
-    if (command.aliases.length > 0) {
-      embed.addFields({ name: 'Aliases', value: command.aliases.map(a => `\`${a}\``).join(', ') });
-    }
-
-    if (command.examples.length > 0) {
-      embed.addFields({ name: 'Examples', value: command.examples.map(e => `\`${e}\``).join('\n') });
-    }
+    const embed = HelpUI.createCommandEmbed({
+      name: command.name,
+      description: command.description,
+      category: command.category,
+      aliases: command.aliases,
+      usage: `/${command.name}`,
+      examples: command.examples,
+      permissions: command.userPermissions,
+      cooldown: command.cooldown,
+      premium: command.premiumTier,
+      nsfw: false,
+      devOnly: command.ownerOnly,
+      related: [],
+    });
 
     if (interaction instanceof ChatInputCommandInteraction) {
       await interaction.reply({ embeds: [embed] });
@@ -220,23 +93,20 @@ export class HelpCommand extends BaseCommand {
     const client = interaction.client as PanindiganClient;
     const commands = client.commands.filter(cmd => cmd.category === category);
     
-    const embed = new EmbedBuilder()
-      .setTitle(`${categoryEmojis[category] || '📌'} ${Formatter.capitalizeFirst(category)} Commands`)
-      .setDescription(`Total: ${commands.size} commands`)
-      .setColor(COLORS[category as keyof typeof COLORS] || COLORS.default);
-
-    // Deduplicate — the collection stores alias keys pointing to the same command object
-    const seen = new Set<string>();
-    const commandList = Array.from(commands.entries())
-      .filter(([key, cmd]) => {
-        if (key !== cmd.name || seen.has(cmd.name)) return false;
-        seen.add(cmd.name);
-        return true;
-      })
-      .map(([, cmd]) => `\`${cmd.name}\` — ${cmd.description}`)
-      .join('\n');
-
-    embed.addFields({ name: 'Commands', value: commandList.substring(0, 1024) || 'No commands found.' });
+    const embed = HelpUI.createCategoryEmbed(category, Array.from(commands.values()).map(cmd => ({
+      name: cmd.name,
+      description: cmd.description,
+      category: cmd.category,
+      aliases: cmd.aliases,
+      usage: `/${cmd.name}`,
+      examples: cmd.examples,
+      permissions: cmd.userPermissions,
+      cooldown: cmd.cooldown,
+      premium: cmd.premiumTier,
+      nsfw: false,
+      devOnly: cmd.ownerOnly,
+      related: [],
+    })));
 
     if (interaction instanceof ChatInputCommandInteraction) {
       await interaction.reply({ embeds: [embed] });

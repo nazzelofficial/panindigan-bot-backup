@@ -2,7 +2,7 @@
 
 An all-in-one Discord bot built for Filipino communities. Written in TypeScript with Discord.js v14, Prisma (PostgreSQL), MongoDB, Redis, and Lavalink for audio.
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0.3-blue)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-24.x-green)](https://nodejs.org/)
 [![Discord.js](https://img.shields.io/badge/Discord.js-14.x-5865F2)](https://discord.js.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)

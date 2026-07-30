@@ -4,6 +4,8 @@ import {
   ChatInputCommandInteraction, Message, AttachmentBuilder, SlashCommandBuilder,
 } from 'discord.js';
 import { PanindiganClient } from '../../structures/PanindiganClient.js';
+import { EmbedManager } from '../../structures/EmbedManager.js';
+import { ErrorHandler } from '../../handlers/ErrorHandler.js';
 
 export class ImageCommand extends BaseCommand {
   constructor() {
@@ -50,19 +52,25 @@ export class ImageCommand extends BaseCommand {
           style,
         });
         const imageUrl = result.data[0]?.url;
-        if (!imageUrl) { await i.editReply({ content: '❌ Failed to generate image.' }); return; }
-        await i.editReply({ content: `🎨 **Generated Image**\nPrompt: *${prompt}*\n${imageUrl}` });
+        if (!imageUrl) { await ErrorHandler.generic(i, 'Failed to generate image.'); return; }
+        const embed = EmbedManager.ai('Generated Image')
+          .setDescription(`🎨 **Generated Image**\nPrompt: *${prompt}*\n${imageUrl}`);
+        await i.editReply({ embeds: [embed] });
 
       } else if (sub === 'avatar') {
         const target = i.options.getUser('user') || i.user;
         const url = target.displayAvatarURL({ extension: 'png', size: 4096, forceStatic: false });
-        await i.editReply({ content: `🖼️ **${target.username}'s Avatar**\n${url}` });
+        const embed = EmbedManager.image('Avatar')
+          .setDescription(`🖼️ **${target.username}'s Avatar**\n${url}`);
+        await i.editReply({ embeds: [embed] });
 
       } else if (sub === 'banner') {
         const target = await (i.options.getUser('user') || i.user).fetch();
         const bannerUrl = (target as any).bannerURL?.({ extension: 'png', size: 4096 });
-        if (!bannerUrl) { await i.editReply({ content: '❌ This user has no banner.' }); return; }
-        await i.editReply({ content: `🖼️ **${target.username}'s Banner**\n${bannerUrl}` });
+        if (!bannerUrl) { await ErrorHandler.generic(i, 'This user has no banner.'); return; }
+        const embed = EmbedManager.image('Banner')
+          .setDescription(`🖼️ **${target.username}'s Banner**\n${bannerUrl}`);
+        await i.editReply({ embeds: [embed] });
 
       } else {
         // Sharp-based image processing
@@ -94,12 +102,12 @@ export class ImageCommand extends BaseCommand {
       }
     } catch (error: any) {
       console.error('Image command error:', error);
-      await i.editReply({ content: `❌ Failed to process image: ${error.message || 'Unknown error'}` });
+      await ErrorHandler.generic(i, `Failed to process image: ${error.message || 'Unknown error'}`);
     }
   }
 
   public async executePrefix(m: Message, _args: string[]): Promise<void> {
-    await m.reply('Please use `/image` slash commands for image generation.');
+    await ErrorHandler.invalidArgument(m, 'Please use `/image` slash commands for image generation.');
   }
 }
 export default ImageCommand;

@@ -5,7 +5,7 @@ import { getPrismaClient } from '../database/postgresql/client.js';
 import { getRedisClient } from '../database/redis/client.js';
 import { getCollection } from '../database/mongodb/client.js';
 import { logger } from '../utils/Logger.js';
-import { COLORS } from '../utils/Constants.js';
+import { COLORS } from '../constants/DesignSystem.js';
 
 const SPAM_WINDOW_MS = 5000;
 const SPAM_THRESHOLD = 5;

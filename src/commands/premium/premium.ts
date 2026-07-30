@@ -1,9 +1,12 @@
 // @ts-nocheck
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import {
-  ChatInputCommandInteraction, Message, EmbedBuilder, SlashCommandBuilder,
+  ChatInputCommandInteraction, Message, SlashCommandBuilder,
 } from 'discord.js';
-import { COLORS } from '../../utils/Constants.js';
+import { DashboardUI } from '../../structures/DashboardUI.js';
+import { EmbedManager } from '../../structures/EmbedManager.js';
+import { SuccessHandler } from '../../handlers/SuccessHandler.js';
+import { ErrorHandler } from '../../handlers/ErrorHandler.js';
 import { PremiumHandler } from '../../handlers/PremiumHandler.js';
 import { getPrismaClient } from '../../database/postgresql/client.js';
 
@@ -39,20 +42,16 @@ export class PremiumCommand extends BaseCommand {
       const status = await handler.getUserPremiumStatus(i.user.id);
       const tier = status?.tier || 'free';
       const info = TIER_INFO[tier as keyof typeof TIER_INFO] || TIER_INFO.free;
-      const embed = new EmbedBuilder()
-        .setTitle(`${info.label} Tier`)
-        .setColor(info.color as any)
-        .addFields(
-          { name: '👤 User', value: `${i.user.tag}`, inline: true },
-          { name: '⭐ Tier', value: info.label, inline: true },
-          { name: '📅 Status', value: status?.active ? '✅ Active' : '❌ Inactive', inline: true },
-          { name: '🎯 Expires', value: status?.expiresAt ? `<t:${Math.floor(new Date(status.expiresAt).getTime() / 1000)}:D>` : 'Never', inline: true },
-          { name: '✨ Perks', value: info.perks.map(p => `• ${p}`).join('\n'), inline: false },
-        ).setTimestamp();
+      const embed = DashboardUI.createPremium(i.user.tag, {
+        tier: tier,
+        active: status?.active || false,
+        expiresAt: status?.expiresAt ? new Date(status.expiresAt) : null,
+        features: info.perks,
+      });
       await i.editReply({ embeds: [embed] });
 
     } else if (sub === 'tiers') {
-      const embed = new EmbedBuilder().setTitle('💎 Premium Tiers').setColor(COLORS.diamond as any).setDescription('Upgrade to unlock more features!');
+      const embed = EmbedManager.premium('💎 Premium Tiers', 'Upgrade to unlock more features!');
       for (const [key, info] of Object.entries(TIER_INFO)) {
         embed.addFields({ name: `${info.label}`, value: info.perks.map(p => `• ${p}`).join('\n'), inline: true });
       }
@@ -62,12 +61,20 @@ export class PremiumCommand extends BaseCommand {
       await i.deferReply({ ephemeral: true });
       const key = i.options.getString('key', true);
       const result = await handler.activateKey(i.user.id, key);
-      await i.editReply({ content: result.success ? `✅ Premium activated! Tier: **${result.tier}**` : `❌ ${result.error}` });
+      if (result.success) {
+        await SuccessHandler.premium(i, result.tier || 'Bronze', TIER_INFO[result.tier as keyof typeof TIER_INFO]?.perks || []);
+      } else {
+        await ErrorHandler.generic(i, new Error(result.error || 'Failed to activate premium'));
+      }
 
     } else if (sub === 'trial') {
       await i.deferReply({ ephemeral: true });
       const result = await handler.activateFreeTrial(i.user.id, 'bronze');
-      await i.editReply({ content: result.success ? '✅ Free trial activated! You have Bronze for 7 days.' : `❌ ${result.error}` });
+      if (result.success) {
+        await SuccessHandler.premium(i, 'Bronze', TIER_INFO.bronze.perks);
+      } else {
+        await ErrorHandler.generic(i, new Error(result.error || 'Failed to activate trial'));
+      }
 
     } else if (sub === 'gift') {
       await i.deferReply({ ephemeral: true });
@@ -76,11 +83,11 @@ export class PremiumCommand extends BaseCommand {
       // Check if giver has premium
       const giverStatus = await handler.getUserPremiumStatus(i.user.id);
       if (!giverStatus?.active || giverStatus.tier === 'free') {
-        await i.editReply({ content: '❌ You need an active premium subscription to gift premium.' }); return;
+        await ErrorHandler.generic(i, new Error('You need an active premium subscription to gift premium.')); return;
       }
       // Apply gift
       await handler.setUserPremium(target.id, tier, 30); // 30 days
-      await i.editReply({ content: `✅ Gifted **${TIER_INFO[tier as keyof typeof TIER_INFO]?.label}** tier to **${target.tag}** for 30 days!` });
+      await SuccessHandler.premium(i, TIER_INFO[tier as keyof typeof TIER_INFO]?.label || tier, TIER_INFO[tier as keyof typeof TIER_INFO]?.perks || []);
     }
   }
 
@@ -91,8 +98,12 @@ export class PremiumCommand extends BaseCommand {
       const status = await handler.getUserPremiumStatus(m.author.id);
       const tier = status?.tier || 'free';
       const info = TIER_INFO[tier as keyof typeof TIER_INFO] || TIER_INFO.free;
-      const embed = new EmbedBuilder().setTitle(`${info.label} Tier`).setColor(info.color as any)
-        .addFields({ name: 'Status', value: status?.active ? '✅ Active' : 'Free tier', inline: true }).setTimestamp();
+      const embed = DashboardUI.createPremium(m.author.tag, {
+        tier: tier,
+        active: status?.active || false,
+        expiresAt: status?.expiresAt ? new Date(status.expiresAt) : null,
+        features: info.perks,
+      });
       await m.reply({ embeds: [embed] });
     } else {
       await m.reply('Please use `/premium` slash commands for full options.');

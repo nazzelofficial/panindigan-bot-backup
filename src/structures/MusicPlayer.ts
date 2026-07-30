@@ -7,7 +7,7 @@ import {
   AttachmentBuilder,
 } from 'discord.js';
 import { KazagumoPlayer, KazagumoTrack } from 'kazagumo';
-import { COLORS } from '../utils/Constants.js';
+import { COLORS } from '../constants/DesignSystem.js';
 
 export class MusicPlayer {
   public static formatDuration(ms: number): string {

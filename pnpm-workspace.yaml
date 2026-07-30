@@ -3,3 +3,8 @@ allowBuilds:
   canvas: true
   esbuild: true
   prisma: true
+
+overrides:
+  '@emnapi/core': ^2.0.0-alpha.3
+  '@emnapi/runtime': ^2.0.0-alpha.3
+  'proper-lockfile>signal-exit': ^3.0.7
