@@ -1,10 +1,11 @@
 // @ts-nocheck
 /**
- * ══════════════════════════════════════════════════════
- *  Panindigan Enterprise Logger
- *  Asia/Manila timezone · Colorized console · JSON prod
- *  Auto-redaction · Structured metadata · Per-module
- * ══════════════════════════════════════════════════════
+ * ══════════════════════════════════════════════════════════════
+ *  Panindigan Enterprise Logger  v2
+ *  Asia/Manila timezone · Colored console · JSON prod
+ *  Module icons · Structured events · Auto-redaction
+ *  Per-module child loggers · Webhook batching
+ * ══════════════════════════════════════════════════════════════
  */
 
 import winston from 'winston';
@@ -44,7 +45,22 @@ function manilaTimestampShort(): string {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
+    fractionalSecondDigits: 3,
     hour12: false,
+  });
+}
+
+export function manilaTimestampFull(): string {
+  return new Date().toLocaleString('en-PH', {
+    timeZone: 'Asia/Manila',
+    weekday: 'short',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
   });
 }
 
@@ -102,56 +118,105 @@ function sanitize(value: unknown): unknown {
 }
 
 // ─── Level icons & styling ─────────────────────────────────────────────────────
+//  Spec: 🟢 INFO  🟡 WARNING  🔴 ERROR  ⚡ PERF  ⚫ DEBUG  🟣 VERBOSE
 
 const LEVEL_CONFIG: Record<string, { icon: string; badge: (s: string) => string }> = {
   error: {
-    icon: '✗',
+    icon: '🔴',
     badge: (s) => chalk.bgRed.white.bold(` ${s.toUpperCase().padEnd(7)} `),
   },
   warn: {
-    icon: '⚠',
+    icon: '🟡',
     badge: (s) => chalk.bgYellow.black.bold(` ${s.toUpperCase().padEnd(7)} `),
   },
   info: {
-    icon: '●',
+    icon: '🟢',
     badge: (s) => chalk.bgBlue.white.bold(` ${s.toUpperCase().padEnd(7)} `),
   },
   debug: {
-    icon: '◎',
+    icon: '⚫',
     badge: (s) => chalk.bgGray.white.bold(` ${s.toUpperCase().padEnd(7)} `),
   },
   verbose: {
-    icon: '◈',
+    icon: '🟣',
     badge: (s) => chalk.bgMagenta.white.bold(` ${s.toUpperCase().padEnd(7)} `),
   },
 };
 
+// ─── Module colors ─────────────────────────────────────────────────────────────
+
 const MODULE_COLORS: Record<string, (s: string) => string> = {
-  bot:        chalk.cyan,
-  shard:      chalk.magenta,
-  commands:   chalk.yellow,
-  events:     chalk.green,
-  music:      chalk.hex('#EB459E'),
-  lyrics:     chalk.hex('#FF79C6'),
-  database:   chalk.blue,
-  redis:      chalk.red,
-  mongodb:    chalk.hex('#47A248'),
-  postgresql: chalk.hex('#4169E1'),
-  economy:    chalk.hex('#F1C40F'),
-  moderation: chalk.hex('#E74C3C'),
-  ai:         chalk.hex('#00ADB5'),
-  leveling:   chalk.hex('#3498DB'),
-  starboard:  chalk.hex('#FFD700'),
-  premium:    chalk.hex('#FF9900'),
-  giveaways:  chalk.hex('#FF6B6B'),
-  health:     chalk.hex('#2ECC71'),
-  uptime:     chalk.hex('#1ABC9C'),
-  monitoring: chalk.hex('#9B59B6'),
-  security:   chalk.hex('#E67E22'),
-  cache:      chalk.hex('#16A085'),
-  scheduler:  chalk.hex('#8E44AD'),
-  telemetry:  chalk.hex('#2980B9'),
-  loader:     chalk.hex('#27AE60'),
+  bot:          chalk.cyan,
+  shard:        chalk.magenta,
+  commands:     chalk.yellow,
+  events:       chalk.green,
+  music:        chalk.hex('#EB459E'),
+  lyrics:       chalk.hex('#FF79C6'),
+  database:     chalk.blue,
+  redis:        chalk.red,
+  mongodb:      chalk.hex('#47A248'),
+  postgresql:   chalk.hex('#4169E1'),
+  economy:      chalk.hex('#F1C40F'),
+  moderation:   chalk.hex('#E74C3C'),
+  ai:           chalk.hex('#00ADB5'),
+  leveling:     chalk.hex('#3498DB'),
+  starboard:    chalk.hex('#FFD700'),
+  premium:      chalk.hex('#FF9900'),
+  giveaways:    chalk.hex('#FF6B6B'),
+  health:       chalk.hex('#2ECC71'),
+  uptime:       chalk.hex('#1ABC9C'),
+  monitoring:   chalk.hex('#9B59B6'),
+  security:     chalk.hex('#E67E22'),
+  cache:        chalk.hex('#16A085'),
+  scheduler:    chalk.hex('#8E44AD'),
+  telemetry:    chalk.hex('#2980B9'),
+  loader:       chalk.hex('#27AE60'),
+  api:          chalk.hex('#0099FF'),
+  network:      chalk.hex('#00BFFF'),
+  voice:        chalk.hex('#9B59B6'),
+  interactions: chalk.hex('#F39C12'),
+  performance:  chalk.hex('#E91E63'),
+  tickets:      chalk.hex('#1E90FF'),
+  automod:      chalk.hex('#FF4500'),
+  antinuke:     chalk.hex('#8B0000'),
+};
+
+// ─── Module icons (spec: 🎵 🔵 🟣 🟡 🔴 ⚡ 💾 🌐 🎤 📦 🛡) ──────────────────
+
+const MODULE_ICONS: Record<string, string> = {
+  bot:          '🤖',
+  shard:        '🔀',
+  commands:     '⚡',
+  events:       '📡',
+  loader:       '📦',
+  music:        '🎵',
+  lyrics:       '🎤',
+  database:     '💾',
+  mongodb:      '💾',
+  postgresql:   '💾',
+  redis:        '📦',
+  economy:      '💰',
+  moderation:   '🛡',
+  tickets:      '🎫',
+  giveaways:    '🎉',
+  ai:           '🟣',
+  leveling:     '⬆',
+  starboard:    '⭐',
+  premium:      '💎',
+  automod:      '🛡',
+  antinuke:     '🔒',
+  health:       '❤',
+  uptime:       '⏱',
+  monitoring:   '📊',
+  security:     '🛡',
+  cache:        '📦',
+  scheduler:    '⏰',
+  telemetry:    '📈',
+  api:          '🔵',
+  network:      '🌐',
+  voice:        '🎤',
+  interactions: '💬',
+  performance:  '⚡',
 };
 
 function styleLevel(level: string): string {
@@ -162,9 +227,13 @@ function styleLevel(level: string): string {
 }
 
 function styleModule(mod?: string): string {
-  if (!mod) return chalk.gray('─'.padEnd(16));
-  const color = MODULE_COLORS[mod.split('.')[0]] ?? chalk.white;
-  return color(mod.padEnd(16));
+  if (!mod) return chalk.gray('  ' + '─'.padEnd(20));
+  const base = mod.split('.')[0];
+  const color = MODULE_COLORS[base] ?? chalk.white;
+  const icon = MODULE_ICONS[base] ?? '·';
+  // Keep module name padded so columns stay aligned
+  const padded = mod.padEnd(20);
+  return `${icon} ${color(padded)}`;
 }
 
 function levelIcon(level: string): string {
@@ -191,24 +260,43 @@ const consoleFormat = winston.format.combine(
   winston.format.timestamp({ format: () => manilaTimestampShort() }),
   winston.format.printf(({
     timestamp, level, message, module: mod,
-    shardId, durationMs, correlationId, ...meta
+    shardId, durationMs, correlationId, requestId,
+    guild, user, channel, command,
+    ...meta
   }) => {
     const sep    = chalk.gray('│');
+    const icon   = levelIcon(level);
     const lvl    = styleLevel(level);
-    const icon   = chalk.bold(levelIcon(level));
     const modStr = styleModule(mod as string | undefined);
-    const ts     = chalk.dim(timestamp as string);
-    const shard  = shardId !== undefined ? chalk.magenta(`  [S${shardId}]`) : '';
-    const dur    = durationMs !== undefined ? chalk.dim(`  +${durationMs}ms`) : '';
-    const corr   = correlationId ? chalk.gray(`  [${correlationId}]`) : '';
+    const ts     = chalk.dim(String(timestamp));
 
-    const skip = new Set(['splat', 'correlationId', 'durationMs', 'shardId']);
+    // Context fields
+    const shard  = shardId !== undefined   ? chalk.magenta(`  [S${shardId}]`) : '';
+    const dur    = durationMs !== undefined ? chalk.dim(` +${durationMs}ms`)  : '';
+    const req    = requestId   ? chalk.gray(`  ·${requestId}`)    : '';
+    const corr   = correlationId ? chalk.gray(`  ~${correlationId}`) : '';
+
+    // Compact guild/user/channel/command context
+    const ctx: string[] = [];
+    if (guild)   ctx.push(chalk.cyan(`guild:${guild}`));
+    if (user)    ctx.push(chalk.green(`user:${user}`));
+    if (channel) ctx.push(chalk.yellow(`ch:${channel}`));
+    if (command) ctx.push(chalk.magenta(`cmd:${command}`));
+    const ctxStr = ctx.length ? chalk.gray('  ') + ctx.join(chalk.gray(' · ')) : '';
+
+    // Remaining meta (exclude known fields)
+    const skip = new Set([
+      'splat', 'correlationId', 'requestId', 'durationMs', 'shardId',
+      'guild', 'user', 'channel', 'command',
+    ]);
     const remaining = Object.keys(meta).filter(k => !skip.has(k) && meta[k] !== undefined);
     const metaStr = remaining.length
-      ? chalk.gray('  ' + JSON.stringify(redact(sanitize(Object.fromEntries(remaining.map(k => [k, meta[k]]))))))
+      ? chalk.gray('  ' + JSON.stringify(
+          redact(sanitize(Object.fromEntries(remaining.map(k => [k, meta[k]])))),
+        ))
       : '';
 
-    return `${ts} ${sep} ${lvl} ${icon} ${sep} ${modStr} ${sep} ${chalk.white(String(message))}${shard}${dur}${corr}${metaStr}`;
+    return `${ts} ${sep} ${icon} ${lvl} ${sep} ${modStr} ${sep} ${chalk.white(String(message))}${shard}${dur}${req}${corr}${ctxStr}${metaStr}`;
   }),
 );
 
@@ -253,8 +341,10 @@ async function flushWebhookQueue(): Promise<void> {
   const batch = webhookQueue.splice(0, 20);
 
   const lines = batch.map(({ level, module: mod, message }) => {
-    const emoji = level === 'error' ? '🔴' : level === 'warn' ? '🟠' : '🔵';
-    const modLabel = mod ? `\`[${mod}]\` ` : '';
+    const cfg = LEVEL_CONFIG[level];
+    const emoji = cfg?.icon ?? '🔵';
+    const modIcon = mod ? (MODULE_ICONS[mod.split('.')[0]] ?? '') : '';
+    const modLabel = mod ? `\`[${modIcon} ${mod}]\` ` : '';
     return `${emoji} **${level.toUpperCase()}** ${modLabel}${message}`;
   });
 
@@ -263,7 +353,7 @@ async function flushWebhookQueue(): Promise<void> {
     await fetch(WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content, username: 'Panindigan Logs' }),
+      body: JSON.stringify({ content, username: 'Panindigan Logs', avatar_url: 'https://i.imgur.com/AfFp7pu.png' }),
     });
   } catch {
     // Never crash on webhook failures
@@ -304,46 +394,56 @@ export const logger = winston.createLogger({
   transports: baseTransports,
 });
 
-// ─── Child loggers ────────────────────────────────────────────────────────────
+// ─── Child logger factory ─────────────────────────────────────────────────────
 
 function child(module: string, extra?: Record<string, unknown>): winston.Logger {
   return logger.child({ module, ...extra });
 }
 
+// ─── Module child loggers ─────────────────────────────────────────────────────
+
 export const loggers = {
   // Core
-  bot:        child('bot'),
-  shard:      child('shard'),
-  commands:   child('commands'),
-  events:     child('events'),
-  loader:     child('loader'),
+  bot:          child('bot'),
+  shard:        child('shard'),
+  commands:     child('commands'),
+  events:       child('events'),
+  loader:       child('loader'),
   // Music
-  music:      child('music'),
-  lyrics:     child('lyrics'),
+  music:        child('music'),
+  lyrics:       child('lyrics'),
+  voice:        child('voice'),
   // Databases
-  database:   child('database'),
-  mongodb:    child('database.mongodb'),
-  postgresql: child('database.postgresql'),
-  redis:      child('database.redis'),
+  database:     child('database'),
+  mongodb:      child('database.mongodb'),
+  postgresql:   child('database.postgresql'),
+  redis:        child('database.redis'),
   // Features
-  economy:    child('economy'),
-  moderation: child('moderation'),
-  tickets:    child('tickets'),
-  giveaways:  child('giveaways'),
-  ai:         child('ai'),
-  leveling:   child('leveling'),
-  starboard:  child('starboard'),
-  premium:    child('premium'),
-  automod:    child('automod'),
-  antinuke:   child('antinuke'),
+  economy:      child('economy'),
+  moderation:   child('moderation'),
+  tickets:      child('tickets'),
+  giveaways:    child('giveaways'),
+  ai:           child('ai'),
+  leveling:     child('leveling'),
+  starboard:    child('starboard'),
+  premium:      child('premium'),
+  automod:      child('automod'),
+  antinuke:     child('antinuke'),
+  // Interactions
+  interactions: child('interactions'),
   // Infra
-  health:     child('health'),
-  uptime:     child('uptime'),
-  monitoring: child('monitoring'),
-  security:   child('security'),
-  cache:      child('cache'),
-  scheduler:  child('scheduler'),
-  telemetry:  child('telemetry'),
+  health:       child('health'),
+  uptime:       child('uptime'),
+  monitoring:   child('monitoring'),
+  security:     child('security'),
+  cache:        child('cache'),
+  scheduler:    child('scheduler'),
+  telemetry:    child('telemetry'),
+  // Network / API
+  api:          child('api'),
+  network:      child('network'),
+  // Performance
+  performance:  child('performance'),
 } as const;
 
 /** Create an ad-hoc child logger for any module name. */
@@ -381,8 +481,19 @@ export function createShardLogger(shardId: number): winston.Logger {
   });
 }
 
+// ─── ID generators ────────────────────────────────────────────────────────────
+
+export function generateRequestId(): string {
+  return `req_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+}
+
+export function generateCorrelationId(): string {
+  return `corr_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+}
+
 // ─── Structured log helpers ───────────────────────────────────────────────────
 
+/** Log command execution (slash or prefix). */
 export function logCommandExecution(
   shardId: number,
   guildId: string,
@@ -394,8 +505,8 @@ export function logCommandExecution(
 ): void {
   loggers.commands.info(`Command: ${command}`, {
     shardId,
-    guildId,
-    userId,
+    guild: guildId,
+    user: userId,
     command,
     args: _args.map((a) => sanitize(a) as string),
     durationMs: executionTime,
@@ -405,6 +516,211 @@ export function logCommandExecution(
   });
 }
 
+/** Log a component / modal interaction. */
+export function logInteraction(
+  type: 'button' | 'selectMenu' | 'modal' | 'autocomplete' | 'contextMenu',
+  opts: {
+    customId?: string;
+    command?: string;
+    guildId?: string;
+    userId?: string;
+    channelId?: string;
+    shardId?: number;
+    durationMs?: number;
+    success?: boolean;
+    requestId?: string;
+  },
+): void {
+  loggers.interactions.info(`${type}: ${opts.customId ?? opts.command ?? '?'}`, {
+    type,
+    guild:     opts.guildId,
+    user:      opts.userId,
+    channel:   opts.channelId,
+    command:   opts.command,
+    customId:  opts.customId,
+    shardId:   opts.shardId,
+    durationMs: opts.durationMs,
+    success:   opts.success,
+    requestId: opts.requestId,
+  });
+}
+
+/** Log a voice channel state event. */
+export function logVoiceEvent(
+  event: 'join' | 'leave' | 'move' | 'mute' | 'deafen' | 'stream' | 'update',
+  opts: {
+    guildId: string;
+    userId: string;
+    channelId?: string;
+    oldChannelId?: string;
+    shardId?: number;
+  },
+): void {
+  loggers.voice.info(`Voice ${event}`, {
+    event,
+    guild:      opts.guildId,
+    user:       opts.userId,
+    channel:    opts.channelId,
+    oldChannel: opts.oldChannelId,
+    shardId:    opts.shardId,
+  });
+}
+
+/** Log a music playback event. */
+export function logMusicEvent(
+  event: 'trackStart' | 'trackEnd' | 'trackError' | 'queueEnd' | 'pause' | 'resume' | 'skip' | 'stop' | 'search' | 'add' | 'remove' | 'volume',
+  opts: {
+    guildId: string;
+    userId?: string;
+    track?: string;
+    source?: string;
+    durationMs?: number;
+    queueSize?: number;
+    shardId?: number;
+  },
+): void {
+  loggers.music.info(`Music ${event}${opts.track ? `: "${opts.track}"` : ''}`, {
+    event,
+    guild:    opts.guildId,
+    user:     opts.userId,
+    track:    opts.track,
+    source:   opts.source,
+    queue:    opts.queueSize,
+    shardId:  opts.shardId,
+    durationMs: opts.durationMs,
+  });
+}
+
+/** Log an AI provider request. */
+export function logAIRequest(
+  provider: 'openai' | 'anthropic' | 'gemini' | 'groq' | string,
+  opts: {
+    model?: string;
+    guildId?: string;
+    userId?: string;
+    promptTokens?: number;
+    completionTokens?: number;
+    durationMs?: number;
+    success: boolean;
+    error?: string;
+    requestId?: string;
+  },
+): void {
+  if (opts.success) {
+    loggers.ai.info(`AI response from ${provider}`, {
+      provider,
+      model:             opts.model,
+      guild:             opts.guildId,
+      user:              opts.userId,
+      promptTokens:      opts.promptTokens,
+      completionTokens:  opts.completionTokens,
+      durationMs:        opts.durationMs,
+      requestId:         opts.requestId,
+    });
+  } else {
+    loggers.ai.warn(`AI request failed (${provider})`, {
+      provider,
+      model:     opts.model,
+      guild:     opts.guildId,
+      user:      opts.userId,
+      durationMs: opts.durationMs,
+      error:     opts.error,
+      requestId: opts.requestId,
+    });
+  }
+}
+
+/** Log a cache lookup (hit or miss). */
+export function logCacheEvent(
+  type: 'hit' | 'miss' | 'set' | 'del' | 'expire',
+  opts: {
+    key: string;
+    store?: 'redis' | 'memory' | string;
+    ttl?: number;
+    durationMs?: number;
+  },
+): void {
+  loggers.cache.debug(`Cache ${type}: ${opts.key}`, {
+    type,
+    key:       opts.key,
+    store:     opts.store ?? 'redis',
+    ttl:       opts.ttl,
+    durationMs: opts.durationMs,
+  });
+}
+
+/** Log an outbound API request. */
+export function logAPIRequest(
+  method: string,
+  url: string,
+  opts: {
+    statusCode?: number;
+    durationMs?: number;
+    success?: boolean;
+    requestId?: string;
+    error?: string;
+  },
+): void {
+  const level = (opts.statusCode ?? 0) >= 500 ? 'error' : (opts.statusCode ?? 0) >= 400 ? 'warn' : 'info';
+  loggers.api[level](`${method.toUpperCase()} ${url}`, {
+    method,
+    url,
+    statusCode: opts.statusCode,
+    durationMs: opts.durationMs,
+    success:    opts.success,
+    requestId:  opts.requestId,
+    error:      opts.error,
+  });
+}
+
+/** Log a security event (rate limit, permission denial, suspicious activity, etc.). */
+export function logSecurityEvent(
+  event: 'rateLimit' | 'permissionDenied' | 'suspiciousActivity' | 'spamDetected' | 'blacklisted' | 'antiNuke' | string,
+  opts: {
+    guildId?: string;
+    userId?: string;
+    channelId?: string;
+    details?: string;
+    severity?: 'low' | 'medium' | 'high' | 'critical';
+    shardId?: number;
+  },
+): void {
+  const level = opts.severity === 'critical' || opts.severity === 'high' ? 'warn' : 'info';
+  loggers.security[level](`Security: ${event}`, {
+    event,
+    severity: opts.severity ?? 'medium',
+    guild:    opts.guildId,
+    user:     opts.userId,
+    channel:  opts.channelId,
+    details:  opts.details,
+    shardId:  opts.shardId,
+  });
+}
+
+/** Log a performance measurement. */
+export function logPerformance(
+  operation: string,
+  durationMs: number,
+  opts?: {
+    threshold?: number;
+    guildId?: string;
+    userId?: string;
+    meta?: Record<string, unknown>;
+  },
+): void {
+  const threshold = opts?.threshold ?? 1000;
+  const level = durationMs > threshold * 2 ? 'warn' : 'info';
+  loggers.performance[level](`⚡ ${operation}`, {
+    operation,
+    durationMs,
+    slow:    durationMs > threshold,
+    guild:   opts?.guildId,
+    user:    opts?.userId,
+    ...opts?.meta,
+  });
+}
+
+/** Log a generic error with full context. */
 export function logError(
   shardId: number,
   error: Error,
@@ -424,7 +740,7 @@ export function registerGlobalErrorHandlers(): void {
   process.on('unhandledRejection', (reason) => {
     loggers.bot.error('Unhandled promise rejection', {
       reason: reason instanceof Error ? reason.message : String(reason),
-      stack: reason instanceof Error ? reason.stack : undefined,
+      stack:  reason instanceof Error ? reason.stack   : undefined,
     });
   });
 
@@ -457,13 +773,19 @@ export function startHealthCheckLogger(
 ): NodeJS.Timeout {
   return setInterval(() => {
     const mem = process.memoryUsage();
+    const cpu = process.cpuUsage();
     const stats = getStats();
     loggers.health.info('Periodic health snapshot', {
-      memoryMB: Math.round(mem.heapUsed / 1024 / 1024),
-      heapTotalMB: Math.round(mem.heapTotal / 1024 / 1024),
-      rssMB: Math.round(mem.rss / 1024 / 1024),
+      memoryMB:     Math.round(mem.heapUsed  / 1024 / 1024),
+      heapTotalMB:  Math.round(mem.heapTotal / 1024 / 1024),
+      rssMB:        Math.round(mem.rss       / 1024 / 1024),
+      externalMB:   Math.round(mem.external  / 1024 / 1024),
+      cpuUserMs:    Math.round(cpu.user   / 1000),
+      cpuSystemMs:  Math.round(cpu.system / 1000),
       uptimeSeconds: Math.floor(process.uptime()),
-      pid: process.pid,
+      pid:           process.pid,
+      nodeVersion:   process.version,
+      environment:   process.env.NODE_ENV ?? 'development',
       ...stats,
     });
   }, intervalMs);

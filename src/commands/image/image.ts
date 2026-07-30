@@ -6,6 +6,7 @@ import {
 import { PanindiganClient } from '../../structures/PanindiganClient.js';
 import { EmbedManager } from '../../structures/EmbedManager.js';
 import { ErrorHandler } from '../../handlers/ErrorHandler.js';
+import { loggers } from '../../utils/Logger.js';
 
 export class ImageCommand extends BaseCommand {
   constructor() {
@@ -101,7 +102,13 @@ export class ImageCommand extends BaseCommand {
         await i.editReply({ files: [attachment] });
       }
     } catch (error: any) {
-      console.error('Image command error:', error);
+      loggers.commands.error('Image command error', {
+        command: 'image',
+        guild: i.guildId ?? undefined,
+        user: i.user?.id,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       await ErrorHandler.generic(i, `Failed to process image: ${error.message || 'Unknown error'}`);
     }
   }

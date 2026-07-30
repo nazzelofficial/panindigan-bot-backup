@@ -16,6 +16,7 @@ import {
   ButtonBuilder,
   StringSelectMenuBuilder,
 } from 'discord.js';
+import { loggers } from '../utils/Logger.js';
 
 // ─── Interaction Handler Options ───────────────────────────────────────────────────
 export interface InteractionHandlerOptions {
@@ -90,7 +91,14 @@ export class InteractionManager {
         await this.handleModal(interaction);
       }
     } catch (error) {
-      console.error('Error handling interaction:', error);
+      loggers.interactions.error('Error handling interaction', {
+        type: interaction.type,
+        customId: 'customId' in interaction ? interaction.customId : undefined,
+        guild: interaction.guildId ?? undefined,
+        user: interaction.user?.id,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       if (interaction.isRepliable() && !interaction.replied) {
         await interaction.reply({
           content: '❌ An error occurred while handling this interaction.',

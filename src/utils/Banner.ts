@@ -1,5 +1,6 @@
 // @ts-nocheck
 import chalk from 'chalk';
+import os from 'os';
 
 // ─── ASCII Banner ─────────────────────────────────────────────────────────────
 
@@ -12,56 +13,98 @@ const LOGO = [
   '╚═╝     ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═══╝╚═════╝ ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝',
 ];
 
-const WIDTH = 80;
+const WIDTH = 82;
 
 function center(text: string, width = WIDTH): string {
   const pad = Math.max(0, Math.floor((width - text.length) / 2));
   return ' '.repeat(pad) + text;
 }
 
-function divider(width = WIDTH): string {
-  return chalk.gray('─'.repeat(width));
+function divider(char = '─', width = WIDTH): string {
+  return chalk.gray(char.repeat(width));
+}
+
+function row(icon: string, label: string, value: string): string {
+  const sep   = chalk.gray('│');
+  const lbl   = chalk.dim(label.padEnd(16));
+  return `  ${icon}  ${sep}  ${lbl}  ${value}`;
+}
+
+function manilaTimestampFull(): string {
+  return new Date().toLocaleString('en-PH', {
+    timeZone: 'Asia/Manila',
+    weekday: 'short',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+  });
 }
 
 export interface BannerOptions {
-  version: string;
+  version:     string;
   environment: string;
   nodeVersion: string;
-  mode?: 'bot' | 'shard';
+  mode?:       'bot' | 'shard';
   shardCount?: number | 'auto';
 }
 
 export function printBanner(opts: BannerOptions): void {
   const { version, environment, nodeVersion, mode = 'bot', shardCount } = opts;
 
-  process.stdout.write('\n');
+  const envColor = environment === 'production' ? chalk.bgRed.white.bold
+                 : environment === 'staging'    ? chalk.bgYellow.black.bold
+                 : chalk.bgGreen.black.bold;
 
+  const modeLabel = mode === 'shard'
+    ? chalk.magenta(`🔀  Shard Manager${shardCount !== undefined ? `  (${shardCount} shards)` : ''}`)
+    : chalk.blue('🤖  Single Instance');
+
+  // Top border
+  process.stdout.write('\n');
+  process.stdout.write(chalk.gray('╔' + '═'.repeat(WIDTH) + '╗') + '\n');
+  process.stdout.write(chalk.gray('║') + ' '.repeat(WIDTH) + chalk.gray('║') + '\n');
+
+  // Logo
   for (const line of LOGO) {
-    process.stdout.write(chalk.cyan(center(line)) + '\n');
+    const padded = center(line, WIDTH);
+    process.stdout.write(chalk.gray('║') + chalk.cyan(padded) + chalk.gray('║') + '\n');
   }
 
-  process.stdout.write('\n');
-  process.stdout.write(chalk.gray(center(`All-in-One Discord Bot  •  Filipino & English`, WIDTH)) + '\n');
-  process.stdout.write('\n');
-  process.stdout.write(divider() + '\n');
+  process.stdout.write(chalk.gray('║') + ' '.repeat(WIDTH) + chalk.gray('║') + '\n');
 
-  const info: [string, string][] = [
-    ['Version',     chalk.yellow(`v${version}`)],
-    ['Mode',        mode === 'shard'
-      ? chalk.magenta(`Shard Manager${shardCount !== undefined ? ` (${shardCount} shards)` : ''}`)
-      : chalk.blue('Single Instance')],
-    ['Environment', environment === 'production'
-      ? chalk.red('production')
-      : chalk.green(environment)],
-    ['Node.js',     chalk.cyan(nodeVersion)],
-    ['PID',         chalk.gray(String(process.pid))],
+  // Tagline
+  const tagline = 'All-in-One Filipino Discord Bot  ·  Commercial-Grade Quality';
+  process.stdout.write(chalk.gray('║') + chalk.gray(center(tagline, WIDTH)) + chalk.gray('║') + '\n');
+  process.stdout.write(chalk.gray('║') + ' '.repeat(WIDTH) + chalk.gray('║') + '\n');
+  process.stdout.write(chalk.gray('╠' + '═'.repeat(WIDTH) + '╣') + '\n');
+
+  // Info rows
+  const rows: [string, string, string][] = [
+    ['🏷 ', 'Version',      chalk.yellow.bold(`v${version}`)],
+    ['⚙️ ', 'Mode',         modeLabel],
+    ['🌍', 'Environment',  envColor(` ${environment.toUpperCase()} `)],
+    ['💚', 'Node.js',       chalk.cyan(nodeVersion)],
+    ['🕐', 'Manila Time',  chalk.white(manilaTimestampFull())],
+    ['💻', 'Hostname',      chalk.gray(os.hostname())],
+    ['🔢', 'PID',           chalk.gray(String(process.pid))],
+    ['📦', 'Platform',      chalk.gray(`${os.platform()} ${os.arch()}`)],
   ];
 
-  for (const [label, value] of info) {
-    const labelStr = chalk.dim(`${label.padEnd(14)}`);
-    process.stdout.write(`  ${labelStr}  ${value}\n`);
+  process.stdout.write(chalk.gray('║') + ' '.repeat(WIDTH) + chalk.gray('║') + '\n');
+  for (const [icon, label, value] of rows) {
+    const line = row(icon, label, value);
+    // Pad to WIDTH to fit between borders
+    const stripped = line.replace(/\x1B\[[0-9;]*m/g, '');
+    const pad = Math.max(0, WIDTH - stripped.length);
+    process.stdout.write(chalk.gray('║') + line + ' '.repeat(pad) + chalk.gray('║') + '\n');
   }
+  process.stdout.write(chalk.gray('║') + ' '.repeat(WIDTH) + chalk.gray('║') + '\n');
 
-  process.stdout.write(divider() + '\n');
+  // Bottom border
+  process.stdout.write(chalk.gray('╚' + '═'.repeat(WIDTH) + '╝') + '\n');
   process.stdout.write('\n');
 }
