@@ -63,67 +63,21 @@ pnpm install
 
 ### 2. Configure environment
 
-```sh
-cp .env.example .env
-```
+Set the required and optional secrets listed below, either via a local `.env` file (copy `.env.example` to `.env` and fill it in) or via your hosting provider's environment/secrets manager.
 
-Edit `.env`. The required variables are:
+## How to run
 
-```env
-DISCORD_TOKEN=
-DISCORD_CLIENT_ID=
-POSTGRES_URL=postgresql://user:pass@host:5432/panindigan
-MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/panindigan
-REDIS_URL=redis://user:pass@host:6379
-```
+If you're using a hosting workflow, the **Start application** workflow runs `pnpm dev`, which starts the bot in development mode via `tsx src/bot/index.ts`.
 
-Optional (but needed for specific features):
+After making code changes, restart the **Start application** workflow (or your dev process).
 
-```env
-# AI commands
-OPENAI_API_KEY=
-ANTHROPIC_API_KEY=
-GEMINI_API_KEY=
-GROQ_API_KEY=
-
-# Music
-LAVALINK_HOST=localhost
-LAVALINK_PORT=2333
-LAVALINK_PASSWORD=youshallnotpass
-
-# Error forwarding to a Discord channel
-LOG_WEBHOOK_URL=
-
-# Bot listing
-TOPGG_TOKEN=
-```
-
-### 3. Set up the database
+**Manual dev/production commands:**
 
 ```sh
-pnpm prisma:generate
-pnpm prisma:migrate
-```
-
-### 4. Configure Lavalink
-
-Edit `lavalink/application.yml` with your Lavalink server settings, then start Lavalink separately before the bot.
-
-### 5. Run
-
-**Development (tsx, no build step):**
-
-```sh
-pnpm dev
-```
-
-**Production (compile first):**
-
-```sh
-pnpm build
-pnpm start          # single instance
-# or
-pnpm shard          # with Discord sharding (recommended for large bots)
+pnpm dev             # development (tsx, no build step)
+pnpm build           # compile for production
+pnpm start           # production, single instance
+pnpm shard           # production, with Discord sharding (recommended for large bots)
 ```
 
 **With PM2:**
@@ -132,6 +86,96 @@ pnpm shard          # with Discord sharding (recommended for large bots)
 pnpm pm2:start
 pnpm pm2:logs
 ```
+
+### Database setup
+
+```sh
+pnpm prisma:generate   # after any schema changes in prisma/schema.prisma
+pnpm prisma:migrate    # apply schema migrations
+```
+
+### Lavalink
+
+Lavalink must be running separately for music features to work (`LAVALINK_HOST` required). Music works without Lavalink, but all music commands will be unavailable.
+
+---
+
+## Required secrets (set via your hosting provider's environment variables)
+
+| Secret | Description |
+|---|---|
+| `DISCORD_TOKEN` | Discord bot token |
+| `DISCORD_CLIENT_ID` | Discord application client ID |
+| `POSTGRES_URL` | PostgreSQL connection string |
+| `MONGODB_URI` | MongoDB connection string |
+| `REDIS_URL` | Redis connection string |
+| `SESSION_SECRET` | Session secret |
+
+## Optional secrets
+
+| Secret | Description |
+|---|---|
+| `OPENAI_API_KEY` | For AI commands (ChatGPT, DALL-E) |
+| `ANTHROPIC_API_KEY` | For Claude AI commands |
+| `GEMINI_API_KEY` | For Gemini AI commands |
+| `GROQ_API_KEY` | For Groq AI commands |
+| `LAVALINK_HOST` / `LAVALINK_PORT` / `LAVALINK_PASSWORD` | For music commands |
+| `LOG_WEBHOOK_URL` | Discord webhook for error forwarding |
+| `TOPGG_TOKEN` | Bot listing on top.gg |
+| `HEALTH_AUTH_TOKEN` | Token to protect `/metrics`, `/status`, `/info` endpoints |
+| `HEALTH_ALLOWED_IPS` | Comma-separated IPs allowed without auth token |
+
+---
+
+## Health & monitoring endpoints
+
+The bot exposes a full enterprise health server (default port `3000`, configurable via `PORT`):
+
+| Endpoint | Description | Auth Required |
+|---|---|---|
+| `GET /` | HTML index with all endpoint docs | No |
+| `GET /health` | Overall status — `200` healthy, `503` degraded/down | No |
+| `GET /health/live` | Liveness probe — process alive + event loop responsive | No |
+| `GET /health/ready` | Readiness probe — all critical deps ready | No |
+| `GET /metrics` | Prometheus-compatible metrics text | Optional |
+| `GET /version` | Version, git commit, git branch, build timestamp | No |
+| `GET /status` | Full dependency status (Discord, DB, Redis, Lavalink) | Optional |
+| `GET /info` | Full runtime info (memory, CPU, gauges, counters) | Optional |
+| `GET /startup` | Boot state and provider detection | No |
+
+**Monitoring compatibility:** UptimeRobot, Better Stack, Cronitor, Pingdom, StatusCake, Freshping, Uptime Kuma, Healthchecks.io, Grafana, Prometheus, Datadog, New Relic, Zabbix, Nagios, and any HTTP monitoring tool.
+
+**Security:** Set `HEALTH_AUTH_TOKEN` to require `Authorization: Bearer <token>` or `X-Health-Key: <token>` on sensitive endpoints. Set `HEALTH_ALLOWED_IPS` (comma-separated) to restrict by IP.
+
+### Health / monitoring env vars
+
+| Variable | Default | Description |
+|---|---|---|
+| `PORT` | `3000` | HTTP health server port |
+| `HOST` | `0.0.0.0` | HTTP health server bind address |
+| `HEALTH_CHECK_INTERVAL_MS` | `30000` | How often dependency checks run |
+| `HEALTH_CACHE_MS` | `15000` | Health check result cache duration |
+| `HEALTH_AUTH_TOKEN` | — | Optional auth token for sensitive endpoints |
+| `HEALTH_ALLOWED_IPS` | — | Optional IP allowlist |
+| `LOG_LEVEL` | `info` | Log level (trace/debug/info/warn/error/fatal) |
+| `LOG_FORMAT` | — | Set to `json` to output structured JSON logs |
+| `LOG_WEBHOOK_URL` | — | Discord webhook for error/warn forwarding |
+| `LOG_WEBHOOK_LEVEL` | `error` | Minimum level forwarded to webhook |
+| `SHUTDOWN_TIMEOUT_MS` | `15000` | Max time for graceful shutdown before forced exit |
+| `MUSIC_INACTIVITY_TIMEOUT_MS` | `300000` | Music player inactivity timeout |
+
+---
+
+## Logging
+
+The bot uses Winston with daily log rotation. Logs are written to `./logs/`:
+
+- `combined-YYYY-MM-DD.log` — all levels
+- `error-YYYY-MM-DD.log` — errors only
+- `info-YYYY-MM-DD.log` — info and above
+- `shards/shard-N-YYYY-MM-DD.log` — per-shard logs
+
+Set `LOG_WEBHOOK_URL` to forward error/warn logs to a Discord webhook (batched every 5 seconds to avoid rate limits). Set `LOG_LEVEL=debug` for verbose output. Set `LOG_FORMAT=json` for structured JSON logs.
 
 ---
 
@@ -152,45 +196,36 @@ Most bot behavior is controlled through `config.json` at the root. The main sect
 
 ---
 
-## Logging
-
-The bot uses Winston with daily log rotation. Logs are written to `./logs/`:
-
-- `combined-YYYY-MM-DD.log` — all levels
-- `error-YYYY-MM-DD.log` — errors only
-- `info-YYYY-MM-DD.log` — info and above
-- `shards/shard-N-YYYY-MM-DD.log` — per-shard logs
-
-Set `LOG_WEBHOOK_URL` in `.env` to forward error/warn logs to a Discord webhook (batched every 5 seconds to avoid rate limits).
-
-Set `LOG_LEVEL=debug` to enable verbose output.
-
----
-
-## Health Check
-
-When running, the bot exposes a small HTTP server (default port `3000`, configurable via `PORT`):
-
-- `GET /health` — returns `200` when ready, `503` during startup
-- `GET /startup` — returns full startup state including completed steps and any errors
-
----
-
-## Project Structure
+## Project structure
 
 ```
 src/
 ├── bot/           # Entry points (index.ts = single, shard.ts = sharded)
-├── commands/      # All slash and prefix commands, organized by category
-├── database/      # PostgreSQL (Prisma), MongoDB, and Redis client setup
+├── commands/      # Slash and prefix commands by category
+├── constants/     # Design system, colors
+├── database/      # PostgreSQL (Prisma), MongoDB, and Redis clients
 ├── events/        # Discord.js event handlers
-├── features/      # Feature-specific modules (economy, leveling, etc.)
+├── features/      # Feature modules (economy, leveling, etc.)
 ├── handlers/      # Command and event loaders
+├── health/        # Enterprise health monitoring system
+│   ├── HealthServer.ts      # HTTP server with all endpoints
+│   ├── HealthChecker.ts     # Dependency health checks
+│   ├── MetricsCollector.ts  # Prometheus-compatible metrics
+│   ├── HostingDetector.ts   # Auto-detect runtime environment
+│   └── GracefulShutdown.ts  # SIGINT/SIGTERM/SIGHUP handlers
 ├── locales/       # i18n strings (en, fil)
-├── services/      # Shared services (AI, music, etc.)
+├── services/      # Shared services (AI, music, lyrics)
 ├── structures/    # Base classes (PanindiganClient, BaseCommand, etc.)
 └── utils/         # Logger, Banner, helpers
 ```
+
+---
+
+## Hosting / deployment
+
+The app auto-detects its hosting environment (Replit, Railway, Render, Koyeb, Fly.io, Docker, Kubernetes, AWS, Azure, GCP, and generic Linux/Windows VPS) and reports it at `/info`. No code changes needed across environments.
+
+---
 
 ---
 
@@ -219,3 +254,9 @@ If you find a bug, open an issue with reproduction steps and the relevant log ou
 MIT — see [LICENSE](LICENSE).
 
 Made by [Nazzel](https://github.com/nazzelofficial).
+
+---
+
+## User preferences
+
+- Keep the existing project structure — do not restructure or migrate unless explicitly asked.
