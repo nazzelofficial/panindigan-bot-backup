@@ -122,23 +122,23 @@ function sanitize(value: unknown): unknown {
 
 const LEVEL_CONFIG: Record<string, { icon: string; badge: (s: string) => string }> = {
   error: {
-    icon: '🔴',
+    icon: '✗',
     badge: (s) => chalk.bgRed.white.bold(` ${s.toUpperCase().padEnd(7)} `),
   },
   warn: {
-    icon: '🟡',
+    icon: '⚠',
     badge: (s) => chalk.bgYellow.black.bold(` ${s.toUpperCase().padEnd(7)} `),
   },
   info: {
-    icon: '🟢',
+    icon: '●',
     badge: (s) => chalk.bgBlue.white.bold(` ${s.toUpperCase().padEnd(7)} `),
   },
   debug: {
-    icon: '⚫',
+    icon: '◎',
     badge: (s) => chalk.bgGray.white.bold(` ${s.toUpperCase().padEnd(7)} `),
   },
   verbose: {
-    icon: '🟣',
+    icon: '◈',
     badge: (s) => chalk.bgMagenta.white.bold(` ${s.toUpperCase().padEnd(7)} `),
   },
 };
