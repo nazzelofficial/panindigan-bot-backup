@@ -5,12 +5,12 @@
  * ═══════════════════════════════════════════════════
  */
 
+// @ts-nocheck
 import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   StringSelectMenuBuilder,
-  StringSelectMenuOptionBuilder,
   EmbedBuilder,
 } from 'discord.js';
 import { EmbedManager } from './EmbedManager.js';

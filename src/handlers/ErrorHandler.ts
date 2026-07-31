@@ -8,7 +8,6 @@
 import {
   ChatInputCommandInteraction,
   Message,
-  EmbedBuilder,
 } from 'discord.js';
 import { EmbedManager } from '../structures/EmbedManager.js';
 import { ComponentBuilder } from '../structures/ComponentBuilder.js';

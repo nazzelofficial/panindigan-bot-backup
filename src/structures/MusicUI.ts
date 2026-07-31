@@ -11,7 +11,6 @@ import {
   ButtonBuilder,
   ChatInputCommandInteraction,
   Message,
-  MessageComponentInteraction,
 } from 'discord.js';
 import { EmbedManager } from './EmbedManager.js';
 import { ButtonManager } from './ButtonManager.js';

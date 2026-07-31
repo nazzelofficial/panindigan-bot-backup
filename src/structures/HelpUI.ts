@@ -12,13 +12,10 @@ import {
   StringSelectMenuBuilder,
   ChatInputCommandInteraction,
   Message,
-  ApplicationCommandOptionType,
-  PermissionFlagsBits,
 } from 'discord.js';
 import { EmbedManager } from './EmbedManager.js';
 import { ButtonManager } from './ButtonManager.js';
 import { SelectMenuManager } from './SelectMenuManager.js';
-import { PaginationManager } from './PaginationManager.js';
 
 // ─── Command Info Interface ───────────────────────────────────────────────────────
 export interface CommandInfo {

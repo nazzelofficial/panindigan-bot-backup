@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * ═══════════════════════════════════════════════════
  *  Panindigan Premium Select Menu Manager

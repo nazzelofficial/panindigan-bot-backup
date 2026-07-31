@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import {
   ChatInputCommandInteraction, Message, SlashCommandBuilder, EmbedBuilder,

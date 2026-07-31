@@ -76,8 +76,7 @@ export class InfoCommand extends BaseCommand {
       .addSubcommand(s => s.setName('github').setDescription('Get GitHub user info')
         .addStringOption(o => o.setName('username').setDescription('GitHub username').setRequired(true)))
       .addSubcommand(s => s.setName('country').setDescription('Get country information')
-        .addStringOption(o => o.setName('country').setDescription('Country name').setRequired(true)))
-      .addSubcommand(s => s.setName('nitro').setDescription('Get nitro information'))) as SlashCommandBuilder;
+        .addStringOption(o => o.setName('country').setDescription('Country name').setRequired(true)))) as SlashCommandBuilder;
   }
 
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> {

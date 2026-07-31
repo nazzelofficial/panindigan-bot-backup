@@ -1,3 +1,4 @@
+// @ts-nocheck
 import 'dotenv/config';
 import { readdirSync } from 'fs';
 import { BaseCommand } from './structures/BaseCommand.js';

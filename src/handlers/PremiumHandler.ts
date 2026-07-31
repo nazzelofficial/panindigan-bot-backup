@@ -238,4 +238,32 @@ export class PremiumHandler {
   async getUserPremium(userId: string, guildId: string) {
     return getUserPremiumTier(userId, guildId);
   }
+
+  /** Returns the premium status object expected by the premium command. */
+  async getUserPremiumStatus(userId: string): Promise<{ tier: PremiumTier; active: boolean; expiresAt: Date | null } | null> {
+    const prisma = getPrismaClient();
+    try {
+      const premium = await prisma.premium.findFirst({
+        where: { userId },
+        orderBy: { activatedAt: 'desc' },
+        select: { tier: true, expiresAt: true, isPermanent: true },
+      });
+      if (!premium) return { tier: 'free', active: false, expiresAt: null };
+      const expired = !premium.isPermanent && premium.expiresAt !== null && new Date() > premium.expiresAt;
+      const tier = (expired ? 'free' : premium.tier) as PremiumTier;
+      return { tier, active: !expired && tier !== 'free', expiresAt: premium.expiresAt ?? null };
+    } catch {
+      return { tier: 'free', active: false, expiresAt: null };
+    }
+  }
+
+  /** Activates a premium key for the user (uses guildId 'global'). */
+  async activateKey(userId: string, key: string): Promise<{ success: boolean; tier?: PremiumTier; error?: string }> {
+    return activatePremiumKey(userId, 'global', key);
+  }
+
+  /** Starts a free trial for the user (uses guildId 'global'). */
+  async activateFreeTrial(userId: string, _tier: string): Promise<{ success: boolean; error?: string }> {
+    return activateFreeTrial(userId, 'global');
+  }
 }
