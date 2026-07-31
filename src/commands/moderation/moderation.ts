@@ -69,8 +69,8 @@ export class ModerationCommand extends BaseCommand {
           .addChannelOption(o => o.setName('channel').setDescription('Channel to unlock').setRequired(false))
           .addStringOption(o => o.setName('reason').setDescription('Unlock reason').setRequired(false)))
         .addSubcommand(s => s.setName('slowmode').setDescription('Set slowmode for a channel')
-          .addChannelOption(o => o.setName('channel').setDescription('Channel to set slowmode').setRequired(false))
           .addIntegerOption(o => o.setName('seconds').setDescription('Slowmode duration (0-21600)').setRequired(true).setMinValue(0).setMaxValue(21600))
+          .addChannelOption(o => o.setName('channel').setDescription('Channel to set slowmode').setRequired(false))
           .addStringOption(o => o.setName('reason').setDescription('Reason').setRequired(false))))
       
       // Role Actions Subcommand Group

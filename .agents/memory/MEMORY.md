@@ -1,0 +1,2 @@
+- [Prisma setup quirks](prisma-setup.md) — Prisma 7 needs `--force` reinstall on Replit; use `db push` not `migrate deploy` when DB already has tables.
+- [Slash command bugs fixed](slash-command-bugs.md) — Premium hierarchy check bug + slowmode option ordering bug; details inside.

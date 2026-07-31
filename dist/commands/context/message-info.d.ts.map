@@ -1,0 +1,1 @@
+{"version":3,"file":"message-info.d.ts","sourceRoot":"","sources":["../../../src/commands/context/message-info.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,WAAW,EAAkB,MAAM,iCAAiC,CAAC;AAC9E,OAAO,EACL,6BAA6B,EAC9B,MAAM,YAAY,CAAC;AAGpB,qBAAa,yBAA0B,SAAQ,WAAW;;IAe3C,cAAc,CAAC,CAAC,EAAE,6BAA6B,GAAG,OAAO,CAAC,IAAI,CAAC;CAsB7E;AAED,eAAe,yBAAyB,CAAC"}

@@ -1,0 +1,44 @@
+import { BaseCommand } from '../../structures/BaseCommand.js';
+import { ChatInputCommandInteraction, Message, SlashCommandBuilder } from 'discord.js';
+export declare class MusicCommand extends BaseCommand {
+    constructor();
+    buildSlashCommand(): SlashCommandBuilder;
+    executeSlash(i: ChatInputCommandInteraction): Promise<void>;
+    private handlePlay;
+    private handlePause;
+    private handleStop;
+    private handleSkip;
+    private handlePrevious;
+    private handleSeek;
+    private handleReplay;
+    private handleShuffle;
+    private handleLoop;
+    private handleVolume;
+    private handleNowPlaying;
+    private handleQueueShow;
+    private handleQueueClear;
+    private handleQueueRemove;
+    private handleQueueMove;
+    private handlePlaylistCreate;
+    private handlePlaylistList;
+    private handlePlaylistShow;
+    private handlePlaylistAdd;
+    private handlePlaylistRemove;
+    private handlePlaylistDelete;
+    private handleFilterBassboost;
+    private handleFilterNightcore;
+    private handleFilterVaporwave;
+    private handleFilter8D;
+    private handleFilterReset;
+    private handleVoiceJoin;
+    private handleVoiceLeave;
+    private handleVoiceDisconnect;
+    private handleSearch;
+    private handleLyrics;
+    private handleStats;
+    executePrefix(m: Message, args: string[]): Promise<void>;
+    private formatDuration;
+    private createProgressBar;
+}
+export default MusicCommand;
+//# sourceMappingURL=music.d.ts.map
