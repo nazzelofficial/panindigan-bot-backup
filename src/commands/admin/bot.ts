@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
-import { ChatInputCommandInteraction, Message, PermissionFlagsBits, PresenceStatusData } from 'discord.js';
+import { ChatInputCommandInteraction, Message, PermissionFlagsBits, PresenceStatusData, SlashCommandBuilder } from 'discord.js';
 import { EmbedManager } from '../../structures/EmbedManager.js';
 import { ErrorHandler } from '../../handlers/ErrorHandler.js';
 import { SuccessHandler } from '../../handlers/SuccessHandler.js';
@@ -24,8 +24,35 @@ export class BotCommand extends BaseCommand {
     super(options);
   }
 
+  public buildSlashCommand(): SlashCommandBuilder {
+    return (new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .addSubcommandGroup(g => g.setName('profile').setDescription('Manage bot profile settings')
+        .addSubcommand(s => s.setName('avatar').setDescription('Change the bot avatar')
+          .addStringOption(o => o.setName('url').setDescription('Image URL for the new avatar').setRequired(true)))
+        .addSubcommand(s => s.setName('name').setDescription('Change the bot username')
+          .addStringOption(o => o.setName('name').setDescription('New bot username (2-32 characters)').setRequired(true)))
+        .addSubcommand(s => s.setName('status').setDescription('Change the bot online status')
+          .addStringOption(o => o.setName('status').setDescription('New status').setRequired(true)
+            .addChoices(
+              { name: 'Online', value: 'online' },
+              { name: 'Idle', value: 'idle' },
+              { name: 'Do Not Disturb', value: 'dnd' },
+              { name: 'Invisible', value: 'invisible' },
+            )))
+        .addSubcommand(s => s.setName('presence').setDescription('Change the bot activity/presence text')
+          .addStringOption(o => o.setName('presence').setDescription('Activity text (max 128 characters)').setRequired(true))))
+      .addSubcommandGroup(g => g.setName('server').setDescription('Manage server operations')
+        .addSubcommand(s => s.setName('leave').setDescription('Make the bot leave this server')
+          .addBooleanOption(o => o.setName('confirm').setDescription('Confirm the action').setRequired(true)))
+        .addSubcommand(s => s.setName('reset').setDescription('Reset all server data for this server')
+          .addBooleanOption(o => o.setName('confirm').setDescription('Confirm the action').setRequired(true))))
+      .setDMPermission(false)) as SlashCommandBuilder;
+  }
+
   public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const group = interaction.options.getSubcommandGroup(true);
+    const group = interaction.options.getSubcommandGroup(false);
 
     if (!interaction.guild) return;
 

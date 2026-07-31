@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
-import { ChatInputCommandInteraction, Message, PermissionFlagsBits } from 'discord.js';
+import { ChatInputCommandInteraction, Message, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import { EmbedManager } from '../../structures/EmbedManager.js';
 import { ErrorHandler } from '../../handlers/ErrorHandler.js';
 import { SuccessHandler } from '../../handlers/SuccessHandler.js';
@@ -24,8 +24,66 @@ export class AIConfigCommand extends BaseCommand {
     super(options);
   }
 
+  public buildSlashCommand(): SlashCommandBuilder {
+    return (new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .addSubcommandGroup(g => g.setName('provider').setDescription('Manage AI providers')
+        .addSubcommand(s => s.setName('set').setDescription('Set the active AI provider')
+          .addStringOption(o => o.setName('provider').setDescription('AI provider to use').setRequired(true)
+            .addChoices(
+              { name: 'ChatGPT (OpenAI)', value: 'chatgpt' },
+              { name: 'Claude (Anthropic)', value: 'claude' },
+              { name: 'Gemini (Google)', value: 'gemini' },
+              { name: 'Groq', value: 'groq' },
+              { name: 'Mistral', value: 'mistral' },
+              { name: 'Perplexity', value: 'perplexity' },
+              { name: 'Replicate', value: 'replicate' },
+            )))
+        .addSubcommand(s => s.setName('list').setDescription('List all available AI providers'))
+        .addSubcommand(s => s.setName('toggle').setDescription('Enable or disable a provider')
+          .addStringOption(o => o.setName('provider').setDescription('Provider to toggle').setRequired(true)
+            .addChoices(
+              { name: 'ChatGPT (OpenAI)', value: 'chatgpt' },
+              { name: 'Claude (Anthropic)', value: 'claude' },
+              { name: 'Gemini (Google)', value: 'gemini' },
+              { name: 'Groq', value: 'groq' },
+              { name: 'Mistral', value: 'mistral' },
+              { name: 'Perplexity', value: 'perplexity' },
+              { name: 'Replicate', value: 'replicate' },
+            )))
+        .addSubcommand(s => s.setName('priority').setDescription('Set provider priority order')
+          .addStringOption(o => o.setName('priority').setDescription('Comma-separated provider priority list').setRequired(true)))
+        .addSubcommand(s => s.setName('test').setDescription('Test a specific AI provider')
+          .addStringOption(o => o.setName('provider').setDescription('Provider to test').setRequired(true)
+            .addChoices(
+              { name: 'ChatGPT (OpenAI)', value: 'chatgpt' },
+              { name: 'Claude (Anthropic)', value: 'claude' },
+              { name: 'Gemini (Google)', value: 'gemini' },
+              { name: 'Groq', value: 'groq' },
+              { name: 'Mistral', value: 'mistral' },
+              { name: 'Perplexity', value: 'perplexity' },
+              { name: 'Replicate', value: 'replicate' },
+            )))
+        .addSubcommand(s => s.setName('stats').setDescription('Show provider status and statistics')))
+      .addSubcommandGroup(g => g.setName('model').setDescription('Manage AI models')
+        .addSubcommand(s => s.setName('set').setDescription('Set the AI model for this server')
+          .addStringOption(o => o.setName('model').setDescription('Model name (e.g. gpt-4, claude-3-opus)').setRequired(true)))
+        .addSubcommand(s => s.setName('global').setDescription('Set the global default AI model (owner only)')
+          .addStringOption(o => o.setName('model').setDescription('Global model name').setRequired(true))))
+      .addSubcommandGroup(g => g.setName('usage').setDescription('View and manage AI usage')
+        .addSubcommand(s => s.setName('stats').setDescription('Show AI usage statistics'))
+        .addSubcommand(s => s.setName('limit').setDescription('Get or set the monthly usage limit')
+          .addIntegerOption(o => o.setName('limit').setDescription('Max requests per month (omit to view current)').setRequired(false).setMinValue(0))))
+      .addSubcommandGroup(g => g.setName('fallback').setDescription('Manage provider fallback behaviour')
+        .addSubcommand(s => s.setName('enable').setDescription('Enable automatic provider fallback'))
+        .addSubcommand(s => s.setName('disable').setDescription('Disable automatic provider fallback'))
+        .addSubcommand(s => s.setName('test').setDescription('Test the fallback chain')))
+      .setDMPermission(false)) as SlashCommandBuilder;
+  }
+
   public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const group = interaction.options.getSubcommandGroup(true);
+    const group = interaction.options.getSubcommandGroup(false);
 
     if (!interaction.guild) return;
 

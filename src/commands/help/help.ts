@@ -2,7 +2,7 @@
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
 import {
   ChatInputCommandInteraction, Message,
-  ActionRowBuilder, ButtonBuilder, ButtonStyle,
+  ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder,
 } from 'discord.js';
 import { HelpUI } from '../../structures/HelpUI.js';
 import { PanindiganClient } from '../../structures/PanindiganClient.js';
@@ -21,6 +21,17 @@ export class HelpCommand extends BaseCommand {
       examples: ['/help', 'p!help', '/help play', 'p!help music'],
     };
     super(options);
+  }
+
+  public buildSlashCommand(): SlashCommandBuilder {
+    return new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .addStringOption(o =>
+        o.setName('target')
+          .setDescription('Command name or category to get help for')
+          .setRequired(false)
+      ) as SlashCommandBuilder;
   }
 
   public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {

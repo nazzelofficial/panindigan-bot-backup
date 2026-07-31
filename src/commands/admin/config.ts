@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { BaseCommand, CommandOptions } from '../../structures/BaseCommand.js';
-import { ChatInputCommandInteraction, Message, PermissionFlagsBits, SlashCommandBuilder, SlashCommandSubcommandBuilder, SlashCommandSubcommandGroupBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, Message, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import { DashboardUI } from '../../structures/DashboardUI.js';
 import { ButtonManager } from '../../structures/ButtonManager.js';
 import { EmbedManager } from '../../structures/EmbedManager.js';
@@ -26,11 +26,60 @@ export class ConfigCommand extends BaseCommand {
     super(options);
   }
 
-  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
-    const subcommand = interaction.options.getSubcommandGroup(false);
-    const subcommandGroup = interaction.options.getSubcommandGroup(true);
+  public buildSlashCommand(): SlashCommandBuilder {
+    return (new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .addSubcommandGroup(g => g.setName('roles').setDescription('Configure server roles')
+        .addSubcommand(s => s.setName('admin').setDescription('Set the admin role')
+          .addRoleOption(o => o.setName('role').setDescription('Role to set as admin').setRequired(true)))
+        .addSubcommand(s => s.setName('mod').setDescription('Set the moderator role')
+          .addRoleOption(o => o.setName('role').setDescription('Role to set as moderator').setRequired(true)))
+        .addSubcommand(s => s.setName('dj').setDescription('Set the DJ role')
+          .addRoleOption(o => o.setName('role').setDescription('Role to set as DJ').setRequired(true)))
+        .addSubcommand(s => s.setName('mute').setDescription('Set the mute role')
+          .addRoleOption(o => o.setName('role').setDescription('Role to set as muted').setRequired(true)))
+        .addSubcommand(s => s.setName('bot').setDescription('Set the bot role')
+          .addRoleOption(o => o.setName('role').setDescription('Role to set as bot').setRequired(true))))
+      .addSubcommandGroup(g => g.setName('channels').setDescription('Configure server channels')
+        .addSubcommand(s => s.setName('application').setDescription('Set the applications channel')
+          .addChannelOption(o => o.setName('channel').setDescription('Channel for applications').setRequired(true)))
+        .addSubcommand(s => s.setName('bot').setDescription('Set the bot commands channel')
+          .addChannelOption(o => o.setName('channel').setDescription('Channel for bot commands').setRequired(true)))
+        .addSubcommand(s => s.setName('economy').setDescription('Set the economy channel')
+          .addChannelOption(o => o.setName('channel').setDescription('Channel for economy').setRequired(true)))
+        .addSubcommand(s => s.setName('giveaway').setDescription('Set the giveaways channel')
+          .addChannelOption(o => o.setName('channel').setDescription('Channel for giveaways').setRequired(true)))
+        .addSubcommand(s => s.setName('levelup').setDescription('Set the level-up announcements channel')
+          .addChannelOption(o => o.setName('channel').setDescription('Channel for level-up messages').setRequired(true)))
+        .addSubcommand(s => s.setName('logs').setDescription('Set the moderation logs channel')
+          .addChannelOption(o => o.setName('channel').setDescription('Channel for mod logs').setRequired(true)))
+        .addSubcommand(s => s.setName('music').setDescription('Set the music channel')
+          .addChannelOption(o => o.setName('channel').setDescription('Channel for music').setRequired(true)))
+        .addSubcommand(s => s.setName('starboard').setDescription('Set the starboard channel')
+          .addChannelOption(o => o.setName('channel').setDescription('Channel for starboard').setRequired(true))))
+      .addSubcommandGroup(g => g.setName('general').setDescription('General server settings')
+        .addSubcommand(s => s.setName('prefix').setDescription('Change the bot prefix')
+          .addStringOption(o => o.setName('prefix').setDescription('New prefix (max 5 characters)').setRequired(true).setMaxLength(5)))
+        .addSubcommand(s => s.setName('language').setDescription('Change the bot language')
+          .addStringOption(o => o.setName('language').setDescription('Language code').setRequired(true)
+            .addChoices({ name: 'English', value: 'en' }, { name: 'Filipino', value: 'fil' }))))
+      .addSubcommandGroup(g => g.setName('ignore').setDescription('Manage ignored channels and users')
+        .addSubcommand(s => s.setName('channel').setDescription('Ignore or unignore a channel')
+          .addChannelOption(o => o.setName('channel').setDescription('Channel to ignore/unignore').setRequired(true))
+          .addStringOption(o => o.setName('action').setDescription('Action to perform').setRequired(true)
+            .addChoices({ name: 'Add', value: 'add' }, { name: 'Remove', value: 'remove' })))
+        .addSubcommand(s => s.setName('user').setDescription('Ignore or unignore a user')
+          .addUserOption(o => o.setName('user').setDescription('User to ignore/unignore').setRequired(true))
+          .addStringOption(o => o.setName('action').setDescription('Action to perform').setRequired(true)
+            .addChoices({ name: 'Add', value: 'add' }, { name: 'Remove', value: 'remove' }))))
+      .setDMPermission(false)) as SlashCommandBuilder;
+  }
 
-    if (!subcommand) {
+  public async executeSlash(interaction: ChatInputCommandInteraction): Promise<void> {
+    const subcommandGroup = interaction.options.getSubcommandGroup(false);
+
+    if (!subcommandGroup) {
       await this.showConfig(interaction);
       return;
     }
