@@ -27,16 +27,17 @@ export class UtilityCommand extends BaseCommand {
     return (new SlashCommandBuilder()
       .setName(this.name).setDescription(this.description)
       
-      // User Utilities
-      .addSubcommand(s => s.setName('afk').setDescription('Set AFK status')
-        .addStringOption(o => o.setName('reason').setDescription('AFK reason').setRequired(false)))
-      .addSubcommand(s => s.setName('birthday').setDescription('Set your birthday')
-        .addStringOption(o => o.setName('date').setDescription('Birthday (YYYY-MM-DD)').setRequired(true)))
-      .addSubcommand(s => s.setName('reminder').setDescription('Set a reminder')
-        .addStringOption(o => o.setName('message').setDescription('Reminder message').setRequired(true))
-        .addStringOption(o => o.setName('time').setDescription('Time (e.g., 5m, 1h)').setRequired(true)))
-      .addSubcommand(s => s.setName('ticket').setDescription('Create a support ticket')
-        .addStringOption(o => o.setName('reason').setDescription('Ticket reason').setRequired(false)))
+      // Personal Utilities
+      .addSubcommandGroup(g => g.setName('personal').setDescription('Personal user utilities')
+        .addSubcommand(s => s.setName('afk').setDescription('Set AFK status')
+          .addStringOption(o => o.setName('reason').setDescription('AFK reason').setRequired(false)))
+        .addSubcommand(s => s.setName('birthday').setDescription('Set your birthday')
+          .addStringOption(o => o.setName('date').setDescription('Birthday (YYYY-MM-DD)').setRequired(true)))
+        .addSubcommand(s => s.setName('reminder').setDescription('Set a reminder')
+          .addStringOption(o => o.setName('message').setDescription('Reminder message').setRequired(true))
+          .addStringOption(o => o.setName('time').setDescription('Time (e.g., 5m, 1h)').setRequired(true)))
+        .addSubcommand(s => s.setName('ticket').setDescription('Create a support ticket')
+          .addStringOption(o => o.setName('reason').setDescription('Ticket reason').setRequired(false))))
       
       // Search & Information
       .addSubcommandGroup(g => g.setName('search').setDescription('Search utilities')
@@ -89,7 +90,14 @@ export class UtilityCommand extends BaseCommand {
       return;
     }
 
-    if (subcommandGroup === 'search') {
+    if (subcommandGroup === 'personal') {
+      switch (subcommand) {
+        case 'afk': await this.handleAfk(i); break;
+        case 'birthday': await this.handleBirthday(i); break;
+        case 'reminder': await this.handleReminder(i); break;
+        case 'ticket': await this.handleTicket(i); break;
+      }
+    } else if (subcommandGroup === 'search') {
       switch (subcommand) {
         case 'google': await this.handleSearchGoogle(i); break;
         case 'youtube': await this.handleSearchYoutube(i); break;
@@ -111,13 +119,6 @@ export class UtilityCommand extends BaseCommand {
         case 'list': await this.handleNotesList(i); break;
         case 'remove': await this.handleNotesRemove(i); break;
         case 'clear': await this.handleNotesClear(i); break;
-      }
-    } else {
-      switch (subcommand) {
-        case 'afk': await this.handleAfk(i); break;
-        case 'birthday': await this.handleBirthday(i); break;
-        case 'reminder': await this.handleReminder(i); break;
-        case 'ticket': await this.handleTicket(i); break;
       }
     }
   }

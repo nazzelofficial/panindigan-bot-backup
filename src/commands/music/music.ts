@@ -94,15 +94,12 @@ export class MusicCommand extends BaseCommand {
         .addSubcommand(s => s.setName('leave').setDescription('Leave the voice channel'))
         .addSubcommand(s => s.setName('disconnect').setDescription('Disconnect from voice channel')))
       
-      // Search Subcommand
-      .addSubcommand(s => s.setName('search').setDescription('Search for songs')
-        .addStringOption(o => o.setName('query').setDescription('Search query').setRequired(true)))
-      
-      // Lyrics Subcommand
-      .addSubcommand(s => s.setName('lyrics').setDescription('Get lyrics for current track'))
-      
-      // Stats Subcommand
-      .addSubcommand(s => s.setName('stats').setDescription('Show music statistics'))
+      // Misc Subcommand Group
+      .addSubcommandGroup(g => g.setName('misc').setDescription('Search, lyrics, and stats')
+        .addSubcommand(s => s.setName('search').setDescription('Search for songs')
+          .addStringOption(o => o.setName('query').setDescription('Search query').setRequired(true)))
+        .addSubcommand(s => s.setName('lyrics').setDescription('Get lyrics for current track'))
+        .addSubcommand(s => s.setName('stats').setDescription('Show music statistics')))
       
       .setDMPermission(false)) as SlashCommandBuilder;
   }
@@ -156,7 +153,7 @@ export class MusicCommand extends BaseCommand {
         case 'leave': await this.handleVoiceLeave(i); break;
         case 'disconnect': await this.handleVoiceDisconnect(i); break;
       }
-    } else {
+    } else if (subcommandGroup === 'misc') {
       switch (subcommand) {
         case 'search': await this.handleSearch(i); break;
         case 'lyrics': await this.handleLyrics(i); break;

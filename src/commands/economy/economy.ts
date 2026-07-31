@@ -99,14 +99,13 @@ export class EconomyCommand extends BaseCommand {
         .addSubcommand(s => s.setName('info').setDescription('View business info')
           .addUserOption(o => o.setName('user').setDescription('User to view business for').setRequired(false))))
       
-      // Leaderboard Subcommand
-      .addSubcommand(s => s.setName('leaderboard').setDescription('View economy leaderboard')
-        .addStringOption(o => o.setName('type').setDescription('Leaderboard type').setRequired(false)
-          .addChoices({ name: 'Balance', value: 'balance' }, { name: 'Net Worth', value: 'networth' })))
-      
-      // Profile Subcommand
-      .addSubcommand(s => s.setName('profile').setDescription('View your economy profile')
-        .addUserOption(o => o.setName('user').setDescription('User to view profile for').setRequired(false)))
+      // Stats Subcommand Group
+      .addSubcommandGroup(g => g.setName('stats').setDescription('Economy stats and profiles')
+        .addSubcommand(s => s.setName('leaderboard').setDescription('View economy leaderboard')
+          .addStringOption(o => o.setName('type').setDescription('Leaderboard type').setRequired(false)
+            .addChoices({ name: 'Balance', value: 'balance' }, { name: 'Net Worth', value: 'networth' })))
+        .addSubcommand(s => s.setName('profile').setDescription('View your economy profile')
+          .addUserOption(o => o.setName('user').setDescription('User to view profile for').setRequired(false))))
       
       .setDMPermission(false)) as SlashCommandBuilder;
   }
@@ -166,7 +165,7 @@ export class EconomyCommand extends BaseCommand {
         case 'sell': await this.handleBusinessSell(i); break;
         case 'info': await this.handleBusinessInfo(i); break;
       }
-    } else {
+    } else if (subcommandGroup === 'stats') {
       switch (subcommand) {
         case 'leaderboard': await this.handleLeaderboard(i); break;
         case 'profile': await this.handleProfile(i); break;

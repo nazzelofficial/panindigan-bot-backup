@@ -69,11 +69,6 @@ export class InfoCommand extends BaseCommand {
         .addStringOption(o => o.setName('location').setDescription('Location').setRequired(true)))
       .addSubcommand(s => s.setName('time').setDescription('Get time in different timezones')
         .addStringOption(o => o.setName('timezone').setDescription('Timezone').setRequired(false)))
-      .addSubcommand(s => s.setName('crypto').setDescription('Get cryptocurrency prices')
-        .addStringOption(o => o.setName('crypto').setDescription('Cryptocurrency symbol').setRequired(true)))
-      .addSubcommand(s => s.setName('stock').setDescription('Get stock prices')
-        .addStringOption(o => o.setName('stock').setDescription('Stock symbol').setRequired(true)))
-      .addSubcommand(s => s.setName('news').setDescription('Get latest news'))
       .addSubcommand(s => s.setName('wikipedia').setDescription('Search Wikipedia')
         .addStringOption(o => o.setName('query').setDescription('Search query').setRequired(true)))
       .addSubcommand(s => s.setName('urban').setDescription('Search Urban Dictionary')
@@ -119,14 +114,10 @@ export class InfoCommand extends BaseCommand {
       case 'emojiinfo': await this.handleEmojiInfo(i); break;
       case 'weather': await this.handleWeather(i); break;
       case 'time': await this.handleTime(i); break;
-      case 'crypto': await this.handleCrypto(i); break;
-      case 'stock': await this.handleStock(i); break;
-      case 'news': await this.handleNews(i); break;
       case 'wikipedia': await this.handleWikipedia(i); break;
       case 'urban': await this.handleUrban(i); break;
       case 'github': await this.handleGithub(i); break;
       case 'country': await this.handleCountry(i); break;
-      case 'nitro': await this.handleNitro(i); break;
       default:
         await ErrorHandler.send(i, { title: 'Unknown Subcommand', description: `\`${subcommand}\` is not a recognized subcommand.`, ephemeral: true });
     }
@@ -544,29 +535,6 @@ export class InfoCommand extends BaseCommand {
     }
   }
 
-  private async handleCrypto(i: ChatInputCommandInteraction): Promise<void> {
-    await i.deferReply();
-    const crypto = i.options.getString('crypto', true);
-    
-    const embed = EmbedManager.info('Cryptocurrency', `Symbol: ${crypto}`);
-    await i.editReply({ embeds: [embed] });
-  }
-
-  private async handleStock(i: ChatInputCommandInteraction): Promise<void> {
-    await i.deferReply();
-    const stock = i.options.getString('stock', true);
-    
-    const embed = EmbedManager.info('Stock Price', `Symbol: ${stock}`);
-    await i.editReply({ embeds: [embed] });
-  }
-
-  private async handleNews(i: ChatInputCommandInteraction): Promise<void> {
-    await i.deferReply();
-    
-    const embed = EmbedManager.info('Latest News', 'Fetching latest news...');
-    await i.editReply({ embeds: [embed] });
-  }
-
   private async handleWikipedia(i: ChatInputCommandInteraction): Promise<void> {
     await i.deferReply();
     const query = i.options.getString('query', true);
@@ -596,13 +564,6 @@ export class InfoCommand extends BaseCommand {
     const country = i.options.getString('country', true);
     
     const embed = EmbedManager.info('Country Information', `Country: ${country}`);
-    await i.editReply({ embeds: [embed] });
-  }
-
-  private async handleNitro(i: ChatInputCommandInteraction): Promise<void> {
-    await i.deferReply();
-    
-    const embed = EmbedManager.info('Nitro Information', 'Discord Nitro information');
     await i.editReply({ embeds: [embed] });
   }
 

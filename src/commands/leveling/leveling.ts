@@ -28,13 +28,17 @@ export class LevelingCommand extends BaseCommand {
       .setName(this.name).setDescription(this.description)
       
       // User Leveling
-      .addSubcommand(s => s.setName('rank').setDescription('View your rank card')
-        .addUserOption(o => o.setName('user').setDescription('Target user').setRequired(false)))
-      .addSubcommand(s => s.setName('level').setDescription('View your level')
-        .addUserOption(o => o.setName('user').setDescription('Target user').setRequired(false)))
-      .addSubcommand(s => s.setName('xp').setDescription('View your XP')
-        .addUserOption(o => o.setName('user').setDescription('Target user').setRequired(false)))
-      .addSubcommand(s => s.setName('leaderboard').setDescription('View server leaderboard'))
+      .addSubcommandGroup(g => g.setName('user').setDescription('User leveling info')
+        .addSubcommand(s => s.setName('rank').setDescription('View your rank card')
+          .addUserOption(o => o.setName('user').setDescription('Target user').setRequired(false)))
+        .addSubcommand(s => s.setName('level').setDescription('View your level')
+          .addUserOption(o => o.setName('user').setDescription('Target user').setRequired(false)))
+        .addSubcommand(s => s.setName('xp').setDescription('View your XP')
+          .addUserOption(o => o.setName('user').setDescription('Target user').setRequired(false)))
+        .addSubcommand(s => s.setName('leaderboard').setDescription('View server leaderboard'))
+        .addSubcommand(s => s.setName('stats').setDescription('View leveling statistics'))
+        .addSubcommand(s => s.setName('reset').setDescription('Reset user XP')
+          .addUserOption(o => o.setName('user').setDescription('Target user').setRequired(true))))
       
       // Configuration (Admin only)
       .addSubcommandGroup(g => g.setName('config').setDescription('Configure leveling system')
@@ -56,10 +60,7 @@ export class LevelingCommand extends BaseCommand {
         .addSubcommand(s => s.setName('list').setDescription('List all level roles'))
         .addSubcommand(s => s.setName('sync').setDescription('Sync roles for all members')))
       
-      // Statistics
-      .addSubcommand(s => s.setName('stats').setDescription('View leveling statistics'))
-      .addSubcommand(s => s.setName('reset').setDescription('Reset user XP')
-        .addUserOption(o => o.setName('user').setDescription('Target user').setRequired(true)))) as SlashCommandBuilder;
+      ) as SlashCommandBuilder;
   }
 
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> {
@@ -76,7 +77,16 @@ export class LevelingCommand extends BaseCommand {
       return;
     }
 
-    if (subcommandGroup === 'config') {
+    if (subcommandGroup === 'user') {
+      switch (subcommand) {
+        case 'rank': await this.handleRank(i); break;
+        case 'level': await this.handleLevel(i); break;
+        case 'xp': await this.handleXp(i); break;
+        case 'leaderboard': await this.handleLeaderboard(i); break;
+        case 'stats': await this.handleStats(i); break;
+        case 'reset': await this.handleReset(i); break;
+      }
+    } else if (subcommandGroup === 'config') {
       switch (subcommand) {
         case 'toggle': await this.handleConfigToggle(i); break;
         case 'channel': await this.handleConfigChannel(i); break;
@@ -89,15 +99,6 @@ export class LevelingCommand extends BaseCommand {
         case 'remove': await this.handleRolesRemove(i); break;
         case 'list': await this.handleRolesList(i); break;
         case 'sync': await this.handleRolesSync(i); break;
-      }
-    } else {
-      switch (subcommand) {
-        case 'rank': await this.handleRank(i); break;
-        case 'level': await this.handleLevel(i); break;
-        case 'xp': await this.handleXp(i); break;
-        case 'leaderboard': await this.handleLeaderboard(i); break;
-        case 'stats': await this.handleStats(i); break;
-        case 'reset': await this.handleReset(i); break;
       }
     }
   }
