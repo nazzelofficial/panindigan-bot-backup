@@ -935,20 +935,20 @@ export class MusicCommand extends BaseCommand {
         return queueList.slice(start, end).join('\n');
       };
 
-      const createEmbed = (page: number): EmbedBuilder => {
-        const embed = new EmbedBuilder()
-          .setTitle('📜 Music Queue')
-          .setColor(COLORS.music)
-          .setDescription(getQueuePage(page) || 'No tracks in queue')
-          .addFields(
-            { name: '🎵 Total Tracks', value: (currentTrack ? queueSize + 1 : queueSize).toString(), inline: true },
-            { name: '⏱️ Total Duration', value: this.formatDuration(totalDuration), inline: true },
-            { name: '🔊 Volume', value: `${player.volume}%`, inline: true },
-            { name: '🔁 Loop', value: player.loop === 'none' ? 'Off' : player.loop, inline: true },
-          )
-          .setFooter({ text: `Page ${page + 1}/${totalPages}` })
-          .setTimestamp();
-        return embed;
+      const createEmbed = (page: number) => {
+        const loopLabel = player.loop === 'none' ? '➡️ Off' : player.loop === 'track' ? '🔂 Track' : '🔁 Queue';
+        return EmbedManager.music('📜 Music Queue',
+          getQueuePage(page) || '*No tracks in queue*',
+          {
+            fields: [
+              { name: '🎵 Total Tracks', value: (currentTrack ? queueSize + 1 : queueSize).toString(), inline: true },
+              { name: '⏱️ Total Duration', value: this.formatDuration(totalDuration), inline: true },
+              { name: '🔊 Volume', value: `${player.volume}%`, inline: true },
+              { name: '🔁 Loop', value: loopLabel, inline: true },
+            ],
+            footer: `Page ${page + 1}/${totalPages}`,
+          }
+        );
       };
 
       if (totalPages <= 1) {
@@ -1100,10 +1100,10 @@ export class MusicCommand extends BaseCommand {
             .setStyle(ButtonStyle.Secondary),
         );
 
-      await i.editReply({ 
-        content: `⚠️ **Warning**: This will clear ${player.queue.size} tracks from the queue.`,
-        components: [row],
-      });
+      const warnEmbed = EmbedManager.error('Confirm Queue Clear',
+        `⚠️ This will remove **${player.queue.size} tracks** from the queue. This action cannot be undone.`
+      );
+      await i.editReply({ embeds: [warnEmbed], components: [row] });
 
       const collector = i.channel!.createMessageComponentCollector({ 
         componentType: ComponentType.Button, 
@@ -1193,7 +1193,7 @@ export class MusicCommand extends BaseCommand {
       }
 
       if (position > player.queue.size) {
-        await i.editReply({ content: `❌ Position ${position} is out of range. Queue has ${player.queue.size} tracks.` });
+        await ErrorHandler.send(i, { title: 'Position Out of Range', description: `Position **#${position}** is out of range. The queue has **${player.queue.size}** tracks.\n\n> Use \`/music queue show\` to view valid positions.` });
         return;
       }
 
@@ -1205,18 +1205,18 @@ export class MusicCommand extends BaseCommand {
         return;
       }
 
-      const embed = new EmbedBuilder()
-        .setTitle('🗑️ Track Removed')
-        .setColor(COLORS.success)
-        .setDescription(`Removed **${removedTrack.title}** from position ${position}`)
-        .addFields(
-          { name: '🎵 Removed Track', value: removedTrack.title, inline: true },
-          { name: '📍 Position', value: `${position}`, inline: true },
-          { name: '👤 Removed by', value: i.user.tag, inline: true },
-          { name: '📊 Remaining', value: `${player.queue.size} tracks`, inline: true },
-        )
-        .setThumbnail(removedTrack.thumbnail)
-        .setTimestamp();
+      const embed = EmbedManager.music('Track Removed',
+        `🗑️ Removed **${removedTrack.title}** from position **#${position}**`,
+        {
+          fields: [
+            { name: '🎵 Track', value: removedTrack.title, inline: true },
+            { name: '📍 Position', value: `#${position}`, inline: true },
+            { name: '👤 Removed by', value: `<@${i.user.id}>`, inline: true },
+            { name: '📊 Remaining', value: `${player.queue.size} tracks`, inline: true },
+          ],
+          thumbnail: removedTrack.thumbnail ?? undefined,
+        }
+      );
       await i.editReply({ embeds: [embed] });
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
@@ -1275,7 +1275,7 @@ export class MusicCommand extends BaseCommand {
       }
 
       if (from > player.queue.size || to > player.queue.size) {
-        await i.editReply({ content: `❌ Position out of range. Queue has ${player.queue.size} tracks.` });
+        await ErrorHandler.send(i, { title: 'Position Out of Range', description: `One or both positions are out of range. The queue has **${player.queue.size}** tracks.` });
         return;
       }
 
@@ -1294,18 +1294,17 @@ export class MusicCommand extends BaseCommand {
       player.queue.remove(fromIndex);
       player.queue.add(trackToMove, toIndex);
 
-      const embed = new EmbedBuilder()
-        .setTitle('🔄 Track Moved')
-        .setColor(COLORS.success)
-        .setDescription(`Moved **${trackToMove.title}** from position ${from} to ${to}`)
-        .addFields(
-          { name: '🎵 Track', value: trackToMove.title, inline: true },
-          { name: '📍 From', value: `${from}`, inline: true },
-          { name: '📍 To', value: `${to}`, inline: true },
-          { name: '👤 Moved by', value: i.user.tag, inline: true },
-        )
-        .setThumbnail(trackToMove.thumbnail)
-        .setTimestamp();
+      const embed = EmbedManager.music('Track Moved',
+        `🔄 Moved **${trackToMove.title}** from position **#${from}** → **#${to}**`,
+        {
+          fields: [
+            { name: '🎵 Track', value: trackToMove.title, inline: true },
+            { name: '📍 From → To', value: `#${from} → #${to}`, inline: true },
+            { name: '👤 Moved by', value: `<@${i.user.id}>`, inline: true },
+          ],
+          thumbnail: trackToMove.thumbnail ?? undefined,
+        }
+      );
       await i.editReply({ embeds: [embed] });
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
@@ -1378,17 +1377,18 @@ export class MusicCommand extends BaseCommand {
         },
       });
 
-      const embed = new EmbedBuilder()
-        .setTitle('📁 Playlist Created')
-        .setColor(COLORS.success)
-        .setDescription(`Successfully created playlist **${name}**`)
-        .addFields(
-          { name: '📝 Name', value: name, inline: true },
-          { name: '📄 Description', value: description || 'None', inline: false },
-          { name: '🎵 Tracks', value: '0', inline: true },
-          { name: '👤 Created by', value: i.user.tag, inline: true },
-        )
-        .setTimestamp();
+      const embed = EmbedManager.music('Playlist Created',
+        `📁 Created playlist **${name}**!`,
+        {
+          fields: [
+            { name: '📝 Name', value: name, inline: true },
+            { name: '📄 Description', value: description || '*No description*', inline: false },
+            { name: '🎵 Tracks', value: '0', inline: true },
+            { name: '👤 Created by', value: `<@${modalSubmit.user.id}>`, inline: true },
+            { name: '💡 Next step', value: 'Add tracks with `/music playlist add`!', inline: false },
+          ],
+        }
+      );
       await modalSubmit.reply({ embeds: [embed], ephemeral: true });
     } catch (error) {
       await modalSubmit.reply({ embeds: [EmbedManager.error('Create Failed', 'Failed to create the playlist. The name might already be taken — try a different name.')], ephemeral: true });
@@ -1406,14 +1406,14 @@ export class MusicCommand extends BaseCommand {
       });
 
       if (playlists.length === 0) {
-        const embed = new EmbedBuilder()
-          .setTitle('📁 Your Playlists')
-          .setColor(COLORS.info)
-          .setDescription('You have no playlists yet')
-          .addFields(
-            { name: '💡 Tip', value: 'Use `/music playlist create` to create your first playlist!', inline: false },
-          )
-          .setTimestamp();
+        const embed = EmbedManager.music('Your Playlists',
+          '📁 You have no playlists yet.',
+          {
+            fields: [
+              { name: '💡 Get started', value: 'Use `/music playlist create` to create your first playlist!', inline: false },
+            ],
+          }
+        );
         await i.editReply({ embeds: [embed] });
         return;
       }
@@ -1423,16 +1423,14 @@ export class MusicCommand extends BaseCommand {
         return `${i + 1}. **${p.name}** - ${trackCount} tracks${p.description ? `\n   ${p.description}` : ''}`;
       }).join('\n\n');
 
-      const embed = new EmbedBuilder()
-        .setTitle('📁 Your Playlists')
-        .setColor(COLORS.music)
-        .setDescription(playlistList)
-        .addFields(
-          { name: '📊 Total', value: playlists.length.toString(), inline: true },
-          { name: '👤 Owner', value: i.user.tag, inline: true },
-        )
-        .setFooter({ text: `Total: ${playlists.length} playlists` })
-        .setTimestamp();
+      const embed = EmbedManager.music('Your Playlists', playlistList, {
+        fields: [
+          { name: '📊 Total', value: `${playlists.length} playlists`, inline: true },
+          { name: '👤 Owner', value: `<@${i.user.id}>`, inline: true },
+          { name: '💡 Tip', value: 'Use `/music playlist play <name>` to queue a playlist!', inline: false },
+        ],
+        footer: `Total: ${playlists.length} playlists`,
+      });
       await i.editReply({ embeds: [embed] });
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
@@ -1450,7 +1448,7 @@ export class MusicCommand extends BaseCommand {
       });
 
       if (!playlist) {
-        await i.editReply({ content: `❌ Playlist "${name}" not found.` });
+        await ErrorHandler.send(i, { title: 'Playlist Not Found', description: `No playlist named **"${name}"** was found.\n\n> Use \`/music playlist list\` to see your playlists.` });
         return;
       }
 
@@ -1459,23 +1457,20 @@ export class MusicCommand extends BaseCommand {
         `${index + 1}. **${track.title}** - ${track.artist || 'Unknown'} (${this.formatDuration(track.duration || 0)})`
       ).join('\n');
 
-      const embed = new EmbedBuilder()
-        .setTitle(`📁 ${playlist.name}`)
-        .setColor(COLORS.music)
-        .setDescription(playlist.description || 'No description')
-        .addFields(
-          { name: '🎵 Tracks', value: tracks.length.toString(), inline: true },
-          { name: '📅 Created', value: `<t:${Math.floor(playlist.createdAt.getTime() / 1000)}:R>`, inline: true },
-          { name: '🔄 Updated', value: `<t:${Math.floor(playlist.updatedAt.getTime() / 1000)}:R>`, inline: true },
-        )
-        .setTimestamp();
-
-      if (tracks.length > 0) {
-        embed.addFields({ name: '📋 Track List', value: trackList.substring(0, 1024), inline: false });
-      } else {
-        embed.addFields({ name: '📋 Track List', value: 'No tracks in this playlist', inline: false });
-      }
-
+      const playlistFields = [
+        { name: '🎵 Tracks', value: tracks.length.toString(), inline: true },
+        { name: '📅 Created', value: `<t:${Math.floor(playlist.createdAt.getTime() / 1000)}:R>`, inline: true },
+        { name: '🔄 Updated', value: `<t:${Math.floor(playlist.updatedAt.getTime() / 1000)}:R>`, inline: true },
+        {
+          name: '📋 Track List',
+          value: tracks.length > 0 ? trackList.substring(0, 1024) : '*No tracks yet — use `/music playlist add` to add some!*',
+          inline: false,
+        },
+      ];
+      const embed = EmbedManager.music(`📁 ${playlist.name}`,
+        playlist.description || '*No description*',
+        { fields: playlistFields }
+      );
       await i.editReply({ embeds: [embed] });
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
@@ -1514,7 +1509,7 @@ export class MusicCommand extends BaseCommand {
       });
 
       if (!playlist) {
-        await i.editReply({ content: `❌ Playlist "${name}" not found.` });
+        await ErrorHandler.send(i, { title: 'Playlist Not Found', description: `No playlist named **"${name}"** was found.\n\n> Use \`/music playlist list\` to see your playlists.` });
         return;
       }
 
@@ -1547,17 +1542,17 @@ export class MusicCommand extends BaseCommand {
         },
       });
 
-      const embed = new EmbedBuilder()
-        .setTitle('➕ Track Added')
-        .setColor(COLORS.success)
-        .setDescription(`Added **${currentTrack.title}** to playlist **${name}**`)
-        .addFields(
-          { name: '🎵 Track', value: currentTrack.title, inline: true },
-          { name: '📁 Playlist', value: name, inline: true },
-          { name: '📊 Total Tracks', value: tracks.length.toString(), inline: true },
-          { name: '👤 Added by', value: i.user.tag, inline: true },
-        )
-        .setThumbnail(currentTrack.thumbnail)
+      const embed = EmbedManager.music('Track Added to Playlist',
+        `➕ Added **${currentTrack.title}** to **${name}**`,
+        {
+          fields: [
+            { name: '🎵 Track', value: currentTrack.title, inline: true },
+            { name: '📁 Playlist', value: name, inline: true },
+            { name: '📊 Total Tracks', value: tracks.length.toString(), inline: true },
+            { name: '👤 Added by', value: `<@${i.user.id}>`, inline: true },
+          ],
+          thumbnail: currentTrack.thumbnail ?? undefined,
+        }
         .setTimestamp();
       await i.editReply({ embeds: [embed] });
     } catch (error) {
@@ -1583,7 +1578,7 @@ export class MusicCommand extends BaseCommand {
       });
 
       if (!playlist) {
-        await i.editReply({ content: `❌ Playlist "${name}" not found.` });
+        await ErrorHandler.send(i, { title: 'Playlist Not Found', description: `No playlist named **"${name}"** was found.\n\n> Use \`/music playlist list\` to see your playlists.` });
         return;
       }
 
@@ -1605,18 +1600,18 @@ export class MusicCommand extends BaseCommand {
         },
       });
 
-      const embed = new EmbedBuilder()
-        .setTitle('🗑️ Track Removed')
-        .setColor(COLORS.success)
-        .setDescription(`Removed **${removedTrack.title}** from playlist **${name}**`)
-        .addFields(
-          { name: '🎵 Removed Track', value: removedTrack.title, inline: true },
-          { name: '📍 Position', value: `${position}`, inline: true },
-          { name: '📁 Playlist', value: name, inline: true },
-          { name: '📊 Remaining', value: tracks.length.toString(), inline: true },
-        )
-        .setThumbnail(removedTrack.thumbnail)
-        .setTimestamp();
+      const embed = EmbedManager.music('Track Removed from Playlist',
+        `🗑️ Removed **${removedTrack.title}** from **${name}**`,
+        {
+          fields: [
+            { name: '🎵 Track', value: removedTrack.title, inline: true },
+            { name: '📍 Position', value: `#${position}`, inline: true },
+            { name: '📁 Playlist', value: name, inline: true },
+            { name: '📊 Remaining', value: `${tracks.length} tracks`, inline: true },
+          ],
+          thumbnail: removedTrack.thumbnail ?? undefined,
+        }
+      );
       await i.editReply({ embeds: [embed] });
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
@@ -1634,7 +1629,7 @@ export class MusicCommand extends BaseCommand {
     });
 
     if (!playlist) {
-      await i.editReply({ content: `❌ Playlist "${name}" not found.` });
+      await ErrorHandler.send(i, { title: 'Playlist Not Found', description: `No playlist named **"${name}"** was found.\n\n> Use \`/music playlist list\` to see your playlists.` });
       return;
     }
 
@@ -1652,10 +1647,10 @@ export class MusicCommand extends BaseCommand {
           .setStyle(ButtonStyle.Secondary),
       );
 
-    await i.editReply({ 
-      content: `⚠️ **Warning**: This will permanently delete playlist **${name}** with ${trackCount} tracks.`,
-      components: [row],
-    });
+    const warnEmbed = EmbedManager.error('Confirm Playlist Delete',
+      `⚠️ This will permanently delete **${name}** and its **${trackCount} tracks**. This cannot be undone.`
+    );
+    await i.editReply({ embeds: [warnEmbed], components: [row] });
 
     const collector = i.channel!.createMessageComponentCollector({ 
       componentType: ComponentType.Button, 
@@ -1670,16 +1665,16 @@ export class MusicCommand extends BaseCommand {
             where: { userId: i.user.id, name },
           });
 
-          const embed = new EmbedBuilder()
-            .setTitle('🗑️ Playlist Deleted')
-            .setColor(COLORS.success)
-            .setDescription(`Playlist **${name}** has been deleted`)
-            .addFields(
-              { name: '📁 Playlist', value: name, inline: true },
-              { name: '🎵 Tracks Lost', value: trackCount.toString(), inline: true },
-              { name: '👤 Deleted by', value: i.user.tag, inline: true },
-            )
-            .setTimestamp();
+          const embed = EmbedManager.music('Playlist Deleted',
+            `🗑️ **${name}** has been permanently deleted.`,
+            {
+              fields: [
+                { name: '📁 Playlist', value: name, inline: true },
+                { name: '🎵 Tracks Removed', value: trackCount.toString(), inline: true },
+                { name: '👤 Deleted by', value: `<@${interaction.user.id}>`, inline: true },
+              ],
+            }
+          );
           await interaction.update({ embeds: [embed], components: [] });
         } catch (error) {
           await ErrorHandler.generic(interaction, error as Error);
@@ -1819,17 +1814,17 @@ export class MusicCommand extends BaseCommand {
       if (hasNightcore) {
         // Remove nightcore
         await player.setFilters({});
-        const embed = new EmbedBuilder()
-          .setTitle('🎚️ Nightcore Disabled')
-          .setColor(COLORS.info)
-          .setDescription('Nightcore filter has been disabled')
-          .addFields(
+        const embed = EmbedManager.music('Nightcore Disabled',
+        `🎚️ **Nightcore** filter has been **turned off**.`,
+        {
+          fields: [
             { name: '🎵 Filter', value: 'Nightcore', inline: true },
-            { name: '🔊 Status', value: 'Disabled', inline: true },
-            { name: '👤 Toggled by', value: i.user.tag, inline: true },
-          )
-          .setTimestamp();
-        await i.editReply({ embeds: [embed] });
+            { name: '🔊 Status', value: '❌ Off', inline: true },
+            { name: '👤 Toggled by', value: `<@${i.user.id}>`, inline: true },
+          ],
+        }
+      );
+      await i.editReply({ embeds: [embed] });
       } else {
         // Apply nightcore
         await player.setFilters({
@@ -1839,17 +1834,18 @@ export class MusicCommand extends BaseCommand {
             rate: 1.0,
           },
         });
-        const embed = new EmbedBuilder()
-          .setTitle('🎚️ Nightcore Enabled')
-          .setColor(COLORS.success)
-          .setDescription('Nightcore filter has been enabled')
-          .addFields(
+        const embed = EmbedManager.music('Nightcore Enabled',
+        `🎚️ **Nightcore** filter is now **active**! Speeds up the track and raises the pitch — anime energy!`,
+        {
+          fields: [
             { name: '🎵 Filter', value: 'Nightcore', inline: true },
-            { name: '🔊 Status', value: 'Enabled', inline: true },
-            { name: '👤 Toggled by', value: i.user.tag, inline: true },
-          )
-          .setTimestamp();
-        await i.editReply({ embeds: [embed] });
+            { name: '🔊 Status', value: '✅ On', inline: true },
+            { name: '👤 Toggled by', value: `<@${i.user.id}>`, inline: true },
+            { name: '💡 Tip', value: 'Use `/music filter reset` to remove all filters.', inline: false },
+          ],
+        }
+      );
+      await i.editReply({ embeds: [embed] });
       }
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
@@ -1897,17 +1893,17 @@ export class MusicCommand extends BaseCommand {
       if (hasVaporwave) {
         // Remove vaporwave
         await player.setFilters({});
-        const embed = new EmbedBuilder()
-          .setTitle('🎚️ Vaporwave Disabled')
-          .setColor(COLORS.info)
-          .setDescription('Vaporwave filter has been disabled')
-          .addFields(
+        const embed = EmbedManager.music('Vaporwave Disabled',
+        `🎚️ **Vaporwave** filter has been **turned off**.`,
+        {
+          fields: [
             { name: '🎵 Filter', value: 'Vaporwave', inline: true },
-            { name: '🔊 Status', value: 'Disabled', inline: true },
-            { name: '👤 Toggled by', value: i.user.tag, inline: true },
-          )
-          .setTimestamp();
-        await i.editReply({ embeds: [embed] });
+            { name: '🔊 Status', value: '❌ Off', inline: true },
+            { name: '👤 Toggled by', value: `<@${i.user.id}>`, inline: true },
+          ],
+        }
+      );
+      await i.editReply({ embeds: [embed] });
       } else {
         // Apply vaporwave
         await player.setFilters({
@@ -1922,17 +1918,18 @@ export class MusicCommand extends BaseCommand {
             { band: 2, gain: 0.05 },
           ],
         });
-        const embed = new EmbedBuilder()
-          .setTitle('🎚️ Vaporwave Enabled')
-          .setColor(COLORS.success)
-          .setDescription('Vaporwave filter has been enabled')
-          .addFields(
+        const embed = EmbedManager.music('Vaporwave Enabled',
+        `🎚️ **Vaporwave** filter is now **active**! Slows the track down and lowers the pitch — retro vibes.`,
+        {
+          fields: [
             { name: '🎵 Filter', value: 'Vaporwave', inline: true },
-            { name: '🔊 Status', value: 'Enabled', inline: true },
-            { name: '👤 Toggled by', value: i.user.tag, inline: true },
-          )
-          .setTimestamp();
-        await i.editReply({ embeds: [embed] });
+            { name: '🔊 Status', value: '✅ On', inline: true },
+            { name: '👤 Toggled by', value: `<@${i.user.id}>`, inline: true },
+            { name: '💡 Tip', value: 'Use `/music filter reset` to remove all filters.', inline: false },
+          ],
+        }
+      );
+      await i.editReply({ embeds: [embed] });
       }
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
@@ -2052,15 +2049,15 @@ export class MusicCommand extends BaseCommand {
       // Reset all filters
       await player.setFilters({});
 
-      const embed = new EmbedBuilder()
-        .setTitle('🎚️ Filters Reset')
-        .setColor(COLORS.success)
-        .setDescription('All audio filters have been reset')
-        .addFields(
-          { name: '🎵 Action', value: 'Reset', inline: true },
-          { name: '👤 Reset by', value: i.user.tag, inline: true },
-        )
-        .setTimestamp();
+      const embed = EmbedManager.music('All Filters Reset',
+        '🎚️ All audio filters have been removed. The track is back to its original sound.',
+        {
+          fields: [
+            { name: '🎵 Filters', value: 'None (cleared)', inline: true },
+            { name: '👤 Reset by', value: `<@${i.user.id}>`, inline: true },
+          ],
+        }
+      );
       await i.editReply({ embeds: [embed] });
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
@@ -2109,17 +2106,17 @@ export class MusicCommand extends BaseCommand {
         deaf: true,
       });
 
-      const embed = new EmbedBuilder()
-        .setTitle('🔊 Joined Voice Channel')
-        .setColor(COLORS.success)
-        .setDescription(`Joined **${voiceChannel.name}**`)
-        .addFields(
-          { name: '🎤 Channel', value: voiceChannel.name, inline: true },
-          { name: '👥 Members', value: voiceChannel.members.size.toString(), inline: true },
-          { name: '🔊 Volume', value: '80%', inline: true },
-          { name: '👤 Joined by', value: i.user.tag, inline: true },
-        )
-        .setTimestamp();
+      const embed = EmbedManager.music('Joined Voice Channel',
+        `🔊 Joined **${voiceChannel.name}**! Use `/music player play` to start listening.`,
+        {
+          fields: [
+            { name: '🎤 Channel', value: voiceChannel.name, inline: true },
+            { name: '👥 Members', value: voiceChannel.members.size.toString(), inline: true },
+            { name: '🔊 Volume', value: '80%', inline: true },
+            { name: '👤 Joined by', value: `<@${i.user.id}>`, inline: true },
+          ],
+        }
+      );
       await i.editReply({ embeds: [embed] });
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
@@ -2163,15 +2160,15 @@ export class MusicCommand extends BaseCommand {
       const channelName = voiceChannel.name;
       player.destroy();
 
-      const embed = new EmbedBuilder()
-        .setTitle('🔊 Left Voice Channel')
-        .setColor(COLORS.info)
-        .setDescription(`Left **${channelName}**`)
-        .addFields(
-          { name: '🎤 Channel', value: channelName, inline: true },
-          { name: '👤 Left by', value: i.user.tag, inline: true },
-        )
-        .setTimestamp();
+      const embed = EmbedManager.music('Left Voice Channel',
+        `👋 Left **${channelName}**. Use `/music voice join` to bring me back!`,
+        {
+          fields: [
+            { name: '🎤 Channel', value: channelName, inline: true },
+            { name: '👤 Left by', value: `<@${i.user.id}>`, inline: true },
+          ],
+        }
+      );
       await i.editReply({ embeds: [embed] });
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
@@ -2206,15 +2203,16 @@ export class MusicCommand extends BaseCommand {
       
       player.destroy();
 
-      const embed = new EmbedBuilder()
-        .setTitle('🔊 Disconnected')
-        .setColor(COLORS.info)
-        .setDescription(`Disconnected from **${channelName}**`)
-        .addFields(
-          { name: '🎤 Channel', value: channelName, inline: true },
-          { name: '👤 Disconnected by', value: i.user.tag, inline: true },
-        )
-        .setTimestamp();
+      const embed = EmbedManager.music('Disconnected',
+        `🔌 Disconnected from **${channelName}** and cleared the queue.`,
+        {
+          fields: [
+            { name: '🎤 Channel', value: channelName, inline: true },
+            { name: '👤 Disconnected by', value: `<@${i.user.id}>`, inline: true },
+            { name: '💡 Tip', value: 'Use `/music player play` to start a new session.', inline: false },
+          ],
+        }
+      );
       await i.editReply({ embeds: [embed] });
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
@@ -2275,15 +2273,16 @@ export class MusicCommand extends BaseCommand {
         }
 
         player.queue.add(result.tracks);
-        const embed = new EmbedBuilder()
-          .setTitle('📋 Playlist Added')
-          .setColor(COLORS.success)
-          .setDescription(`Added **${result.tracks.length} tracks** from playlist`)
-          .addFields(
-            { name: '🎵 Tracks', value: result.tracks.length.toString(), inline: true },
-            { name: '👤 Requested by', value: i.user.tag, inline: true },
-          )
-          .setTimestamp();
+        const embed = EmbedManager.music('Playlist Queued',
+          `📋 Added **${result.tracks.length} tracks** to the queue!`,
+          {
+            fields: [
+              { name: '🎵 Tracks Added', value: result.tracks.length.toString(), inline: true },
+              { name: '👤 Requested by', value: `<@${i.user.id}>`, inline: true },
+              { name: '💡 Tip', value: 'Use `/music player nowplaying` to see what\'s on next.', inline: false },
+            ],
+          }
+        );
         await i.editReply({ embeds: [embed] });
 
         if (!player.playing && !player.paused) await player.play();
@@ -2295,16 +2294,16 @@ export class MusicCommand extends BaseCommand {
         `${index + 1}. **${track.title}** - ${track.author || 'Unknown'} (${this.formatDuration(track.length || 0)})`
       ).join('\n');
 
-      const embed = new EmbedBuilder()
-        .setTitle('🔍 Music Search')
-        .setColor(COLORS.music)
-        .setDescription(`Search results for: **${query}**\n\n${trackList}`)
-        .addFields(
-          { name: '🔍 Query', value: query, inline: true },
-          { name: '🎵 Results', value: tracks.length.toString(), inline: true },
-        )
-        .setFooter({ text: 'Select a track to play' })
-        .setTimestamp();
+      const embed = EmbedManager.music('🔍 Search Results',
+        `Results for **${query}**\n\n${trackList}`,
+        {
+          fields: [
+            { name: '🔍 Query', value: query, inline: true },
+            { name: '🎵 Results', value: `${tracks.length} tracks`, inline: true },
+          ],
+          footer: 'Select a track from the menu below to play it',
+        }
+      );
 
       // Create select menu
       const selectMenu = new StringSelectMenuBuilder()
@@ -2607,20 +2606,22 @@ export class MusicCommand extends BaseCommand {
       const isPlaying = player?.playing || false;
       const isPaused = player?.paused || false;
 
-      const embed = new EmbedBuilder()
-        .setTitle('📊 Music Statistics')
-        .setColor(COLORS.music)
-        .addFields(
-          { name: '🎵 Tracks Played', value: tracksPlayed.toString(), inline: true },
-          { name: '⏱️ Total Play Time', value: this.formatDuration(totalPlayTime), inline: true },
-          { name: '🎧 Sessions', value: sessions.toString(), inline: true },
-          { name: '⏭️ Skips', value: skips.toString(), inline: true },
-          { name: '🎤 Current Status', value: isPlaying ? 'Playing' : isPaused ? 'Paused' : 'Idle', inline: true },
-          { name: '📊 Queue Size', value: queueSize.toString(), inline: true },
-          { name: '🎵 Now Playing', value: currentTrack ? currentTrack.title : 'None', inline: false },
-        )
-        .setFooter({ text: `🖥️ ${i.guild.name}` })
-        .setTimestamp();
+      const statusEmoji = isPlaying ? '▶️ Playing' : isPaused ? '⏸️ Paused' : '⏹️ Idle';
+      const embed = EmbedManager.music('Music Statistics',
+        `📊 Server music stats for **${i.guild.name}**`,
+        {
+          fields: [
+            { name: '🎵 Tracks Played', value: tracksPlayed.toLocaleString(), inline: true },
+            { name: '⏱️ Total Play Time', value: this.formatDuration(totalPlayTime), inline: true },
+            { name: '🎧 Sessions', value: sessions.toLocaleString(), inline: true },
+            { name: '⏭️ Skips', value: skips.toLocaleString(), inline: true },
+            { name: '🎤 Status', value: statusEmoji, inline: true },
+            { name: '📋 Queue Size', value: `${queueSize} tracks`, inline: true },
+            { name: '🎵 Now Playing', value: currentTrack ? `**${currentTrack.title}**` : '*Nothing playing*', inline: false },
+          ],
+          footer: i.guild.name,
+        }
+      );
       await i.editReply({ embeds: [embed] });
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);

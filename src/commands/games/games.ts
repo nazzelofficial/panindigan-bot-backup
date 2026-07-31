@@ -89,11 +89,11 @@ export class GamesCommand extends BaseCommand {
       .addSubcommandGroup(g => g.setName('rpg').setDescription('Role-playing games')
         .addSubcommand(s => s.setName('adventure').setDescription('Start an adventure'))
         .addSubcommand(s => s.setName('character').setDescription('View your character')
-          .addUserOption(o => o.setName('user').setDescription('User to view character for').setRequired(false))
+          .addUserOption(o => o.setName('user').setDescription('User to view character for').setRequired(false)))
         .addSubcommand(s => s.setName('inventory').setDescription('View your inventory')
-          .addUserOption(o => o.setName('user').setDescription('User to view inventory for').setRequired(false))
+          .addUserOption(o => o.setName('user').setDescription('User to view inventory for').setRequired(false)))
         .addSubcommand(s => s.setName('battle').setDescription('Battle another player')
-          .addUserOption(o => o.setName('opponent').setDescription('Your opponent').setRequired(false));
+          .addUserOption(o => o.setName('opponent').setDescription('Your opponent').setRequired(false))));
   }
 
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> {

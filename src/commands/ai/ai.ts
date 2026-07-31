@@ -99,14 +99,14 @@ export class AICommand extends BaseCommand {
         .addSubcommand(s => s.setName('describe').setDescription('Describe an image')
           .addAttachmentOption(o => o.setName('image').setDescription('Image to describe').setRequired(true)))
         .addSubcommand(s => s.setName('ocr').setDescription('Extract text from image')
-          .addAttachmentOption(o => o.setName('image').setDescription('Image with text').setRequired(true)))
+          .addAttachmentOption(o => o.setName('image').setDescription('Image with text').setRequired(true))))
       
       // Security Subcommand Group
       .addSubcommandGroup(g => g.setName('security').setDescription('AI security tools')
         .addSubcommand(s => s.setName('analyze').setDescription('Analyze code for security issues')
           .addStringOption(o => o.setName('code').setDescription('Code to analyze').setRequired(true)))
         .addSubcommand(s => s.setName('audit').setDescription('Audit for vulnerabilities')
-          .addStringOption(o => o.setName('code').setDescription('Code to audit').setRequired(true))));
+          .addStringOption(o => o.setName('code').setDescription('Code to audit').setRequired(true)))));
   }
 
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> {

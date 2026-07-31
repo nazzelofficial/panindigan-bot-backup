@@ -44,6 +44,43 @@ class EmojiManager {
     this.cache.clear();
   }
 
+  /**
+   * Resolve an emoji string for a registry entry.
+   * Priority: hardcoded ID → name-based lookup in client emoji cache → Unicode fallback.
+   *
+   * Name-based lookup: if you add emoji to your bot's servers (or an emoji guild) using
+   * the exact names listed below (e.g. "music_play", "eco_coins"), the bot will
+   * automatically find and use them without any ID configuration needed.
+   */
+  private resolveEmoji(config: EmojiConfig, animatedOnly?: boolean, staticOnly?: boolean): string {
+    if (!this.client) return config.fallback;
+
+    // 1. Try lookup by hardcoded ID
+    if (config.id) {
+      try {
+        const emoji = this.client.emojis.cache.get(config.id);
+        if (emoji) {
+          if (animatedOnly && !emoji.animated) { /* fall through */ }
+          else if (staticOnly && emoji.animated) { /* fall through */ }
+          else return emoji.toString();
+        }
+      } catch { /* silent */ }
+    }
+
+    // 2. Try name-based lookup — finds emojis added to any server the bot is in
+    try {
+      const emoji = this.client.emojis.cache.find(e => e.name === config.name);
+      if (emoji) {
+        if (animatedOnly && !emoji.animated) { /* fall through */ }
+        else if (staticOnly && emoji.animated) { /* fall through */ }
+        else return emoji.toString();
+      }
+    } catch { /* silent */ }
+
+    // 3. Unicode fallback
+    return config.fallback;
+  }
+
   private initializeRegistry(): CategoryEmojis {
     return {
       // ── Admin ──────────────────────────────────────────────────────────────
@@ -262,91 +299,46 @@ class EmojiManager {
     };
   }
 
-  /** Get the emoji string for a category/key. Falls back to Unicode if no custom emoji is set. */
+  /**
+   * Get the emoji string for a category/key.
+   * Tries hardcoded ID → name lookup in client cache → Unicode fallback.
+   */
   public get(category: keyof CategoryEmojis, key: string): string {
     const cacheKey = `${category}:${key}`;
-
     if (this.cache.has(cacheKey)) return this.cache.get(cacheKey)!;
 
     const config = this.registry[category]?.[key];
-    if (!config) return this.registry.utility.search?.fallback ?? '❓';
+    if (!config) return this.registry.utility.error?.fallback ?? '❓';
 
-    if (!this.client || !config.id) {
-      this.cache.set(cacheKey, config.fallback);
-      return config.fallback;
-    }
-
-    try {
-      const emoji = this.client.emojis.cache.get(config.id);
-      if (emoji) {
-        const str = emoji.toString();
-        this.cache.set(cacheKey, str);
-        return str;
-      }
-    } catch {
-      // silent fallback
-    }
-
-    this.cache.set(cacheKey, config.fallback);
-    return config.fallback;
+    const result = this.resolveEmoji(config);
+    this.cache.set(cacheKey, result);
+    return result;
   }
 
   /** Get the animated emoji string, or Unicode fallback if not animated/not found. */
   public getAnimated(category: keyof CategoryEmojis, key: string): string {
     const cacheKey = `${category}:${key}:animated`;
-
     if (this.cache.has(cacheKey)) return this.cache.get(cacheKey)!;
 
     const config = this.registry[category]?.[key];
-    if (!config) return this.registry.utility.search?.fallback ?? '❓';
+    if (!config) return this.registry.utility.error?.fallback ?? '❓';
 
-    if (!this.client || !config.id || !config.animated) {
-      this.cache.set(cacheKey, config.fallback);
-      return config.fallback;
-    }
-
-    try {
-      const emoji = this.client.emojis.cache.get(config.id);
-      if (emoji && emoji.animated) {
-        const str = emoji.toString();
-        this.cache.set(cacheKey, str);
-        return str;
-      }
-    } catch {
-      // silent fallback
-    }
-
-    this.cache.set(cacheKey, config.fallback);
-    return config.fallback;
+    const result = config.animated ? this.resolveEmoji(config, true, false) : config.fallback;
+    this.cache.set(cacheKey, result);
+    return result;
   }
 
   /** Get a static (non-animated) emoji, falling back to Unicode. */
   public getStatic(category: keyof CategoryEmojis, key: string): string {
     const cacheKey = `${category}:${key}:static`;
-
     if (this.cache.has(cacheKey)) return this.cache.get(cacheKey)!;
 
     const config = this.registry[category]?.[key];
-    if (!config) return this.registry.utility.search?.fallback ?? '❓';
+    if (!config) return this.registry.utility.error?.fallback ?? '❓';
 
-    if (!this.client || !config.id || config.animated) {
-      this.cache.set(cacheKey, config.fallback);
-      return config.fallback;
-    }
-
-    try {
-      const emoji = this.client.emojis.cache.get(config.id);
-      if (emoji && !emoji.animated) {
-        const str = emoji.toString();
-        this.cache.set(cacheKey, str);
-        return str;
-      }
-    } catch {
-      // silent fallback
-    }
-
-    this.cache.set(cacheKey, config.fallback);
-    return config.fallback;
+    const result = !config.animated ? this.resolveEmoji(config, false, true) : config.fallback;
+    this.cache.set(cacheKey, result);
+    return result;
   }
 
   /** Get all resolved emoji strings for a category. */
@@ -360,7 +352,33 @@ class EmojiManager {
     return result;
   }
 
-  public clearCache(): void { this.cache.clear(); }
+  /**
+   * List all emoji names that should be uploaded to a guild for full animated support.
+   * Prints a helpful table for server admins.
+   */
+  public listRequiredEmojis(): Array<{ name: string; animated: boolean; category: string }> {
+    const result: Array<{ name: string; animated: boolean; category: string }> = [];
+    for (const [category, emojis] of Object.entries(this.registry)) {
+      for (const [, config] of Object.entries(emojis as Record<string, EmojiConfig>)) {
+        result.push({ name: config.name, animated: config.animated ?? false, category });
+      }
+    }
+    return result.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  /**
+   * Register a custom emoji ID for a known registry entry.
+   * Call this at startup if you have a dedicated emoji guild and known IDs.
+   */
+  public registerEmoji(category: keyof CategoryEmojis, key: string, id: string): void {
+    const config = this.registry[category]?.[key];
+    if (config) {
+      config.id = id;
+      this.cache.delete(`${category}:${key}`);
+      this.cache.delete(`${category}:${key}:animated`);
+      this.cache.delete(`${category}:${key}:static`);
+    }
+  }
 
   public registerCustomEmoji(category: keyof CategoryEmojis, key: string, config: EmojiConfig): void {
     if (!this.registry[category]) (this.registry as any)[category] = {};
@@ -368,6 +386,7 @@ class EmojiManager {
     this.cache.delete(`${category}:${key}`);
   }
 
+  public clearCache(): void { this.cache.clear(); }
   public getRegistry(): CategoryEmojis { return this.registry; }
 }
 

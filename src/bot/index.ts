@@ -93,6 +93,12 @@ async function runStep<T>(
 // ─── Environment validation ───────────────────────────────────────────────────
 
 function validateEnvironment(): void {
+  // Replit exposes PostgreSQL as DATABASE_URL (runtime-managed).
+  // Accept either DATABASE_URL or POSTGRES_URL so the bot starts cleanly on Replit.
+  if (!process.env.POSTGRES_URL && process.env.DATABASE_URL) {
+    process.env.POSTGRES_URL = process.env.DATABASE_URL;
+  }
+
   const required = [
     'DISCORD_TOKEN',
     'DISCORD_CLIENT_ID',
