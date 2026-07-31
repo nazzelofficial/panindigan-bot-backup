@@ -135,7 +135,7 @@ export async function activatePremiumKey(
   }
 }
 
-export async function activateFreeTrial(
+export async function activateFreeTrialModule(
   userId: string,
   guildId: string
 ): Promise<{ success: boolean; error?: string }> {
@@ -146,12 +146,13 @@ export async function activateFreeTrial(
   const prisma = getPrismaClient();
 
   try {
-    const user = await prisma.user.findUnique({
-      where: { userId_guildId: { userId, guildId } },
+    // Check if user already has trial used (check across all guilds for global trial)
+    const existingTrial = await prisma.user.findFirst({
+      where: { userId, trialUsed: true },
       select: { trialUsed: true },
     });
 
-    if (user?.trialUsed) {
+    if (existingTrial?.trialUsed) {
       return { success: false, error: 'You have already used your free trial' };
     }
 
@@ -159,11 +160,13 @@ export async function activateFreeTrial(
     const expiresAt = new Date(now.getTime() + config.premium.trial.durationDays * 24 * 60 * 60 * 1000);
 
     await prisma.$transaction([
+      // Create or update user record for this guild
       prisma.user.upsert({
         where: { userId_guildId: { userId, guildId } },
         create: { userId, guildId, trialUsed: true, premiumTier: config.premium.trial.tier, premiumExpiresAt: expiresAt },
         update: { trialUsed: true, premiumTier: config.premium.trial.tier, premiumExpiresAt: expiresAt },
       }),
+      // Create or update premium record for this guild
       prisma.premium.upsert({
         where: { userId_guildId: { userId, guildId } },
         create: { userId, guildId, tier: config.premium.trial.tier, activatedAt: now, expiresAt, isPermanent: false },
@@ -263,7 +266,33 @@ export class PremiumHandler {
   }
 
   /** Starts a free trial for the user (uses guildId 'global'). */
-  async activateFreeTrial(userId: string, _tier: string): Promise<{ success: boolean; error?: string }> {
-    return activateFreeTrial(userId, 'global');
+  async activateFreeTrial(userId: string, tier: string): Promise<{ success: boolean; error?: string }> {
+    // Use the provided tier parameter if valid, otherwise use config default
+    const trialTier = (tier && ['bronze', 'silver', 'gold', 'diamond'].includes(tier)) ? tier : config.premium.trial.tier;
+    const result = await activateFreeTrialModule(userId, 'global');
+    
+    // If successful but tier was different from what was requested, override the tier
+    if (result.success && trialTier !== config.premium.trial.tier) {
+      const prisma = getPrismaClient();
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + config.premium.trial.durationDays * 24 * 60 * 60 * 1000);
+      
+      try {
+        await prisma.$transaction([
+          prisma.user.updateMany({
+            where: { userId },
+            data: { premiumTier: trialTier, premiumExpiresAt: expiresAt },
+          }),
+          prisma.premium.updateMany({
+            where: { userId, guildId: 'global' },
+            data: { tier: trialTier, expiresAt },
+          }),
+        ]);
+      } catch (error) {
+        loggers.premium.error('Error updating trial tier', { userId, trialTier, errorMessage: String(error) });
+      }
+    }
+    
+    return result;
   }
 }

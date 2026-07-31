@@ -120,9 +120,16 @@ export class ConfigCommand extends BaseCommand {
     if (!interaction.guild) return;
 
     const prisma = getPrismaClient();
-    const guild = await prisma.guild.findUnique({
+    let guild = await prisma.guild.findUnique({
       where: { guildId: interaction.guild.id },
     });
+
+    // Create guild record if it doesn't exist
+    if (!guild) {
+      guild = await prisma.guild.create({
+        data: { guildId: interaction.guild.id },
+      });
+    }
 
     const components = [
       ButtonManager.dashboard('config', {
@@ -213,9 +220,10 @@ export class ConfigCommand extends BaseCommand {
         break;
     }
 
-    await prisma.guild.update({
+    await prisma.guild.upsert({
       where: { guildId: interaction.guild.id },
-      data: updateData,
+      create: { guildId: interaction.guild.id, ...updateData },
+      update: updateData,
     });
 
     const description = `**Role:** ${roleName}\n**Updated by:** ${interaction.user.tag}`;
@@ -306,9 +314,10 @@ export class ConfigCommand extends BaseCommand {
         break;
     }
 
-    await prisma.guild.update({
+    await prisma.guild.upsert({
       where: { guildId: interaction.guild.id },
-      data: updateData,
+      create: { guildId: interaction.guild.id, ...updateData },
+      update: updateData,
     });
 
     const description = `**Channel:** ${channelName}\n**Updated by:** ${interaction.user.tag}`;
@@ -353,9 +362,10 @@ export class ConfigCommand extends BaseCommand {
         break;
     }
 
-    await prisma.guild.update({
+    await prisma.guild.upsert({
       where: { guildId: interaction.guild.id },
-      data: updateData,
+      create: { guildId: interaction.guild.id, ...updateData },
+      update: updateData,
     });
 
     const description = `**Setting:** ${settingName}\n**Updated by:** ${interaction.user.tag}`;
@@ -397,9 +407,10 @@ export class ConfigCommand extends BaseCommand {
           ignoredChannels.splice(index, 1);
         }
 
-        await prisma.guild.update({
+        await prisma.guild.upsert({
           where: { guildId: interaction.guild.id },
-          data: { ignoredChannels },
+          create: { guildId: interaction.guild.id, ignoredChannels },
+          update: { ignoredChannels },
         });
 
         const actionText = channelAction === 'add' ? 'Ignored' : 'Unignored';
@@ -434,9 +445,10 @@ export class ConfigCommand extends BaseCommand {
           ignoredUsers.splice(index, 1);
         }
 
-        await prisma.guild.update({
+        await prisma.guild.upsert({
           where: { guildId: interaction.guild.id },
-          data: { ignoredUsers },
+          create: { guildId: interaction.guild.id, ignoredUsers },
+          update: { ignoredUsers },
         });
 
         const userActionText = userAction === 'add' ? 'Ignored' : 'Unignored';
@@ -486,9 +498,10 @@ export class ConfigCommand extends BaseCommand {
         return;
     }
 
-    await prisma.guild.update({
+    await prisma.guild.upsert({
       where: { guildId: message.guild.id },
-      data: updateData,
+      create: { guildId: message.guild.id, ...updateData },
+      update: updateData,
     });
 
     const description = `**Role:** ${role.toString()}\n**Updated by:** ${message.author.tag}`;
@@ -548,9 +561,10 @@ export class ConfigCommand extends BaseCommand {
         return;
     }
 
-    await prisma.guild.update({
+    await prisma.guild.upsert({
       where: { guildId: message.guild.id },
-      data: updateData,
+      create: { guildId: message.guild.id, ...updateData },
+      update: updateData,
     });
 
     const description = `**Channel:** ${channel.toString()}\n**Updated by:** ${message.author.tag}`;
@@ -599,9 +613,10 @@ export class ConfigCommand extends BaseCommand {
         return;
     }
 
-    await prisma.guild.update({
+    await prisma.guild.upsert({
       where: { guildId: message.guild.id },
-      data: updateData,
+      create: { guildId: message.guild.id, ...updateData },
+      update: updateData,
     });
 
     const description = `**Setting:** ${settingName}\n**Updated by:** ${message.author.tag}`;
@@ -647,9 +662,10 @@ export class ConfigCommand extends BaseCommand {
 
     const updateData = action === 'channel' ? { ignoredChannels: ignoredList } : { ignoredUsers: ignoredList };
 
-    await prisma.guild.update({
+    await prisma.guild.upsert({
       where: { guildId: message.guild.id },
-      data: updateData,
+      create: { guildId: message.guild.id, ...updateData },
+      update: updateData,
     });
 
     const actionText = ignoreAction === 'add' ? 'Ignored' : 'Unignored';

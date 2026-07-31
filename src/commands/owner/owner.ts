@@ -733,10 +733,10 @@ export class OwnerCommand extends BaseCommand {
     const prisma = getPrismaClient();
     
     try {
-      await prisma.blacklistedGuild.upsert({
+      await prisma.guild.upsert({
         where: { guildId: id },
-        create: { guildId: id, reason: 'Manual blacklist by owner' },
-        update: { reason: 'Manual blacklist by owner' },
+        create: { guildId: id, isBlacklisted: true, blacklistReason: 'Manual blacklist by owner' },
+        update: { isBlacklisted: true, blacklistReason: 'Manual blacklist by owner' },
       });
       
       const guild = i.client.guilds.cache.get(id);
@@ -754,7 +754,10 @@ export class OwnerCommand extends BaseCommand {
     const prisma = getPrismaClient();
     
     try {
-      await prisma.blacklistedGuild.delete({ where: { guildId: id } });
+      await prisma.guild.update({ 
+        where: { guildId: id },
+        data: { isBlacklisted: false, blacklistReason: null },
+      });
       await SuccessHandler.command(i, 'unblacklist', `Guild ${id} unblacklisted`);
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
@@ -829,12 +832,12 @@ export class OwnerCommand extends BaseCommand {
     const prisma = getPrismaClient();
     
     try {
-      await prisma.user.upsert({
+      // Set global blacklist on all user records
+      await prisma.user.updateMany({
         where: { userId: id },
-        create: { userId: id, blacklisted: true },
-        update: { blacklisted: true },
+        data: { isGlobalBlacklisted: true, globalBlacklistReason: 'Manual blacklist by owner' },
       });
-      await SuccessHandler.command(i, 'blacklist', `User ${id} blacklisted`);
+      await SuccessHandler.command(i, 'blacklist', `User ${id} globally blacklisted`);
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
     }
@@ -846,11 +849,11 @@ export class OwnerCommand extends BaseCommand {
     const prisma = getPrismaClient();
     
     try {
-      await prisma.user.update({ 
+      await prisma.user.updateMany({ 
         where: { userId: id },
-        data: { blacklisted: false },
+        data: { isGlobalBlacklisted: false, globalBlacklistReason: null },
       });
-      await SuccessHandler.command(i, 'unblacklist', `User ${id} unblacklisted`);
+      await SuccessHandler.command(i, 'unblacklist', `User ${id} globally unblacklisted`);
     } catch (error) {
       await ErrorHandler.generic(i, error as Error);
     }

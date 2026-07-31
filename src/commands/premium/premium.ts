@@ -10,6 +10,7 @@ import { ErrorHandler } from '../../handlers/ErrorHandler.js';
 import { PremiumHandler } from '../../handlers/PremiumHandler.js';
 import { getPrismaClient } from '../../database/postgresql/client.js';
 import { COLORS } from '../../constants/DesignSystem.js';
+import config from '../../config.json' with { type: 'json' };
 
 const TIER_INFO = {
   free:    { label: 'Free',    color: COLORS.default, perks: ['Basic commands', 'Economy system', 'Social GIFs', 'Leveling', 'Giveaways'] },
@@ -45,9 +46,9 @@ export class PremiumCommand extends BaseCommand {
       const info = TIER_INFO[tier as keyof typeof TIER_INFO] || TIER_INFO.free;
       const embed = DashboardUI.createPremium(i.user.tag, {
         tier: tier,
-        active: status?.active || false,
-        expiresAt: status?.expiresAt ? new Date(status.expiresAt) : null,
+        expiresAt: status?.expiresAt ? status.expiresAt.toISOString() : undefined,
         features: info.perks,
+        servers: 0, // Will be updated when we add server tracking
       });
       await i.editReply({ embeds: [embed] });
 
@@ -70,9 +71,10 @@ export class PremiumCommand extends BaseCommand {
 
     } else if (sub === 'trial') {
       await i.deferReply({ ephemeral: true });
-      const result = await handler.activateFreeTrial(i.user.id, 'bronze');
+      const trialTier = config.premium.trial.tier || 'bronze';
+      const result = await handler.activateFreeTrial(i.user.id, trialTier);
       if (result.success) {
-        await SuccessHandler.premium(i, 'Bronze', TIER_INFO.bronze.perks);
+        await SuccessHandler.premium(i, TIER_INFO[trialTier as keyof typeof TIER_INFO]?.label || trialTier, TIER_INFO[trialTier as keyof typeof TIER_INFO]?.perks || []);
       } else {
         await ErrorHandler.generic(i, new Error(result.error || 'Failed to activate trial'));
       }
@@ -101,9 +103,9 @@ export class PremiumCommand extends BaseCommand {
       const info = TIER_INFO[tier as keyof typeof TIER_INFO] || TIER_INFO.free;
       const embed = DashboardUI.createPremium(m.author.tag, {
         tier: tier,
-        active: status?.active || false,
-        expiresAt: status?.expiresAt ? new Date(status.expiresAt) : null,
+        expiresAt: status?.expiresAt ? status.expiresAt.toISOString() : undefined,
         features: info.perks,
+        servers: 0, // Will be updated when we add server tracking
       });
       await m.reply({ embeds: [embed] });
     } else {

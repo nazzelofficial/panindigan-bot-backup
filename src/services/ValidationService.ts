@@ -78,19 +78,21 @@ class ValidationService {
       const userId = interaction.user.id;
       const guildId = interaction.guild?.id;
 
-      // Check global blacklist
-      const globalBlacklist = await this.prisma.blacklist.findUnique({
-        where: { userId },
+      // Check global blacklist via User model
+      const globalBlacklist = await this.prisma.user.findFirst({
+        where: { userId, isGlobalBlacklisted: true },
+        select: { globalBlacklistReason: true },
       });
 
       if (globalBlacklist) {
         return { valid: false, error: 'You are globally blacklisted from using this bot.' };
       }
 
-      // Check guild blacklist
+      // Check guild blacklist via Moderation model
       if (guildId) {
-        const guildBlacklist = await this.prisma.guildBlacklist.findFirst({
-          where: { userId, guildId },
+        const guildBlacklist = await this.prisma.moderation.findFirst({
+          where: { userId, guildId, isBlacklisted: true },
+          select: { blacklistReason: true },
         });
 
         if (guildBlacklist) {
@@ -110,17 +112,16 @@ class ValidationService {
   ): Promise<ValidationResult> {
     try {
       const userId = interaction.user.id;
-      const premium = await this.prisma.premium.findUnique({
-        where: { userId },
-      });
+      const guildId = interaction.guild?.id || 'global';
+      
+      // Use the proper premium check function
+      const { getUserPremiumTier } = await import('../handlers/PremiumHandler.js');
+      const userTier = await getUserPremiumTier(userId, guildId);
 
-      if (!premium) {
-        if (requiredTier === 'free') return { valid: true };
-        return { valid: false, error: 'This feature requires a premium subscription.' };
-      }
+      if (requiredTier === 'free') return { valid: true };
 
       const tierHierarchy = ['free', 'bronze', 'silver', 'gold', 'diamond'];
-      const userTierIndex = tierHierarchy.indexOf(premium.tier);
+      const userTierIndex = tierHierarchy.indexOf(userTier);
       const requiredTierIndex = tierHierarchy.indexOf(requiredTier);
 
       if (userTierIndex < requiredTierIndex) {
