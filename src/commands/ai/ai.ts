@@ -165,7 +165,11 @@ export class AICommand extends BaseCommand {
       switch (subcommand) {
         case 'analyze': await this.handleSecurityAnalyze(i); break;
         case 'audit': await this.handleSecurityAudit(i); break;
+        default:
+          await ErrorHandler.send(i, { title: 'Unknown Subcommand', description: `\`${subcommand}\` is not a recognized subcommand.`, ephemeral: true });
       }
+    } else {
+      await ErrorHandler.send(i, { title: 'Unknown Command Group', description: `\`${subcommandGroup}\` is not a recognized group. Try refreshing Discord.`, ephemeral: true });
     }
   }
 

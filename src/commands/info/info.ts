@@ -127,6 +127,8 @@ export class InfoCommand extends BaseCommand {
       case 'github': await this.handleGithub(i); break;
       case 'country': await this.handleCountry(i); break;
       case 'nitro': await this.handleNitro(i); break;
+      default:
+        await ErrorHandler.send(i, { title: 'Unknown Subcommand', description: `\`${subcommand}\` is not a recognized subcommand.`, ephemeral: true });
     }
   }
 

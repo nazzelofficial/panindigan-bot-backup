@@ -1424,8 +1424,12 @@ export class OwnerCommand extends BaseCommand {
           case 'exec': await this.handleDevExec(i); break;
           case 'test': await this.handleDevTest(i); break;
           case 'logs': await this.handleDevLogs(i); break;
+          default:
+            await i.reply({ content: `❌ Unknown dev subcommand: \`${subcommand}\``, ephemeral: true });
         }
         break;
+      default:
+        await i.reply({ content: `❌ Unknown command group: \`${subcommandGroup}\``, ephemeral: true });
     }
   }
 

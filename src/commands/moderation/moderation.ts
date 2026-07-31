@@ -171,7 +171,11 @@ export class ModerationCommand extends BaseCommand {
         case 'automod': await this.handleAutomod(i); break;
         case 'raidmode': await this.handleRaidmode(i); break;
         case 'filter': await this.handleFilter(i); break;
+        default:
+          await ErrorHandler.send(i, { title: 'Unknown Subcommand', description: `\`${subcommand}\` is not a recognized subcommand.`, ephemeral: true });
       }
+    } else {
+      await ErrorHandler.send(i, { title: 'Unknown Command Group', description: `\`${subcommandGroup}\` is not a recognized group. Try refreshing Discord.`, ephemeral: true });
     }
   }
 

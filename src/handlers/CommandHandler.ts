@@ -2,7 +2,7 @@
 import { readdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { REST, Routes } from 'discord.js';
+import { REST, Routes, ContextMenuCommandBuilder, ApplicationCommandType } from 'discord.js';
 import { PanindiganClient } from '../structures/PanindiganClient.js';
 import { BaseCommand } from '../structures/BaseCommand.js';
 import { loggers } from '../utils/Logger.js';
@@ -95,13 +95,40 @@ async function registerSlashCommands(client: PanindiganClient): Promise<void> {
   let skippedOwner = 0;
   let skippedLimit = 0;
 
+  // Register slash commands
   for (const [name, command] of client.commands) {
     if (!command.slashCommand || name !== command.name) continue;
     // Skip owner-only commands — they don't need global slash commands
     if (command.ownerOnly) { skippedOwner++; continue; }
     // Respect Discord's 100 global command limit
     if (commands.length >= DISCORD_GLOBAL_COMMAND_LIMIT) { skippedLimit++; continue; }
-    commands.push(command.buildSlashCommand().toJSON());
+    try {
+      commands.push(command.buildSlashCommand().toJSON());
+    } catch (err) {
+      loggers.commands.error('Failed to build slash command — skipping', {
+        name: command.name,
+        errorMessage: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : undefined,
+      });
+    }
+  }
+
+  // Register context menu commands
+  for (const [name, command] of client.commands) {
+    if (!command.contextMenuCommand || name !== command.name) continue;
+    if (commands.length >= DISCORD_GLOBAL_COMMAND_LIMIT) { skippedLimit++; continue; }
+    try {
+      const builder = new ContextMenuCommandBuilder()
+        .setName(command.name)
+        .setType(command.contextMenuType ?? ApplicationCommandType.Message);
+      commands.push(builder.toJSON());
+      loggers.commands.debug('Queued context menu command', { name: command.name, type: command.contextMenuType });
+    } catch (err) {
+      loggers.commands.error('Failed to build context menu command — skipping', {
+        name: command.name,
+        errorMessage: err instanceof Error ? err.message : String(err),
+      });
+    }
   }
 
   if (skippedOwner > 0) loggers.commands.debug('Owner-only commands excluded from slash registration', { skippedOwner });

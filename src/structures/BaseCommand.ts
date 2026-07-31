@@ -6,6 +6,7 @@ import {
   Message,
   PermissionResolvable,
   Client,
+  ApplicationCommandType,
 } from 'discord.js';
 
 export interface Event {
@@ -48,6 +49,8 @@ export interface CommandOptions {
   guildOnly?: boolean;
   slashCommand?: boolean;
   prefixCommand?: boolean;
+  contextMenuCommand?: boolean;
+  contextMenuType?: ApplicationCommandType;
   aliases?: string[];
   examples?: string[];
 }
@@ -64,6 +67,8 @@ export abstract class BaseCommand {
   public readonly guildOnly: boolean;
   public readonly slashCommand: boolean;
   public readonly prefixCommand: boolean;
+  public readonly contextMenuCommand: boolean;
+  public readonly contextMenuType: ApplicationCommandType | undefined;
   public readonly aliases: string[];
   public readonly examples: string[];
 
@@ -79,12 +84,17 @@ export abstract class BaseCommand {
     this.guildOnly = options.guildOnly ?? false;
     this.slashCommand = options.slashCommand ?? true;
     this.prefixCommand = options.prefixCommand ?? true;
+    this.contextMenuCommand = options.contextMenuCommand ?? false;
+    this.contextMenuType = options.contextMenuType;
     this.aliases = options.aliases ?? [];
     this.examples = options.examples ?? [];
   }
 
   public abstract executeSlash(interaction: ChatInputCommandInteraction): Promise<void>;
   public abstract executePrefix(message: Message, _args: string[]): Promise<void>;
+  public async executeContext(interaction: ContextMenuCommandInteraction): Promise<void> {
+    // Override in context menu commands
+  }
 
   public buildSlashCommand(): SlashCommandBuilder {
     const builder = new SlashCommandBuilder()

@@ -21,6 +21,27 @@ export const event: Event = {
       return;
     }
 
+    // ── Context menu interactions ─────────────────────────────────────────────
+    if (interaction.isContextMenuCommand()) {
+      const command = client.commands.get(interaction.commandName);
+      if (!command) return;
+      try {
+        await command.executeContext(interaction);
+      } catch (error) {
+        loggers.commands.error('Error executing context menu command', {
+          command: interaction.commandName,
+          user: interaction.user.id,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        try {
+          const msg = { content: '❌ An error occurred while running this command.', ephemeral: true };
+          if (interaction.replied || interaction.deferred) await interaction.followUp(msg);
+          else await interaction.reply(msg);
+        } catch { /* expired */ }
+      }
+      return;
+    }
+
     if (!interaction.isChatInputCommand()) return;
 
     const command = client.commands.get(interaction.commandName);

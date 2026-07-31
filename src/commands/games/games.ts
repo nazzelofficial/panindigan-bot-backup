@@ -152,7 +152,11 @@ export class GamesCommand extends BaseCommand {
         case 'character': await this.handleCharacter(i); break;
         case 'inventory': await this.handleInventory(i); break;
         case 'battle': await this.handleBattle(i); break;
+        default:
+          await ErrorHandler.send(i, { title: 'Unknown Subcommand', description: `\`${subcommand}\` is not a recognized subcommand.`, ephemeral: true });
       }
+    } else {
+      await ErrorHandler.send(i, { title: 'Unknown Command Group', description: `\`${subcommandGroup}\` is not a recognized group. Try refreshing Discord.`, ephemeral: true });
     }
   }
 
