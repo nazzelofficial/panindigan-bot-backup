@@ -2,7 +2,7 @@
 import { readdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { REST, Routes, ContextMenuCommandBuilder, ApplicationCommandType } from 'discord.js';
+import { REST, Routes, ContextMenuCommandBuilder, ApplicationCommandType, APIApplicationCommand } from 'discord.js';
 import { PanindiganClient } from '../structures/PanindiganClient.js';
 import { BaseCommand } from '../structures/BaseCommand.js';
 import { loggers } from '../utils/Logger.js';
@@ -147,6 +147,20 @@ async function registerSlashCommands(client: PanindiganClient): Promise<void> {
     const data: any = await rest.put(Routes.applicationCommands(clientId), { body: commands });
 
     loggers.commands.info('Slash commands registered successfully', { registered: data.length });
+
+    // Clear stale guild-specific commands so old flat commands no longer appear in Discord
+    const guildIds = Array.from(client.guilds.cache.keys());
+    if (guildIds.length > 0) {
+      await Promise.all(
+        guildIds.map((guildId) =>
+          rest
+            .put(Routes.applicationGuildCommands(clientId, guildId), { body: [] })
+            .then(() => loggers.commands.debug('Guild commands cleared', { guildId }))
+            .catch((e) => loggers.commands.debug('Could not clear guild commands (non-critical)', { guildId, error: String(e) })),
+        ),
+      );
+      loggers.commands.info('Stale guild-specific commands cleared', { guilds: guildIds.length });
+    }
   } catch (error) {
     loggers.commands.error('Failed to register slash commands', {
       errorMessage: error instanceof Error ? error.message : String(error),
