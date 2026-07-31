@@ -58,7 +58,7 @@ export class GamesCommand extends BaseCommand {
         .addSubcommand(s => s.setName('simonsays').setDescription('Play Simon Says'))
         .addSubcommand(s => s.setName('reaction').setDescription('Test your reaction time'))
         .addSubcommand(s => s.setName('typing').setDescription('Test your typing speed'))
-        .addSubcommand(s => s.setName('whackamole').setDescription('Play Whack-a-Mole'))
+        .addSubcommand(s => s.setName('whackamole').setDescription('Play Whack-a-Mole')))
       
       // Casino Games Subcommand Group
       .addSubcommandGroup(g => g.setName('casino').setDescription('Casino-style games')
@@ -67,23 +67,23 @@ export class GamesCommand extends BaseCommand {
         .addSubcommand(s => s.setName('roulette').setDescription('Play Roulette')
           .addIntegerOption(o => o.setName('bet').setDescription('Bet amount').setRequired(true).setMinValue(1))
           .addStringOption(o => o.setName('choice').setDescription('Bet choice').setRequired(true)
-            .addChoices({ name: 'Red', value: 'red' }, { name: 'Black', value: 'black' }, { name: 'Green', value: 'green' }))
+            .addChoices({ name: 'Red', value: 'red' }, { name: 'Black', value: 'black' }, { name: 'Green', value: 'green' })))
         .addSubcommand(s => s.setName('slots').setDescription('Play Slots')
-          .addIntegerOption(o => o.setName('bet').setDescription('Bet amount').setRequired(true).setMinValue(1))
+          .addIntegerOption(o => o.setName('bet').setDescription('Bet amount').setRequired(true).setMinValue(1)))
         .addSubcommand(s => s.setName('poker').setDescription('Play Video Poker')
-          .addIntegerOption(o => o.setName('bet').setDescription('Bet amount').setRequired(true).setMinValue(1))
+          .addIntegerOption(o => o.setName('bet').setDescription('Bet amount').setRequired(true).setMinValue(1)))
         .addSubcommand(s => s.setName('higherlower').setDescription('Play Higher or Lower')
-          .addIntegerOption(o => o.setName('bet').setDescription('Bet amount').setRequired(true).setMinValue(1))
+          .addIntegerOption(o => o.setName('bet').setDescription('Bet amount').setRequired(true).setMinValue(1))))
       
       // Trivia & Quiz Subcommand Group
       .addSubcommandGroup(g => g.setName('trivia').setDescription('Trivia and quiz games')
         .addSubcommand(s => s.setName('trivia').setDescription('Play trivia')
           .addStringOption(o => o.setName('category').setDescription('Category').setRequired(false)
-            .addChoices({ name: 'General', value: 'general' }, { name: 'Science', value: 'science' }, { name: 'History', value: 'history' }, { name: 'Geography', value: 'geography' }))
+            .addChoices({ name: 'General', value: 'general' }, { name: 'Science', value: 'science' }, { name: 'History', value: 'history' }, { name: 'Geography', value: 'geography' })))
         .addSubcommand(s => s.setName('akinator').setDescription('Play Akinator - guess the character'))
         .addSubcommand(s => s.setName('hangman').setDescription('Play Hangman')
           .addStringOption(o => o.setName('category').setDescription('Category').setRequired(false)
-            .addChoices({ name: 'Animals', value: 'animals' }, { name: 'Countries', value: 'countries' }, { name: 'Food', value: 'food' }))
+            .addChoices({ name: 'Animals', value: 'animals' }, { name: 'Countries', value: 'countries' }, { name: 'Food', value: 'food' }))))
       
       // RPG Subcommand Group
       .addSubcommandGroup(g => g.setName('rpg').setDescription('Role-playing games')
@@ -93,7 +93,7 @@ export class GamesCommand extends BaseCommand {
         .addSubcommand(s => s.setName('inventory').setDescription('View your inventory')
           .addUserOption(o => o.setName('user').setDescription('User to view inventory for').setRequired(false)))
         .addSubcommand(s => s.setName('battle').setDescription('Battle another player')
-          .addUserOption(o => o.setName('opponent').setDescription('Your opponent').setRequired(false))));
+          .addUserOption(o => o.setName('opponent').setDescription('Your opponent').setRequired(false)))));
   }
 
   public async executeSlash(i: ChatInputCommandInteraction): Promise<void> {

@@ -332,11 +332,12 @@ export class AIConfigCommand extends BaseCommand {
         await message.reply({ embeds: [embed] });
         break;
 
-      case 'list':
+      case 'list': {
         const providers = ['chatgpt', 'claude', 'gemini', 'groq', 'mistral', 'perplexity', 'replicate'];
-        const embed = EmbedManager.info('📋 Available AI Providers', providers.map(p => `• ${p}`).join('\n'));
-        await message.reply({ embeds: [embed] });
+        const listEmbed = EmbedManager.info('📋 Available AI Providers', providers.map(p => `• ${p}`).join('\n'));
+        await message.reply({ embeds: [listEmbed] });
         break;
+      }
 
       default:
         await ErrorHandler.invalidArgument(message, 'action', 'set or list');

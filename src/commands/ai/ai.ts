@@ -77,7 +77,7 @@ export class AICommand extends BaseCommand {
         .addSubcommand(s => s.setName('improve').setDescription('Improve text')
           .addStringOption(o => o.setName('text').setDescription('Text to improve').setRequired(true)))
         .addSubcommand(s => s.setName('factcheck').setDescription('Fact-check information')
-          .addStringOption(o => o.setName('claim').setDescription('Claim to fact-check').setRequired(true)))
+          .addStringOption(o => o.setName('claim').setDescription('Claim to fact-check').setRequired(true))))
       
       // Code Subcommand Group
       .addSubcommandGroup(g => g.setName('code').setDescription('AI code assistance')
@@ -92,7 +92,7 @@ export class AICommand extends BaseCommand {
         .addSubcommand(s => s.setName('optimize').setDescription('Optimize code')
           .addStringOption(o => o.setName('code').setDescription('Code to optimize').setRequired(true)))
         .addSubcommand(s => s.setName('explain').setDescription('Explain code')
-          .addStringOption(o => o.setName('code').setDescription('Code to explain').setRequired(true)))
+          .addStringOption(o => o.setName('code').setDescription('Code to explain').setRequired(true))))
       
       // Vision Subcommand Group
       .addSubcommandGroup(g => g.setName('vision').setDescription('AI image analysis')

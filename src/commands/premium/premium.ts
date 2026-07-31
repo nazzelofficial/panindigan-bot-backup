@@ -9,6 +9,7 @@ import { SuccessHandler } from '../../handlers/SuccessHandler.js';
 import { ErrorHandler } from '../../handlers/ErrorHandler.js';
 import { PremiumHandler } from '../../handlers/PremiumHandler.js';
 import { getPrismaClient } from '../../database/postgresql/client.js';
+import { COLORS } from '../../constants/DesignSystem.js';
 
 const TIER_INFO = {
   free:    { label: 'Free',    color: COLORS.default, perks: ['Basic commands', 'Economy system', 'Social GIFs', 'Leveling', 'Giveaways'] },

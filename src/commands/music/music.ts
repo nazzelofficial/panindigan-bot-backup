@@ -1552,7 +1552,7 @@ export class MusicCommand extends BaseCommand {
             { name: '👤 Added by', value: `<@${i.user.id}>`, inline: true },
           ],
           thumbnail: currentTrack.thumbnail ?? undefined,
-        }
+        })
         .setTimestamp();
       await i.editReply({ embeds: [embed] });
     } catch (error) {
@@ -2107,7 +2107,7 @@ export class MusicCommand extends BaseCommand {
       });
 
       const embed = EmbedManager.music('Joined Voice Channel',
-        `🔊 Joined **${voiceChannel.name}**! Use `/music player play` to start listening.`,
+        `🔊 Joined **${voiceChannel.name}**! Use \`/music player play\` to start listening.`,
         {
           fields: [
             { name: '🎤 Channel', value: voiceChannel.name, inline: true },
@@ -2161,7 +2161,7 @@ export class MusicCommand extends BaseCommand {
       player.destroy();
 
       const embed = EmbedManager.music('Left Voice Channel',
-        `👋 Left **${channelName}**. Use `/music voice join` to bring me back!`,
+        `👋 Left **${channelName}**. Use \`/music voice join\` to bring me back!`,
         {
           fields: [
             { name: '🎤 Channel', value: channelName, inline: true },
