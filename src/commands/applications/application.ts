@@ -14,7 +14,7 @@ import { getPrismaClient } from '../../database/postgresql/client.js';
 
 export class ApplicationCommand extends BaseCommand {
   constructor() {
-    super({ name: 'application', description: 'Manage and submit applications', category: 'applications', premiumTier: 'silver', cooldown: 10, guildOnly: true, slashCommand: true, prefixCommand: false, aliases: ['apply', 'app'], examples: ['/application create', '/application list', '/application view <id>'] } as CommandOptions);
+    super({ name: 'application', description: 'Manage and submit applications', category: 'applications', premiumTier: 'free', cooldown: 10, guildOnly: true, slashCommand: true, prefixCommand: false, aliases: ['apply', 'app'], examples: ['/application create', '/application list', '/application view <id>'] } as CommandOptions);
   }
 
   public buildSlashCommand(): SlashCommandBuilder {

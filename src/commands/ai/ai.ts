@@ -16,7 +16,7 @@ export class AICommand extends BaseCommand {
       name: 'ai',
       description: 'AI-powered commands for assistance and generation',
       category: 'ai',
-      premiumTier: 'bronze',
+      premiumTier: 'free',
       cooldown: 5,
       slashCommand: true,
       prefixCommand: true,

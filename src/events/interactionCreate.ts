@@ -3,7 +3,7 @@ import { Event } from '../structures/BaseCommand.js';
 import { ChatInputCommandInteraction, Interaction } from 'discord.js';
 import { PanindiganClient } from '../structures/PanindiganClient.js';
 import { checkCooldown } from '../handlers/CooldownHandler.js';
-import { getUserPremiumTier } from '../handlers/PremiumHandler.js';
+import { getUserPremiumTier, hasPremiumAccess } from '../handlers/PremiumHandler.js';
 import { Permissions } from '../utils/Permissions.js';
 import { handleComponent } from '../handlers/ComponentHandler.js';
 import { loggers, logCommandExecution } from '../utils/Logger.js';
@@ -108,7 +108,12 @@ export const event: Event = {
         ? await getUserPremiumTier(interaction.user.id, interaction.guild.id)
         : 'free';
 
-      if (command.premiumTier !== 'free' && command.premiumTier !== premiumTier) {
+      const hasAccess = command.premiumTier === 'free' || await hasPremiumAccess(
+        interaction.user.id,
+        interaction.guild?.id ?? 'global',
+        command.premiumTier,
+      );
+      if (!hasAccess) {
         const tierEmojis: Record<string, string> = { bronze: '🥉', silver: '⭐', gold: '💎', diamond: '👑' };
         const icon = tierEmojis[command.premiumTier] ?? '💎';
         await ErrorHandler.send(interaction, {

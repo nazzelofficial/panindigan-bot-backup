@@ -9,7 +9,7 @@ import { COLORS } from '../../constants/DesignSystem.js';
 
 export class StarboardCommand extends BaseCommand {
   constructor() {
-    super({ name: 'starboard', description: 'Configure the starboard system', category: 'starboard', premiumTier: 'bronze', cooldown: 5, guildOnly: true, slashCommand: true, prefixCommand: true, userPermissions: [PermissionFlagsBits.ManageGuild], aliases: ['star', 'sb'], examples: ['/starboard setup #channel', '/starboard threshold 5', '/starboard emoji ⭐', '/starboard lock', '/starboard info'] } as CommandOptions);
+    super({ name: 'starboard', description: 'Configure the starboard system', category: 'starboard', premiumTier: 'free', cooldown: 5, guildOnly: true, slashCommand: true, prefixCommand: true, userPermissions: [PermissionFlagsBits.ManageGuild], aliases: ['star', 'sb'], examples: ['/starboard setup #channel', '/starboard threshold 5', '/starboard emoji ⭐', '/starboard lock', '/starboard info'] } as CommandOptions);
   }
 
   public buildSlashCommand(): SlashCommandBuilder {

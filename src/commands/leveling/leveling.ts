@@ -14,7 +14,7 @@ export class LevelingCommand extends BaseCommand {
       name: 'leveling',
       description: 'Manage the leveling system and XP',
       category: 'leveling',
-      premiumTier: 'bronze',
+      premiumTier: 'free',
       cooldown: 5,
       slashCommand: true,
       prefixCommand: true,

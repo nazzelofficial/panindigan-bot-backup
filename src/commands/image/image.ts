@@ -10,7 +10,7 @@ import { loggers } from '../../utils/Logger.js';
 
 export class ImageCommand extends BaseCommand {
   constructor() {
-    super({ name: 'image', description: 'Generate images and apply image effects', category: 'image', premiumTier: 'gold', cooldown: 10, guildOnly: false, slashCommand: true, prefixCommand: true, aliases: ['img', 'generate', 'imagegen'], examples: ['/image generate a cute cat', '/image avatar @user', '/image blur @user'] } as CommandOptions);
+    super({ name: 'image', description: 'Generate images and apply image effects', category: 'image', premiumTier: 'free', cooldown: 10, guildOnly: false, slashCommand: true, prefixCommand: true, aliases: ['img', 'generate', 'imagegen'], examples: ['/image generate a cute cat', '/image avatar @user', '/image blur @user'] } as CommandOptions);
   }
 
   public buildSlashCommand(): SlashCommandBuilder {
